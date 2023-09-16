@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link href="styles.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="lesson-part">
+            <h1>Do Now</h1>
+            <h2 id="timerLabel"></h2>
+            <button id="start" onclick="startButtonClicked()">Start</button>
+            <button id="reset" onclick="resetButtonClicked()">Reset</button>
+        </div>
+        <div id="bathroom">
+            <h1>Bathroom</h1>
+            <h2 id="bathroomTimerLabel"></h2>
+        </div>
+        <div class="container">
+            
+        </div>
+        
+        <script type="text/javascript" src="index.js"></script>
+        <script type="text/javascript" src="webpack.config.js"></script>
+        <script type="module" src="gapi.js"></script>
+        <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+        <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+    </body>
+</html>

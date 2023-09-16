@@ -1,0 +1,47 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: black;
+}
+
+.lesson-part {
+    width: 100vw;
+    text-align: center;
+    color: whitesmoke;
+    padding: 20px;
+}
+
+#bathroom {
+    width: 100vw;
+    background-color: black;
+    text-align: center;
+    color: whitesmoke;
+    padding: 20px;
+}
+
+.container {
+    display: grid;
+    /* background-color: gray; */
+    grid-template: repeat(6, auto 1fr) / repeat(6, 1fr);
+    /* row-gap: 10px; */
+    column-gap: 10px;
+}
+
+.item {
+    background-color: gray;
+    text-align: center;
+    /* padding: 10px; */
+}
+
+.header {
+    grid-column: span 6;
+    color: whitesmoke;
+    background-color: cornflowerblue;
+    padding-left: 10px;
+    padding-bottom: 10px;
+}
+
+img {
+    width: 50%;
+    height: 50%;
+}
