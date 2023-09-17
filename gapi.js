@@ -31,7 +31,6 @@
    });
    gapiInited = true;
    getAuth();
-//    maybeEnableButtons();
  }
 
  /**
@@ -56,11 +55,6 @@
      handleAuthClick();
    }     
  }
-//  function maybeEnableButtons() {
-//    if (gapiInited && gisInited) {
-//      document.getElementById('authorize_button').style.visibility = 'visible';
-//    }
-//  }
 
  /**
   *  Sign in the user upon button click.
@@ -71,11 +65,6 @@
        throw (resp);
      }
      readFromSheet();
-    //  document.getElementById('signout_button').style.visibility = 'visible';
-    //  document.getElementById('authorize_button').innerText = 'Refresh';
-    //  await updateValues('1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM', 
-    //                     'Daily Data!AH9:AH11',
-    //                     'RAW');
    };
 
    if (gapi.client.getToken() === null) {
@@ -96,9 +85,6 @@
    if (token !== null) {
      google.accounts.oauth2.revoke(token.access_token);
      gapi.client.setToken('');
-    //  document.getElementById('content').innerText = '';
-    //  document.getElementById('authorize_button').innerText = 'Authorize';
-    //  document.getElementById('signout_button').style.visibility = 'hidden';
    }
  }
 
