@@ -263,7 +263,7 @@ function uploadButtonClicked() {
         const range = `${col}${row}:${col}${row+2}`;
         ranges.push(range);
     }
-    
+
     batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                       ranges,
                       values,
@@ -286,20 +286,20 @@ function convertGradeArrayToString(arr) {
 }
 
 function getColumn() {
-    var date1 = new Date("08/07/2023");
-    var date2 = new Date("09/18/2023");
+    const date1 = new Date("08/07/2023");
+    const date2 = new Date("09/18/2023");
         
     // calculate the time difference of two dates
-    var difference_in_time = date2.getTime() - date1.getTime();
+    const difference_in_time = date2.getTime() - date1.getTime();
 
     // calculate the no. of days between two dates
-    var difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
+    const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
 
     // calculate the no. of wekeends between two dates
     const no_weekends = Math.floor(difference_in_days / 7);
 
     // the number of columns away the current one is from column Z
-    let total = 70 + difference_in_days - no_weekends - 90;
+    const total = 70 + difference_in_days - no_weekends - 90;
     // To display the final no. of days (result)
     // console.log("difference = " + difference_in_days + 
     //             "\nweekends = " + no_weekends +
