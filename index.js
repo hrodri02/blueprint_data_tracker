@@ -7,44 +7,44 @@ const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
 
 const periods = [
     // 1st period
-    [{"id": 0, "first_name": "Joseph", "last_name": "Logwood", "grades": []}, 
-    {"id": 1, "first_name": "Makaiden", "last_name": "Vongphrachanh", "grades": []},
-    {"id": 2, "first_name": "Carly", "last_name": "Guerrero", "grades": []},
+    [{"id": 0, "period": 1, "first_name": "Joseph", "last_name": "Logwood", "grades": []}, 
+    {"id": 1, "period": 1, "first_name": "Makaiden", "last_name": "Vongphrachanh", "grades": []},
+    {"id": 2, "period": 1, "first_name": "Carly", "last_name": "Guerrero", "grades": []},
     ],
     // 2nd period
-    [{"id": 3, "first_name": "Uavalu", "last_name": "Kauvaka", "grades": []},
-    {"id": 4, "first_name": "Navie", "last_name": "Davis", "grades": []},
-    {"id": 5, "first_name": "Prince", "last_name": "Leggett","grades": []}
+    [{"id": 3, "period": 2, "first_name": "Uavalu", "last_name": "Kauvaka", "grades": []},
+    {"id": 4, "period": 2, "first_name": "Navie", "last_name": "Davis", "grades": []},
+    {"id": 5, "period": 2, "first_name": "Prince", "last_name": "Leggett","grades": []}
     ],
     // 3rd period
-    [{"id": 6, "first_name": "Benjamin", "last_name": "Inthavong", "grades": []}, 
-    {"id": 7, "first_name": "Emmanuel", "last_name": "Garcia Ponce","grades": []}, 
-    {"id": 8, "first_name": "Alexandra", "last_name": "Covian Perez","grades": []},
-    {"id": 9, "first_name": "Emeri", "last_name": "Hewitt","grades": []},
-    {"id": 10, "first_name": "Alexa", "last_name": "Padilla Garcia","grades": []}
+    [{"id": 6, "period": 3, "first_name": "Benjamin", "last_name": "Inthavong", "grades": []}, 
+    {"id": 7, "period": 3, "first_name": "Emmanuel", "last_name": "Garcia Ponce","grades": []}, 
+    {"id": 8, "period": 3, "first_name": "Alexandra", "last_name": "Covian Perez","grades": []},
+    {"id": 9, "period": 3, "first_name": "Emeri", "last_name": "Hewitt","grades": []},
+    {"id": 10, "period": 3, "first_name": "Alexa", "last_name": "Padilla Garcia","grades": []}
     ],
     // 4th period
-    [{"id": 11, "first_name": "John", "last_name": "Solozano","grades": []},
-    {"id": 12, "first_name": "David", "last_name": "Hernandez","grades": []},
-    {"id": 13, "first_name": "Juliana", "last_name": "Ignacio Tinajero","grades": []},
-    {"id": 14, "first_name": "Zacchaeus", "last_name": "Evans","grades": []},
-    {"id": 15, "first_name": "Saniyah", "last_name": "Sims","grades": []},
+    [{"id": 11, "period": 4, "first_name": "John", "last_name": "Solozano","grades": []},
+    {"id": 12, "period": 4, "first_name": "David", "last_name": "Hernandez","grades": []},
+    {"id": 13, "period": 4, "first_name": "Juliana", "last_name": "Ignacio Tinajero","grades": []},
+    {"id": 14, "period": 4, "first_name": "Zacchaeus", "last_name": "Evans","grades": []},
+    {"id": 15, "period": 4, "first_name": "Saniyah", "last_name": "Sims","grades": []},
     ],
     // 6th period
-    [{"id": 16, "first_name": "Nhi", "last_name": "Truong","grades": []}, 
-    {"id": 17, "first_name": "Brenda", "last_name": "Calmo Calmo","grades": []}, 
-    {"id": 18, "first_name": "Luis", "last_name": "Chang Chilel","grades": []},
-    {"id": 19, "first_name": "Caleb", "last_name": "Pablo","grades": []},
-    {"id": 20, "first_name": "Alex", "last_name": "Pablo Ramirez","grades": []},
-    {"id": 21, "first_name": "Lawrence", "last_name": "Ward","grades": []},
+    [{"id": 16, "period": 6, "first_name": "Nhi", "last_name": "Truong","grades": []}, 
+    {"id": 17, "period": 6, "first_name": "Brenda", "last_name": "Calmo Calmo","grades": []}, 
+    {"id": 18, "period": 6, "first_name": "Luis", "last_name": "Chang Chilel","grades": []},
+    {"id": 19, "period": 6, "first_name": "Caleb", "last_name": "Pablo","grades": []},
+    {"id": 20, "period": 6, "first_name": "Alex", "last_name": "Pablo Ramirez","grades": []},
+    {"id": 21, "period": 6, "first_name": "Lawrence", "last_name": "Ward","grades": []},
     ],
     // 7th period
-    [{"id": 22, "first_name": "Carlos", "last_name": "Moran Flores","grades": []}, 
-    {"id": 23, "first_name": "Arodi", "last_name": "Granados Funes","grades": []}, 
-    {"id": 24, "first_name": "John", "last_name": "Martin-Garcia","grades": []},
-    {"id": 25, "first_name": "Tysean", "last_name": "Kelly","grades": []},
-    {"id": 26, "first_name": "Khloe", "last_name": "Pierce","grades": []},
-    {"id": 27, "first_name": "Rebecca", "last_name": "Chales Pablo","grades": []},
+    [{"id": 22, "period": 7, "first_name": "Carlos", "last_name": "Moran Flores","grades": []}, 
+    {"id": 23, "period": 7, "first_name": "Arodi", "last_name": "Granados Funes","grades": []}, 
+    {"id": 24, "period": 7, "first_name": "John", "last_name": "Martin-Garcia","grades": []},
+    {"id": 25, "period": 7, "first_name": "Tysean", "last_name": "Kelly","grades": []},
+    {"id": 26, "period": 7, "first_name": "Khloe", "last_name": "Pierce","grades": []},
+    {"id": 27, "period": 7, "first_name": "Rebecca", "last_name": "Chales Pablo","grades": []},
     ]
 ]
 
@@ -76,71 +76,6 @@ function setupBathroomTimer() {
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
     bathroomTimerLabel.innerText = `${mins}:${secsString}`;
-}
-
-function startLessonTimer() {
-    // document.getElementsByClassName(classNames[0])[0].scrollIntoView();
-    let i = 0;
-    let timeInMS = timesInMS[0];
-
-    lessonTimerId = window.setInterval(() => {
-        timeInMS -= 1000;
-        mins = parseInt(timeInMS / 60000);
-        secs = (timeInMS - mins * 60000) / 1000;
-    
-        if (mins == 0 && secs === 0) {
-            if (i == lessonParts.length - 1) {
-                clearInterval(lessonTimerId);
-            }
-            else {
-                // update the lesson part
-                i++;
-                lessonLabel.innerText = lessonParts[i];
-                // update background color
-                div.style.background = colors[i];
-                // update the time in the new part
-                timeInMS = timesInMS[i];
-                mins = parseInt(timeInMS / 60000);
-                secs = (timeInMS - mins * 60000) / 1000;
-                lessonTimerLabel.innerText = `${mins}:0${secs}`;
-            }
-        }
-        else if (mins > 0 && secs === 0) {
-            mins -= 1;
-            secs = 59;
-            lessonTimerLabel.innerText = `${mins}:${secs}`;
-        }
-        else {
-            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            lessonTimerLabel.innerText = `${mins}:${secsString}`;
-        }
-    }, 1000);
-}
-
-function startBathroomTimer() {
-    let timeInMS = 15*60000;
-    let mins = parseInt(timeInMS / 60000);
-    let secs = (timeInMS - mins * 60000) / 1000;
-
-    bathroomTimerId = window.setInterval(() => {
-        timeInMS -= 1000;
-        mins = parseInt(timeInMS / 60000);
-        secs = (timeInMS - mins * 60000) / 1000;
-
-        if (mins == 0 && secs == 0) {
-            bathroomTimerLabel.innerText = `${mins}:${secs}`;
-            clearInterval(bathroomTimerId);
-        }
-        else if (mins > 0 && secs == 0) {
-            mins -= 1;
-            secs = 59;
-            bathroomTimerLabel.innerText = `${mins}:${secs}`;
-        }
-        else {
-            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            bathroomTimerLabel.innerText = `${mins}:${secsString}`;
-        }
-    }, 1000);
 }
 
 function setupPeriods() {
@@ -209,11 +144,83 @@ function setupPeriods() {
     }
 }
 
+function startButtonClicked() {
+    startLessonTimer();
+    startBathroomTimer();
+    startButton.disabled = true;
+}
+
+function startLessonTimer() {
+    // document.getElementsByClassName(classNames[0])[0].scrollIntoView();
+    let i = 0;
+    let timeInMS = timesInMS[0];
+
+    lessonTimerId = window.setInterval(() => {
+        timeInMS -= 1000;
+        mins = parseInt(timeInMS / 60000);
+        secs = (timeInMS - mins * 60000) / 1000;
+    
+        if (mins == 0 && secs === 0) {
+            if (i == lessonParts.length - 1) {
+                clearInterval(lessonTimerId);
+            }
+            else {
+                // update the lesson part
+                i++;
+                lessonLabel.innerText = lessonParts[i];
+                // update background color
+                div.style.background = colors[i];
+                // update the time in the new part
+                timeInMS = timesInMS[i];
+                mins = parseInt(timeInMS / 60000);
+                secs = (timeInMS - mins * 60000) / 1000;
+                lessonTimerLabel.innerText = `${mins}:0${secs}`;
+            }
+        }
+        else if (mins > 0 && secs === 0) {
+            mins -= 1;
+            secs = 59;
+            lessonTimerLabel.innerText = `${mins}:${secs}`;
+        }
+        else {
+            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
+            lessonTimerLabel.innerText = `${mins}:${secsString}`;
+        }
+    }, 1000);
+}
+
+function startBathroomTimer() {
+    let timeInMS = 15*60000;
+    let mins = parseInt(timeInMS / 60000);
+    let secs = (timeInMS - mins * 60000) / 1000;
+
+    bathroomTimerId = window.setInterval(() => {
+        timeInMS -= 1000;
+        mins = parseInt(timeInMS / 60000);
+        secs = (timeInMS - mins * 60000) / 1000;
+
+        if (mins == 0 && secs == 0) {
+            bathroomTimerLabel.innerText = `${mins}:${secs}`;
+            clearInterval(bathroomTimerId);
+        }
+        else if (mins > 0 && secs == 0) {
+            mins -= 1;
+            secs = 59;
+            bathroomTimerLabel.innerText = `${mins}:${secs}`;
+        }
+        else {
+            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
+            bathroomTimerLabel.innerText = `${mins}:${secsString}`;
+        }
+    }, 1000);
+}
+
 function gradeButtonClick() {
     const button = event.srcElement;
     const color = button.style.backgroundColor;
-    const student_id = button.parentElement.id;
-    const student = periods[0][student_id];
+    const studentID = button.parentElement.id;
+    const student = findStudentWith(studentID);
+
     if (color == "green") {
         button.style.backgroundColor = "";
         const index = student["grades"].indexOf(button.textContent);
@@ -225,18 +232,15 @@ function gradeButtonClick() {
     }
 }
 
-function startButtonClicked() {
-    startLessonTimer();
-    startBathroomTimer();
-    startButton.disabled = true;
-}
-
-function resetButtonClicked() {
-    clearInterval(lessonTimerId);
-    clearInterval(bathroomTimerId);
-    setupLessonTimer()
-    setupBathroomTimer()
-    startButton.disabled = false;
+function findStudentWith(studentID) {
+    for (i in periods) {
+        for (student of periods[i]) {
+            if (student["id"] == studentID) {
+                return student;
+            }
+        }
+    }
+    return null;
 }
 
 function uploadButtonClicked() {
@@ -263,8 +267,9 @@ function uploadButtonClicked() {
     batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                       ranges,
                       values,
-                      "RAW", (res) => {
-                          console.log(res);
+                      "RAW", 
+                      (res) => {
+                        resetGrades(students);                               
                       });
 }
 
@@ -282,7 +287,7 @@ function convertGradeArrayToString(arr) {
 
 function getColumn() {
     var date1 = new Date("08/07/2023");
-    var date2 = new Date();
+    var date2 = new Date("09/18/2023");
         
     // calculate the time difference of two dates
     var difference_in_time = date2.getTime() - date1.getTime();
@@ -308,4 +313,26 @@ function getColumn() {
     column_name += String.fromCharCode(65 + index_of_second - 1);
         
     return column_name;
+}
+
+function resetGrades(students) {
+    // clear the grades array for each student
+    for (i in students) {
+        students[i]["grades"] = []
+        // update the colors of the grades buttons   
+        const div = document.getElementById(students[i]["id"])
+        for (node of div.childNodes) {
+            if (node.tagName === "BUTTON") {
+                node.style.backgroundColor = "";
+            }
+        }
+    }    
+}
+
+function resetButtonClicked() {
+    clearInterval(lessonTimerId);
+    clearInterval(bathroomTimerId);
+    setupLessonTimer()
+    setupBathroomTimer()
+    startButton.disabled = false;
 }
