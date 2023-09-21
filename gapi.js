@@ -120,9 +120,9 @@
    for (i in periods) {
       for (j in periods[i]) {
         const student = periods[i][j];
-        const name = student["last_name"] + ", " + student["first_name"];
+        const name = student.last_name + ", " + student.first_name;
         const index = containsSubstring(students, name);
-        student["row"] = index + 3;
+        student.row = index + 3;
       }
    }
 }
