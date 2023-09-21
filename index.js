@@ -7,44 +7,51 @@ const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
 
 const periods = [
     // 1st period
-    [{"id": 0, "period": 1, "first_name": "Joseph", "last_name": "Logwood", "grades": []}, 
-    {"id": 1, "period": 1, "first_name": "Makaiden", "last_name": "Vongphrachanh", "grades": []},
-    {"id": 2, "period": 1, "first_name": "Carly", "last_name": "Guerrero", "grades": []},
+    [
+        new Student(0, "Joseph", "Logwood", 1),
+        new Student(1, "Makaiden", "Vongphrachanh", 1),
+        new Student(2, "Carly", "Guerrero", 1),
     ],
     // 2nd period
-    [{"id": 3, "period": 2, "first_name": "Uavalu", "last_name": "Kauvaka", "grades": []},
-    {"id": 4, "period": 2, "first_name": "Navie", "last_name": "Davis", "grades": []},
-    {"id": 5, "period": 2, "first_name": "Prince", "last_name": "Leggett","grades": []}
+    [
+        new Student(3, "Uavalu", "Kauvaka", 2),
+        new Student(4, "Navie", "Davis", 2),
+        new Student(5, "Prince", "Leggett", 2),
     ],
     // 3rd period
-    [{"id": 6, "period": 3, "first_name": "Benjamin", "last_name": "Inthavong", "grades": []}, 
-    {"id": 7, "period": 3, "first_name": "Emmanuel", "last_name": "Garcia Ponce","grades": []}, 
-    {"id": 8, "period": 3, "first_name": "Alexandra", "last_name": "Covian Perez","grades": []},
-    {"id": 9, "period": 3, "first_name": "Emeri", "last_name": "Hewitt","grades": []},
-    {"id": 10, "period": 3, "first_name": "Alexa", "last_name": "Padilla Garcia","grades": []}
+    [
+        new Student(6, "Benjamin", "Inthavong", 3),
+        new Student(7, "Emmanuel", "Garcia Ponce", 3),
+        new Student(8, "Alexandra", "Covian Perez", 3),
+        new Student(9, "Emeri", "Hewitt", 3),
+        new Student(10, "Alexa", "Padilla Garcia", 3),
+        new Student(11, "Elias", "The-Boy", 3),
     ],
     // 4th period
-    [{"id": 11, "period": 4, "first_name": "John", "last_name": "Solozano","grades": []},
-    {"id": 12, "period": 4, "first_name": "David", "last_name": "Hernandez","grades": []},
-    {"id": 13, "period": 4, "first_name": "Juliana", "last_name": "Ignacio Tinajero","grades": []},
-    {"id": 14, "period": 4, "first_name": "Zacchaeus", "last_name": "Evans","grades": []},
-    {"id": 15, "period": 4, "first_name": "Saniyah", "last_name": "Sims","grades": []},
+    [
+        new Student(12, "John", "Solozano", 4),
+        new Student(13, "David", "Hernandez", 4),
+        new Student(14, "Juliana", "Ignacio Tinajero", 4),
+        new Student(15, "Zacchaeus", "Evans", 4),
+        new Student(16, "Saniyah", "Sims", 4),
     ],
     // 6th period
-    [{"id": 16, "period": 6, "first_name": "Nhi", "last_name": "Truong","grades": []}, 
-    {"id": 17, "period": 6, "first_name": "Brenda", "last_name": "Calmo Calmo","grades": []}, 
-    {"id": 18, "period": 6, "first_name": "Luis", "last_name": "Chang Chilel","grades": []},
-    {"id": 19, "period": 6, "first_name": "Caleb", "last_name": "Pablo","grades": []},
-    {"id": 20, "period": 6, "first_name": "Alex", "last_name": "Pablo Ramirez","grades": []},
-    {"id": 21, "period": 6, "first_name": "Lawrence", "last_name": "Ward","grades": []},
+    [
+        new Student(17, "Nhi", "Truong", 6),
+        new Student(18, "Brenda", "Calmo Calmo", 6),
+        new Student(19, "Luis", "Chang Chilel", 6),
+        new Student(20, "Caleb", "Pablo", 6),
+        new Student(21, "Alex", "Pablo Ramirez", 6),
+        new Student(22, "Lawrence", "Ward", 6),
     ],
     // 7th period
-    [{"id": 22, "period": 7, "first_name": "Carlos", "last_name": "Moran Flores","grades": []}, 
-    {"id": 23, "period": 7, "first_name": "Arodi", "last_name": "Granados Funes","grades": []}, 
-    {"id": 24, "period": 7, "first_name": "John", "last_name": "Martin-Garcia","grades": []},
-    {"id": 25, "period": 7, "first_name": "Tysean", "last_name": "Kelly","grades": []},
-    {"id": 26, "period": 7, "first_name": "Khloe", "last_name": "Pierce","grades": []},
-    {"id": 27, "period": 7, "first_name": "Rebecca", "last_name": "Chales Pablo","grades": []},
+    [
+        new Student(23, "Carlos", "Moran Flores", 6),
+        new Student(24, "Arodi", "Granados Funes", 6),
+        new Student(25, "John", "Martin-Garcia", 6),
+        new Student(26, "Tysean", "Kelly", 6),
+        new Student(27, "Khloe", "Pierce", 6),
+        new Student(28, "Rebecca", "Chales Pablo", 6),
     ]
 ]
 
@@ -104,13 +111,13 @@ function setupPeriods() {
         for (i in students) {
             const div = document.createElement("div");
             div.classList.add("item");
-            div.id = students[i]["id"];
+            div.id = students[i].id;
             const img = document.createElement("img");
             img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png";
             div.appendChild(img);
     
             const h3 = document.createElement("h3");
-            const name = document.createTextNode(students[i]["first_name"]);
+            const name = document.createTextNode(students[i].first_name);
             h3.appendChild(name);
             div.appendChild(h3);
     
@@ -222,20 +229,22 @@ function gradeButtonClick() {
     const student = findStudentWith(studentID);
 
     if (color == "green") {
+        // remove letter grade
         button.style.backgroundColor = "";
         const index = student["grades"].indexOf(button.textContent);
-        student["grades"].splice(index, 1);
+        student.grades.splice(index, 1);
     }
     else {
+        // add letter grade
         button.style.backgroundColor = "green";
-        student["grades"].push(button.textContent);
+        student.grades.push(button.textContent);
     }
 }
 
 function findStudentWith(studentID) {
     for (i in periods) {
         for (student of periods[i]) {
-            if (student["id"] == studentID) {
+            if (student.id == studentID) {
                 return student;
             }
         }
@@ -247,18 +256,18 @@ function uploadButtonClicked() {
     const button = event.srcElement;
     const period = button.parentElement.id;
     const index = periodStrings.indexOf(period);
-    students = periods[index];
+    const students = periods[index];
     let ranges = [];
     let values = [];
     for (i in students) {
         let arr = [];
         arr.push(["Present"]);
         arr.push([0]);
-        const grades = convertGradeArrayToString(students[i]["grades"]);
+        const grades = convertGradeArrayToString(students[i].grades);
         arr.push([grades]);
         values.push(arr);
 
-        const row = students[i]["row"];
+        const row = students[i].row;
         const col = getColumn();
         const range = `${col}${row}:${col}${row+2}`;
         ranges.push(range);
@@ -287,7 +296,7 @@ function convertGradeArrayToString(arr) {
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date("09/18/2023");
+    const date2 = new Date("09/21/2023");
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -318,9 +327,9 @@ function getColumn() {
 function resetGrades(students) {
     // clear the grades array for each student
     for (i in students) {
-        students[i]["grades"] = []
+        students[i].grades = []
         // update the colors of the grades buttons   
-        const div = document.getElementById(students[i]["id"])
+        const div = document.getElementById(students[i].id)
         for (node of div.childNodes) {
             if (node.tagName === "BUTTON") {
                 node.style.backgroundColor = "";
