@@ -260,6 +260,12 @@ function uploadButtonClicked() {
     let ranges = [];
     let values = [];
     for (i in students) {
+        const row = students[i].row;
+        // any row less than 3 should not be written to on the data tracker
+        if (row < 3) {
+            continue;
+        }
+
         let arr = [];
         arr.push(["Present"]);
         arr.push([0]);
@@ -267,7 +273,6 @@ function uploadButtonClicked() {
         arr.push([grades]);
         values.push(arr);
 
-        const row = students[i].row;
         const col = getColumn();
         const range = `${col}${row}:${col}${row+2}`;
         ranges.push(range);
