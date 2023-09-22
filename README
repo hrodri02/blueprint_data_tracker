@@ -6,4 +6,6 @@ dotenv-webpack@8.0.1
 To run the application you can use the cmd below in the terminal after you have installed the packages.
 npx http-server -p 8000
 
+After you type the command you can view it on a brower by typing localhost:8000 in the address bar.
+
 You will need the CLIENT_ID and API_KEY, so that it runs without errors. I will email those to you and you can add them to the constants in the gapi.js file.
