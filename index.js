@@ -120,14 +120,52 @@ function setupPeriods() {
             const name = document.createTextNode(students[i].first_name);
             h3.appendChild(name);
             div.appendChild(h3);
+
+            const select = document.createElement("select");
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.text = "--Attendance--";
+            select.options.add(defaultOption);
+            const presentOption = document.createElement("option");
+            presentOption.value = "Present";
+            presentOption.text = "Present";
+            select.options.add(presentOption);
+            const tardyOption = document.createElement("option");
+            tardyOption.value = "Tardy";
+            tardyOption.text = "Tardy";
+            select.options.add(tardyOption);
+            div.appendChild(select);
+            const leftEarlyOption = document.createElement("option");
+            leftEarlyOption.value = "Left Early";
+            leftEarlyOption.text = "Left Early";
+            select.options.add(leftEarlyOption);
+            div.appendChild(select);
+            const absentOption = document.createElement("option");
+            absentOption.value = "Absent";
+            absentOption.text = "Absent";
+            select.options.add(absentOption);
+            div.appendChild(select);
+            const noSessionOption = document.createElement("option");
+            noSessionOption.value = "No Session";
+            noSessionOption.text = "No Session";
+            select.options.add(noSessionOption);
+            div.appendChild(select);
+            const noSchoolOption = document.createElement("option");
+            noSchoolOption.value = "No School";
+            noSchoolOption.text = "No School";
+            select.options.add(noSchoolOption);
+            div.appendChild(select);
+
+            div.append(document.createElement("br"));
             
             const gradeInput = document.createElement("input");
             gradeInput.type = "number";
             gradeInput.min = 0;
             gradeInput.max = 4;
             div.appendChild(gradeInput);
-            const breakHTML = document.createElement("br");
-            div.append(breakHTML);
+
+            div.append(document.createElement("br"));
+
             const g = document.createElement("button");
             g.textContent = "G";
             g.onclick = gradeButtonClick;
@@ -274,11 +312,12 @@ function uploadButtonClicked() {
         }
 
         let arr = [];
-        arr.push(["Present"]);
+        const attendance = getAttendance(student);
+        arr.push(attendance);
         const exitTicketGrade = getExitTicketGrade(student);
-        arr.push([exitTicketGrade]);
-        const participationGrade = convertGradeArrayToString(student.grades);
-        arr.push([participationGrade]);
+        arr.push(exitTicketGrade);
+        const participationGrade = getParticipationGrade(student);
+        arr.push(participationGrade);
         values.push(arr);
 
         const col = getColumn();
@@ -295,53 +334,68 @@ function uploadButtonClicked() {
                       });
 }
 
-function getExitTicketGrade(student) {
+function getAttendance(student) {
     const div = document.getElementById(student.id);
+    const attendance = [];
     for (child of div.childNodes) {
-        if (child.tagName == "INPUT") {
-            if (child.value === "") {
-                return 0;
+        if (child.tagName == "SELECT") {
+            const index = child.selectedIndex;
+            const selectedOption = child.options[index];
+            const value = selectedOption.value;
+            // check if user selected a value for the attendance
+            try {
+                if (value === "") throw "Please select a value for the attendance";  
+                attendance.push(value);
             }
-            else {
-                const grade = Number(child.value);
-                if (validExitTicketGrade(grade)) {
-                    return Math.round(grade);
-                }
-                else {
-                    // TODO: present an error message to the user
-                    console.log("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
-                }
+            catch (err) {
+                // TODO: show this message in a pop-up
+                console.log(err);
             }
         }
     }
 
-    return 0;
+    return attendance;
 }
 
-function validExitTicketGrade(grade) {
-    if (0 <= grade && grade <= 4) {
-        // Round the number in case the user enters a decimal
-        return true;
+function getExitTicketGrade(student) {
+    const div = document.getElementById(student.id);
+    const grade = [];
+    for (child of div.childNodes) {
+        if (child.tagName == "INPUT") {
+            try {
+                const value = child.value;
+                if (value !== "" && Number(value) < 0) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+                if (value !== "" && Number(value) > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+                if (value !== "") {
+                    grade.push(Number(value));
+                }
+            }
+            catch (err) {
+                // TODO: show this message in a pop-up
+                console.log(err);
+            }
+        }
     }
 
-    return false;
+    return grade;
 }
 
-function convertGradeArrayToString(arr) {
+function getParticipationGrade(student) {
+    const studentsLetters = student.grades;
     const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
     const grades = letters.reduce((str, letter) => {
-        if (arr.includes(letter)) {
+        if (studentsLetters.includes(letter)) {
             return str + letter;
         }
         return str;
     }, "");
 
-    return grades;
+    return (grades == "")? [] : [grades];
 }
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date();
+    const date2 = new Date("09/25/2023");
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
