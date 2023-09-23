@@ -120,7 +120,14 @@ function setupPeriods() {
             const name = document.createTextNode(students[i].first_name);
             h3.appendChild(name);
             div.appendChild(h3);
-    
+            
+            const gradeInput = document.createElement("input");
+            gradeInput.type = "number";
+            gradeInput.min = 0;
+            gradeInput.max = 4;
+            div.appendChild(gradeInput);
+            const breakHTML = document.createElement("br");
+            div.append(breakHTML);
             const g = document.createElement("button");
             g.textContent = "G";
             g.onclick = gradeButtonClick;
@@ -259,8 +266,8 @@ function uploadButtonClicked() {
     const students = periods[index];
     let ranges = [];
     let values = [];
-    for (i in students) {
-        const row = students[i].row;
+    for (student of students) {
+        const row = student.row;
         // any row less than 3 should not be written to on the data tracker
         if (row < 3) {
             continue;
@@ -268,9 +275,10 @@ function uploadButtonClicked() {
 
         let arr = [];
         arr.push(["Present"]);
-        arr.push([0]);
-        const grades = convertGradeArrayToString(students[i].grades);
-        arr.push([grades]);
+        const exitTicketGrade = getExitTicketGrade(student);
+        arr.push([exitTicketGrade]);
+        const participationGrade = convertGradeArrayToString(student.grades);
+        arr.push([participationGrade]);
         values.push(arr);
 
         const col = getColumn();
@@ -287,6 +295,38 @@ function uploadButtonClicked() {
                       });
 }
 
+function getExitTicketGrade(student) {
+    const div = document.getElementById(student.id);
+    for (child of div.childNodes) {
+        if (child.tagName == "INPUT") {
+            if (child.value === "") {
+                return 0;
+            }
+            else {
+                const grade = Number(child.value);
+                if (validExitTicketGrade(grade)) {
+                    return Math.round(grade);
+                }
+                else {
+                    // TODO: present an error message to the user
+                    console.log("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+function validExitTicketGrade(grade) {
+    if (0 <= grade && grade <= 4) {
+        // Round the number in case the user enters a decimal
+        return true;
+    }
+
+    return false;
+}
+
 function convertGradeArrayToString(arr) {
     const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
     const grades = letters.reduce((str, letter) => {
@@ -301,7 +341,7 @@ function convertGradeArrayToString(arr) {
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date("09/21/2023");
+    const date2 = new Date();
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -338,6 +378,9 @@ function resetGrades(students) {
         for (node of div.childNodes) {
             if (node.tagName === "BUTTON") {
                 node.style.backgroundColor = "";
+            }
+            else if (node.tagName === "INPUT") {
+                node.value = "";
             }
         }
     }    
