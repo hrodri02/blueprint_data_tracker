@@ -395,7 +395,7 @@ function getParticipationGrade(student) {
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date("09/25/2023");
+    const date2 = new Date();
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -435,6 +435,9 @@ function resetGrades(students) {
             }
             else if (node.tagName === "INPUT") {
                 node.value = "";
+            }
+            else if (node.tagName === "SELECT") {
+                node.selectedIndex = 0;
             }
         }
     }    
