@@ -5,18 +5,20 @@ body {
 }
 
 .lesson-part {
-    width: 100vw;
     text-align: center;
     color: whitesmoke;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
 }
 
-#bathroom {
-    width: 100vw;
+#hallpass {
     background-color: black;
     text-align: center;
     color: whitesmoke;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
 }
 
 .container {
@@ -30,7 +32,8 @@ body {
 .item {
     background-color: gray;
     text-align: center;
-    /* padding: 10px; */
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .header {
