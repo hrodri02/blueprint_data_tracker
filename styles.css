@@ -32,7 +32,8 @@ body {
 .item {
     background-color: gray;
     text-align: center;
-    /* padding: 10px; */
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .header {
