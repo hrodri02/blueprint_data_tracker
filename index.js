@@ -58,7 +58,7 @@ const periods = [
 const div = document.querySelector("div");
 const lessonLabel = document.querySelector("h1");
 const lessonTimerLabel = document.getElementById("timerLabel");
-const bathroomTimerLabel = document.getElementById("bathroomTimerLabel");
+const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const startButton = document.getElementById("start");
 let lessonTimerId = null;
 let bathroomTimerId = null;
@@ -82,7 +82,7 @@ function setupBathroomTimer() {
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-    bathroomTimerLabel.innerText = `${mins}:${secsString}`;
+    hallpassTimerLabel.innerText = `${mins}:${secsString}`;
 }
 
 function setupPeriods() {
@@ -252,17 +252,17 @@ function startBathroomTimer() {
         secs = (timeInMS - mins * 60000) / 1000;
 
         if (mins == 0 && secs == 0) {
-            bathroomTimerLabel.innerText = `${mins}:${secs}`;
+            hallpassTimerLabel.innerText = `${mins}:${secs}`;
             clearInterval(bathroomTimerId);
         }
         else if (mins > 0 && secs == 0) {
             mins -= 1;
             secs = 59;
-            bathroomTimerLabel.innerText = `${mins}:${secs}`;
+            hallpassTimerLabel.innerText = `${mins}:${secs}`;
         }
         else {
             const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            bathroomTimerLabel.innerText = `${mins}:${secsString}`;
+            hallpassTimerLabel.innerText = `${mins}:${secsString}`;
         }
     }, 1000);
 }
