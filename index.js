@@ -88,112 +88,128 @@ function setupBathroomTimer() {
 function setupPeriods() {
     const container = document.getElementsByClassName("container")[0];
     for (period in periods) {
-        // add period header
-        const div = document.createElement("div");
-        div.classList.add("header");
-        div.id = periodStrings[period];
-        const h1 = document.createElement("h1");
-        // h1.style.backgroundColor = "black";
-        const headerText = document.createTextNode(`${periodStrings[period]} Period`);
-        const uploadButton = document.createElement("button");
-        uploadButton.classList.add("upload");
-        uploadButton.onclick = uploadButtonClicked;
-        const buttonText = document.createTextNode("Upload");
-        uploadButton.appendChild(buttonText);
-        h1.appendChild(headerText);
-        div.appendChild(h1);
-        div.appendChild(uploadButton);
-
-        container.appendChild(div);
+        setupPeriodHeader(container, period);
         
         // add students of the current period
         const students = periods[period];
-        for (i in students) {
+        for (student of students) {
             const div = document.createElement("div");
             div.classList.add("item");
-            div.id = students[i].id;
-            const img = document.createElement("img");
-            img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png";
-            div.appendChild(img);
-    
-            const h3 = document.createElement("h3");
-            const name = document.createTextNode(students[i].first_name);
-            h3.appendChild(name);
-            div.appendChild(h3);
-
-            const select = document.createElement("select");
-            const defaultOption = document.createElement("option");
-            defaultOption.value = "";
-            defaultOption.text = "--Attendance--";
-            select.options.add(defaultOption);
-            const presentOption = document.createElement("option");
-            presentOption.value = "Present";
-            presentOption.text = "Present";
-            select.options.add(presentOption);
-            const tardyOption = document.createElement("option");
-            tardyOption.value = "Tardy";
-            tardyOption.text = "Tardy";
-            select.options.add(tardyOption);
-            div.appendChild(select);
-            const leftEarlyOption = document.createElement("option");
-            leftEarlyOption.value = "Left Early";
-            leftEarlyOption.text = "Left Early";
-            select.options.add(leftEarlyOption);
-            div.appendChild(select);
-            const absentOption = document.createElement("option");
-            absentOption.value = "Absent";
-            absentOption.text = "Absent";
-            select.options.add(absentOption);
-            div.appendChild(select);
-            const noSessionOption = document.createElement("option");
-            noSessionOption.value = "No Session";
-            noSessionOption.text = "No Session";
-            select.options.add(noSessionOption);
-            div.appendChild(select);
-            const noSchoolOption = document.createElement("option");
-            noSchoolOption.value = "No School";
-            noSchoolOption.text = "No School";
-            select.options.add(noSchoolOption);
-            div.appendChild(select);
-
-            div.append(document.createElement("br"));
-            
-            const gradeInput = document.createElement("input");
-            gradeInput.type = "number";
-            gradeInput.min = 0;
-            gradeInput.max = 4;
-            div.appendChild(gradeInput);
-
-            div.append(document.createElement("br"));
-
-            const g = document.createElement("button");
-            g.textContent = "G";
-            g.onclick = gradeButtonClick;
-            div.appendChild(g);
-            const r = document.createElement("button");
-            r.textContent = "R";
-            r.onclick = gradeButtonClick;
-            div.appendChild(r);
-            const a = document.createElement("button");
-            a.textContent = "A";
-            a.onclick = gradeButtonClick;
-            div.appendChild(a);
-            const d = document.createElement("button");
-            d.textContent = "D";
-            d.onclick = gradeButtonClick;
-            div.appendChild(d);
-            const e = document.createElement("button");
-            e.textContent = "E";
-            e.onclick = gradeButtonClick;
-            div.appendChild(e);
-            const s = document.createElement("button");
-            s.textContent = "S";
-            s.onclick = gradeButtonClick;
-            div.appendChild(s);
-    
+            setupStudentImage(div, student);
+            setupStudentName(div, student);
+            setupAttendanceDropDownMenu(div);
+            addBreakHTMLElement(div);
+            setupGradeInput(div);
+            addBreakHTMLElement(div);
+            setupGradesButtons(div);
             container.appendChild(div);
         }
     }
+}
+
+function setupPeriodHeader(container, period) {
+    // add period header
+    const div = document.createElement("div");
+    div.classList.add("header");
+    div.id = periodStrings[period];
+    const h1 = document.createElement("h1");
+    const headerText = document.createTextNode(`${periodStrings[period]} Period`);
+    const uploadButton = document.createElement("button");
+    uploadButton.classList.add("upload");
+    uploadButton.onclick = uploadButtonClicked;
+    const buttonText = document.createTextNode("Upload");
+    uploadButton.appendChild(buttonText);
+    h1.appendChild(headerText);
+    div.appendChild(h1);
+    div.appendChild(uploadButton);
+    container.appendChild(div);
+}
+
+function setupStudentImage(div, student) {
+    div.id = student.id;
+    const img = document.createElement("img");
+    img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png";
+    div.appendChild(img);
+}
+
+function setupStudentName(div, student) {
+    const h3 = document.createElement("h3");
+    const name = document.createTextNode(student.first_name);
+    h3.appendChild(name);
+    div.appendChild(h3);
+}
+
+function setupAttendanceDropDownMenu(div) {
+    const select = document.createElement("select");
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.text = "--Attendance--";
+    select.options.add(defaultOption);
+    const presentOption = document.createElement("option");
+    presentOption.value = "Present";
+    presentOption.text = "Present";
+    select.options.add(presentOption);
+    const tardyOption = document.createElement("option");
+    tardyOption.value = "Tardy";
+    tardyOption.text = "Tardy";
+    select.options.add(tardyOption);
+    const leftEarlyOption = document.createElement("option");
+    leftEarlyOption.value = "Left Early";
+    leftEarlyOption.text = "Left Early";
+    select.options.add(leftEarlyOption);
+    const absentOption = document.createElement("option");
+    absentOption.value = "Absent";
+    absentOption.text = "Absent";
+    select.options.add(absentOption);
+    const noSessionOption = document.createElement("option");
+    noSessionOption.value = "No Session";
+    noSessionOption.text = "No Session";
+    select.options.add(noSessionOption);
+    const noSchoolOption = document.createElement("option");
+    noSchoolOption.value = "No School";
+    noSchoolOption.text = "No School";
+    select.options.add(noSchoolOption);
+    div.appendChild(select);
+}
+
+function addBreakHTMLElement(div) {
+    const br = document.createElement("br");
+    div.append(br);
+}
+
+function setupGradeInput(div) {
+    const gradeInput = document.createElement("input");
+    gradeInput.type = "number";
+    gradeInput.min = 0;
+    gradeInput.max = 4;
+    div.appendChild(gradeInput);
+}
+
+function setupGradesButtons(div) {
+    const g = document.createElement("button");
+    g.textContent = "G";
+    g.onclick = gradeButtonClick;
+    div.appendChild(g);
+    const r = document.createElement("button");
+    r.textContent = "R";
+    r.onclick = gradeButtonClick;
+    div.appendChild(r);
+    const a = document.createElement("button");
+    a.textContent = "A";
+    a.onclick = gradeButtonClick;
+    div.appendChild(a);
+    const d = document.createElement("button");
+    d.textContent = "D";
+    d.onclick = gradeButtonClick;
+    div.appendChild(d);
+    const e = document.createElement("button");
+    e.textContent = "E";
+    e.onclick = gradeButtonClick;
+    div.appendChild(e);
+    const s = document.createElement("button");
+    s.textContent = "S";
+    s.onclick = gradeButtonClick;
+    div.appendChild(s);
 }
 
 function startButtonClicked() {
