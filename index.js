@@ -120,7 +120,52 @@ function setupPeriods() {
             const name = document.createTextNode(students[i].first_name);
             h3.appendChild(name);
             div.appendChild(h3);
-    
+
+            const select = document.createElement("select");
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.text = "--Attendance--";
+            select.options.add(defaultOption);
+            const presentOption = document.createElement("option");
+            presentOption.value = "Present";
+            presentOption.text = "Present";
+            select.options.add(presentOption);
+            const tardyOption = document.createElement("option");
+            tardyOption.value = "Tardy";
+            tardyOption.text = "Tardy";
+            select.options.add(tardyOption);
+            div.appendChild(select);
+            const leftEarlyOption = document.createElement("option");
+            leftEarlyOption.value = "Left Early";
+            leftEarlyOption.text = "Left Early";
+            select.options.add(leftEarlyOption);
+            div.appendChild(select);
+            const absentOption = document.createElement("option");
+            absentOption.value = "Absent";
+            absentOption.text = "Absent";
+            select.options.add(absentOption);
+            div.appendChild(select);
+            const noSessionOption = document.createElement("option");
+            noSessionOption.value = "No Session";
+            noSessionOption.text = "No Session";
+            select.options.add(noSessionOption);
+            div.appendChild(select);
+            const noSchoolOption = document.createElement("option");
+            noSchoolOption.value = "No School";
+            noSchoolOption.text = "No School";
+            select.options.add(noSchoolOption);
+            div.appendChild(select);
+
+            div.append(document.createElement("br"));
+            
+            const gradeInput = document.createElement("input");
+            gradeInput.type = "number";
+            gradeInput.min = 0;
+            gradeInput.max = 4;
+            div.appendChild(gradeInput);
+
+            div.append(document.createElement("br"));
+
             const g = document.createElement("button");
             g.textContent = "G";
             g.onclick = gradeButtonClick;
@@ -259,18 +304,20 @@ function uploadButtonClicked() {
     const students = periods[index];
     let ranges = [];
     let values = [];
-    for (i in students) {
-        const row = students[i].row;
+    for (student of students) {
+        const row = student.row;
         // any row less than 3 should not be written to on the data tracker
         if (row < 3) {
             continue;
         }
 
         let arr = [];
-        arr.push(["Present"]);
-        arr.push([0]);
-        const grades = convertGradeArrayToString(students[i].grades);
-        arr.push([grades]);
+        const attendance = getAttendance(student);
+        arr.push(attendance);
+        const exitTicketGrade = getExitTicketGrade(student);
+        arr.push(exitTicketGrade);
+        const participationGrade = getParticipationGrade(student);
+        arr.push(participationGrade);
         values.push(arr);
 
         const col = getColumn();
@@ -287,21 +334,68 @@ function uploadButtonClicked() {
                       });
 }
 
-function convertGradeArrayToString(arr) {
+function getAttendance(student) {
+    const div = document.getElementById(student.id);
+    const attendance = [];
+    for (child of div.childNodes) {
+        if (child.tagName == "SELECT") {
+            const index = child.selectedIndex;
+            const selectedOption = child.options[index];
+            const value = selectedOption.value;
+            // check if user selected a value for the attendance
+            try {
+                if (value === "") throw "Please select a value for the attendance";  
+                attendance.push(value);
+            }
+            catch (err) {
+                // TODO: show this message in a pop-up
+                console.log(err);
+            }
+        }
+    }
+
+    return attendance;
+}
+
+function getExitTicketGrade(student) {
+    const div = document.getElementById(student.id);
+    const grade = [];
+    for (child of div.childNodes) {
+        if (child.tagName == "INPUT") {
+            try {
+                const value = child.value;
+                if (value !== "" && Number(value) < 0) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+                if (value !== "" && Number(value) > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+                if (value !== "") {
+                    grade.push(Number(value));
+                }
+            }
+            catch (err) {
+                // TODO: show this message in a pop-up
+                console.log(err);
+            }
+        }
+    }
+
+    return grade;
+}
+
+function getParticipationGrade(student) {
+    const studentsLetters = student.grades;
     const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
     const grades = letters.reduce((str, letter) => {
-        if (arr.includes(letter)) {
+        if (studentsLetters.includes(letter)) {
             return str + letter;
         }
         return str;
     }, "");
 
-    return grades;
+    return (grades == "")? [] : [grades];
 }
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date("09/21/2023");
+    const date2 = new Date();
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -338,6 +432,12 @@ function resetGrades(students) {
         for (node of div.childNodes) {
             if (node.tagName === "BUTTON") {
                 node.style.backgroundColor = "";
+            }
+            else if (node.tagName === "INPUT") {
+                node.value = "";
+            }
+            else if (node.tagName === "SELECT") {
+                node.selectedIndex = 0;
             }
         }
     }    
