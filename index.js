@@ -3,7 +3,7 @@ const lessonParts = ["Do Now", "Number Talk", "Launch", "Engage", "Summary", "Ex
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
 const colors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
 const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
-// const timesInMS = [1000, 1000, 1000, 1000, 1000, 1000];
+// const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
 
 const periods = [
     // 1st period
@@ -233,6 +233,9 @@ function startLessonTimer() {
                 clearInterval(lessonTimerId);
             }
             else {
+                // play alarm sound
+                const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+                alarmSound.play();
                 // update the lesson part
                 i++;
                 lessonLabel.innerText = lessonParts[i];
