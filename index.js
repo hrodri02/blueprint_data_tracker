@@ -61,10 +61,10 @@ const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const startButton = document.getElementById("start");
 let lessonTimerId = null;
-let bathroomTimerId = null;
+let hallpassTimerId = null;
 
 setupLessonTimer();
-setupBathroomTimer();
+setupHallpassTimer();
 setupPeriods();
 
 function setupLessonTimer() {
@@ -77,7 +77,7 @@ function setupLessonTimer() {
     lessonTimerLabel.innerText = `${mins}:${secsString}`;
 }
 
-function setupBathroomTimer() {
+function setupHallpassTimer() {
     const timeInMS = 15*60000;
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
@@ -214,7 +214,7 @@ function setupGradesButtons(div) {
 
 function startButtonClicked() {
     startLessonTimer();
-    startBathroomTimer();
+    startHallpassTimer();
     startButton.disabled = true;
 }
 
@@ -260,19 +260,22 @@ function startLessonTimer() {
     }, 1000);
 }
 
-function startBathroomTimer() {
+function startHallpassTimer() {
     let timeInMS = 15*60000;
     let mins = parseInt(timeInMS / 60000);
     let secs = (timeInMS - mins * 60000) / 1000;
 
-    bathroomTimerId = window.setInterval(() => {
+    hallpassTimerId = window.setInterval(() => {
         timeInMS -= 1000;
         mins = parseInt(timeInMS / 60000);
         secs = (timeInMS - mins * 60000) / 1000;
 
         if (mins == 0 && secs == 0) {
+            // play alarm sound
+            const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+            alarmSound.play();
             hallpassTimerLabel.innerText = `${mins}:${secs}`;
-            clearInterval(bathroomTimerId);
+            clearInterval(hallpassTimerId);
         }
         else if (mins > 0 && secs == 0) {
             mins -= 1;
@@ -464,8 +467,8 @@ function resetGrades(students) {
 
 function resetButtonClicked() {
     clearInterval(lessonTimerId);
-    clearInterval(bathroomTimerId);
+    clearInterval(hallpassTimerId);
     setupLessonTimer()
-    setupBathroomTimer()
+    setupHallpassTimer()
     startButton.disabled = false;
 }
