@@ -111,9 +111,10 @@ function setupPeriods() {
 function setupPeriodHeader(container, period) {
     // add period header
     const div = document.createElement("div");
-    div.classList.add("header");
+    div.classList.add("period-header-container");
     div.id = periodStrings[period];
     const h1 = document.createElement("h1");
+    h1.classList.add("period-header");
     const headerText = document.createTextNode(`${periodStrings[period]} Period`);
     const uploadButton = document.createElement("button");
     uploadButton.classList.add("upload");
