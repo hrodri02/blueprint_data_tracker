@@ -17,41 +17,42 @@ const periods = [
         new Student(3, "Uavalu", "Kauvaka", 2),
         new Student(4, "Navie", "Davis", 2),
         new Student(5, "Prince", "Leggett", 2),
+        new Student(6, "Jay'Lon", "Andrades", 2)
     ],
     // 3rd period
     [
-        new Student(6, "Benjamin", "Inthavong", 3),
-        new Student(7, "Emmanuel", "Garcia Ponce", 3),
-        new Student(8, "Alexandra", "Covian Perez", 3),
-        new Student(9, "Emeri", "Hewitt", 3),
-        new Student(10, "Alexa", "Padilla Garcia", 3),
-        new Student(11, "Elias", "The-Boy", 3),
+        new Student(7, "Benjamin", "Inthavong", 3),
+        new Student(8, "Emmanuel", "Garcia Ponce", 3),
+        new Student(9, "Alexandra", "Covian Perez", 3),
+        new Student(10, "Emeri", "Hewitt", 3),
+        new Student(11, "Alexa", "Padilla Garcia", 3),
+        new Student(12, "Elias", "The-Boy", 3),
     ],
     // 4th period
     [
-        new Student(12, "John", "Solozano", 4),
-        new Student(13, "David", "Hernandez", 4),
-        new Student(14, "Juliana", "Ignacio Tinajero", 4),
-        new Student(15, "Zacchaeus", "Evans", 4),
-        new Student(16, "Saniyah", "Sims", 4),
+        new Student(13, "John", "Solozano", 4),
+        new Student(14, "David", "Hernandez", 4),
+        new Student(15, "Juliana", "Ignacio Tinajero", 4),
+        new Student(16, "Zacchaeus", "Evans", 4),
+        new Student(17, "Saniyah", "Sims", 4),
     ],
     // 6th period
     [
-        new Student(17, "Nhi", "Truong", 6),
-        new Student(18, "Brenda", "Calmo Calmo", 6),
-        new Student(19, "Luis", "Chang Chilel", 6),
-        new Student(20, "Caleb", "Pablo", 6),
-        new Student(21, "Alex", "Pablo Ramirez", 6),
-        new Student(22, "Lawrence", "Ward", 6),
+        new Student(18, "Nhi", "Truong", 6),
+        new Student(19, "Brenda", "Calmo Calmo", 6),
+        new Student(20, "Luis", "Chang Chilel", 6),
+        new Student(21, "Caleb", "Pablo", 6),
+        new Student(22, "Alex", "Pablo Ramirez", 6),
+        new Student(23, "Lawrence", "Ward", 6),
     ],
     // 7th period
     [
-        new Student(23, "Carlos", "Moran Flores", 6),
-        new Student(24, "Arodi", "Granados Funes", 6),
-        new Student(25, "John", "Martin-Garcia", 6),
-        new Student(26, "Tysean", "Kelly", 6),
-        new Student(27, "Khloe", "Pierce", 6),
-        new Student(28, "Rebecca", "Chales Pablo", 6),
+        new Student(24, "Carlos", "Moran Flores", 6),
+        new Student(25, "Arodi", "Granados Funes", 6),
+        new Student(26, "John", "Martin-Garcia", 6),
+        new Student(27, "Tysean", "Kelly", 6),
+        new Student(28, "Khloe", "Pierce", 6),
+        new Student(29, "Rebecca", "Chales Pablo", 6),
     ]
 ]
 
