@@ -3,7 +3,7 @@ const lessonParts = ["Do Now", "Number Talk", "Launch", "Engage", "Summary", "Ex
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
 const colors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
 const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
-// const timesInMS = [1000, 1000, 1000, 1000, 1000, 1000];
+// const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
 
 const periods = [
     // 1st period
@@ -17,41 +17,42 @@ const periods = [
         new Student(3, "Uavalu", "Kauvaka", 2),
         new Student(4, "Navie", "Davis", 2),
         new Student(5, "Prince", "Leggett", 2),
+        new Student(6, "Jay'Lon", "Andrades", 2)
     ],
     // 3rd period
     [
-        new Student(6, "Benjamin", "Inthavong", 3),
-        new Student(7, "Emmanuel", "Garcia Ponce", 3),
-        new Student(8, "Alexandra", "Covian Perez", 3),
-        new Student(9, "Emeri", "Hewitt", 3),
-        new Student(10, "Alexa", "Padilla Garcia", 3),
-        new Student(11, "Elias", "The-Boy", 3),
+        new Student(7, "Benjamin", "Inthavong", 3),
+        new Student(8, "Emmanuel", "Garcia Ponce", 3),
+        new Student(9, "Alexandra", "Covian Perez", 3),
+        new Student(10, "Emeri", "Hewitt", 3),
+        new Student(11, "Alexa", "Padilla Garcia", 3),
+        new Student(12, "Elias", "The-Boy", 3),
     ],
     // 4th period
     [
-        new Student(12, "John", "Solozano", 4),
-        new Student(13, "David", "Hernandez", 4),
-        new Student(14, "Juliana", "Ignacio Tinajero", 4),
-        new Student(15, "Zacchaeus", "Evans", 4),
-        new Student(16, "Saniyah", "Sims", 4),
+        new Student(13, "John", "Solozano", 4),
+        new Student(14, "David", "Hernandez", 4),
+        new Student(15, "Juliana", "Ignacio Tinajero", 4),
+        new Student(16, "Zacchaeus", "Evans", 4),
+        new Student(17, "Saniyah", "Sims", 4),
     ],
     // 6th period
     [
-        new Student(17, "Nhi", "Truong", 6),
-        new Student(18, "Brenda", "Calmo Calmo", 6),
-        new Student(19, "Luis", "Chang Chilel", 6),
-        new Student(20, "Caleb", "Pablo", 6),
-        new Student(21, "Alex", "Pablo Ramirez", 6),
-        new Student(22, "Lawrence", "Ward", 6),
+        new Student(18, "Nhi", "Truong", 6),
+        new Student(19, "Brenda", "Calmo Calmo", 6),
+        new Student(20, "Luis", "Chang Chilel", 6),
+        new Student(21, "Caleb", "Pablo", 6),
+        new Student(22, "Alex", "Pablo Ramirez", 6),
+        new Student(23, "Lawrence", "Ward", 6),
     ],
     // 7th period
     [
-        new Student(23, "Carlos", "Moran Flores", 6),
-        new Student(24, "Arodi", "Granados Funes", 6),
-        new Student(25, "John", "Martin-Garcia", 6),
-        new Student(26, "Tysean", "Kelly", 6),
-        new Student(27, "Khloe", "Pierce", 6),
-        new Student(28, "Rebecca", "Chales Pablo", 6),
+        new Student(24, "Carlos", "Moran Flores", 6),
+        new Student(25, "Arodi", "Granados Funes", 6),
+        new Student(26, "John", "Martin-Garcia", 6),
+        new Student(27, "Tysean", "Kelly", 6),
+        new Student(28, "Khloe", "Pierce", 6),
+        new Student(29, "Rebecca", "Chales Pablo", 6),
     ]
 ]
 
@@ -61,10 +62,10 @@ const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const startButton = document.getElementById("start");
 let lessonTimerId = null;
-let bathroomTimerId = null;
+let hallpassTimerId = null;
 
 setupLessonTimer();
-setupBathroomTimer();
+setupHallpassTimer();
 setupPeriods();
 
 function setupLessonTimer() {
@@ -77,7 +78,7 @@ function setupLessonTimer() {
     lessonTimerLabel.innerText = `${mins}:${secsString}`;
 }
 
-function setupBathroomTimer() {
+function setupHallpassTimer() {
     const timeInMS = 15*60000;
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
@@ -215,7 +216,7 @@ function setupGradesButtons(div) {
 
 function startButtonClicked() {
     startLessonTimer();
-    startBathroomTimer();
+    startHallpassTimer();
     startButton.disabled = true;
 }
 
@@ -234,6 +235,9 @@ function startLessonTimer() {
                 clearInterval(lessonTimerId);
             }
             else {
+                // play alarm sound
+                const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+                alarmSound.play();
                 // update the lesson part
                 i++;
                 lessonLabel.innerText = lessonParts[i];
@@ -258,19 +262,22 @@ function startLessonTimer() {
     }, 1000);
 }
 
-function startBathroomTimer() {
+function startHallpassTimer() {
     let timeInMS = 15*60000;
     let mins = parseInt(timeInMS / 60000);
     let secs = (timeInMS - mins * 60000) / 1000;
 
-    bathroomTimerId = window.setInterval(() => {
+    hallpassTimerId = window.setInterval(() => {
         timeInMS -= 1000;
         mins = parseInt(timeInMS / 60000);
         secs = (timeInMS - mins * 60000) / 1000;
 
         if (mins == 0 && secs == 0) {
+            // play alarm sound
+            const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+            alarmSound.play();
             hallpassTimerLabel.innerText = `${mins}:${secs}`;
-            clearInterval(bathroomTimerId);
+            clearInterval(hallpassTimerId);
         }
         else if (mins > 0 && secs == 0) {
             mins -= 1;
@@ -462,8 +469,8 @@ function resetGrades(students) {
 
 function resetButtonClicked() {
     clearInterval(lessonTimerId);
-    clearInterval(bathroomTimerId);
+    clearInterval(hallpassTimerId);
     setupLessonTimer()
-    setupBathroomTimer()
+    setupHallpassTimer()
     startButton.disabled = false;
 }
