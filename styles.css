@@ -32,8 +32,19 @@ body {
 .item {
     background-color: gray;
     text-align: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px 0;
+}
+
+div select {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div input {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .period-header-container {

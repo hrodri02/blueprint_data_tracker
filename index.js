@@ -99,9 +99,7 @@ function setupPeriods() {
             setupStudentImage(div, student);
             setupStudentName(div, student);
             setupAttendanceDropDownMenu(div);
-            addBreakHTMLElement(div);
             setupGradeInput(div);
-            addBreakHTMLElement(div);
             setupGradesButtons(div);
             container.appendChild(div);
         }
@@ -172,11 +170,6 @@ function setupAttendanceDropDownMenu(div) {
     noSchoolOption.text = "No School";
     select.options.add(noSchoolOption);
     div.appendChild(select);
-}
-
-function addBreakHTMLElement(div) {
-    const br = document.createElement("br");
-    div.append(br);
 }
 
 function setupGradeInput(div) {
