@@ -88,21 +88,30 @@ function setupHallpassTimer() {
 
 function setupPeriods() {
     const container = document.getElementsByClassName("container")[0];
+    setupNotesSection(container);
+
     for (period in periods) {
         setupPeriodHeader(container, period);
-        
-        // add students of the current period
-        const students = periods[period];
-        for (student of students) {
-            const div = document.createElement("div");
-            div.classList.add("item");
-            setupStudentImage(div, student);
-            setupStudentName(div, student);
-            setupAttendanceDropDownMenu(div);
-            setupGradeInput(div);
-            setupGradesButtons(div);
-            container.appendChild(div);
-        }
+        setupStudentsForPeriod(container, period);
+    }
+}
+
+function setupStudentsForPeriod(container, period) {
+    const flexContainer = document.createElement("div");
+    flexContainer.classList.add("flex-container");
+    container.appendChild(flexContainer);
+
+    // add students of the current period
+    const students = periods[period];
+    for (student of students) {
+        const div = document.createElement("div");
+        div.classList.add("flex-item");
+        setupStudentImage(div, student);
+        setupStudentName(div, student);
+        setupAttendanceDropDownMenu(div);
+        setupGradeInput(div);
+        setupGradesButtons(div);
+        flexContainer.appendChild(div);
     }
 }
 
@@ -123,6 +132,13 @@ function setupPeriodHeader(container, period) {
     div.appendChild(h1);
     div.appendChild(uploadButton);
     container.appendChild(div);
+}
+
+function setupNotesSection(container) {
+    const textArea = document.createElement("textarea");
+    textArea.classList.add("notes-container");
+    textArea.name = "notes";
+    container.appendChild(textArea);
 }
 
 function setupStudentImage(div, student) {

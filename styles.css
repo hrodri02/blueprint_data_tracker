@@ -23,16 +23,32 @@ body {
 
 .container {
     display: grid;
-    /* background-color: gray; */
-    grid-template: repeat(6, auto 1fr) / repeat(6, 1fr);
-    /* row-gap: 10px; */
-    column-gap: 10px;
+    grid-template: repeat(6, 5vh auto) / 80% 20%;
 }
 
-.item {
-    background-color: gray;
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    grid-column-start: 1;
+    grid-column-end: 2;
     text-align: center;
+    
+}
+
+.flex-item {
+    background-color: gray;
+    width: 15vw;
     padding: 10px 0;
+}
+
+img {
+    width: 50%;
+    height: auto;
+}
+
+h3 {
+    margin: 10px 0;
 }
 
 div select {
@@ -48,21 +64,29 @@ div input {
 }
 
 .period-header-container {
-    grid-column: span 6;
+    display: flex;
+    justify-content: space-between;
+    grid-column-start: 1;
+    grid-column-end: 2;
     color: whitesmoke;
     background-color: cornflowerblue;
-    padding: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
 }
 
 .period-header {
-    display: inline;
+    align-self: center;
 }
 
 .upload {
-    float: right;
+    align-self: center;
 }
 
-img {
-    width: 50%;
-    height: 50%;
+.notes-container {
+    background-color: black;
+    color: #ccc;
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 13;
 }
