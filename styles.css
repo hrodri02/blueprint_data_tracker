@@ -23,7 +23,35 @@ body {
 
 .container {
     display: grid;
+    margin-left: 15%;
     grid-template: repeat(6, 5vh auto) / 80% 20%;
+}
+
+.navigation-bar {
+    background-color: black;
+    position: sticky;
+    top: 0;
+}
+
+ul {
+    list-style-type: none;
+    text-align: center;
+    width: 15%;
+    margin: 0;
+    padding: 0;
+    float: left;
+}
+
+li a {
+    display: block;
+    color: #ccc;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #ccc;
+    color: black;
 }
 
 .flex-container {
