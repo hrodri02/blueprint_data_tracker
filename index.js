@@ -1,9 +1,10 @@
 const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"];
-const lessonParts = ["Do Now", "Number Talk", "Launch", "Engage", "Summary", "Exit Ticket"]
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
-const colors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
+const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
+const textColors = ["", "", "black", "", "black", ""];
 const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
 // const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
+const numLessonParts = 6;
 
 const periods = [
     // 1st period
@@ -47,11 +48,8 @@ const periods = [
     ]
 ]
 
-const div = document.querySelector("div");
-const lessonLabel = document.querySelector("h1");
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
-const startButton = document.getElementById("start");
 let lessonTimerId = null;
 let hallpassTimerId = null;
 
@@ -60,8 +58,8 @@ setupHallpassTimer();
 setupPeriods();
 
 function setupLessonTimer() {
-    div.style.background = colors[0];
-    lessonLabel.innerText = lessonParts[0];    
+    lessonTimerLabel.style.background = backgroundColors[0];
+    lessonTimerLabel.style.color = textColors[0];
     const timeInMS = timesInMS[0];
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
@@ -217,7 +215,7 @@ function setupGradesButtons(div) {
 function startButtonClicked() {
     startLessonTimer();
     startHallpassTimer();
-    startButton.disabled = true;
+    lessonTimerLabel.style.pointerEvents = "none";
 }
 
 function startLessonTimer() {
@@ -231,7 +229,7 @@ function startLessonTimer() {
         secs = (timeInMS - mins * 60000) / 1000;
     
         if (mins == 0 && secs === 0) {
-            if (i == lessonParts.length - 1) {
+            if (i == numLessonParts - 1) {
                 clearInterval(lessonTimerId);
             }
             else {
@@ -240,9 +238,9 @@ function startLessonTimer() {
                 alarmSound.play();
                 // update the lesson part
                 i++;
-                lessonLabel.innerText = lessonParts[i];
                 // update background color
-                div.style.background = colors[i];
+                lessonTimerLabel.style.background = backgroundColors[i];
+                lessonTimerLabel.style.color = textColors[i];
                 // update the time in the new part
                 timeInMS = timesInMS[i];
                 mins = parseInt(timeInMS / 60000);
@@ -472,5 +470,5 @@ function resetButtonClicked() {
     clearInterval(hallpassTimerId);
     setupLessonTimer()
     setupHallpassTimer()
-    startButton.disabled = false;
+    lessonTimerLabel.style.pointerEvents = "auto";
 }

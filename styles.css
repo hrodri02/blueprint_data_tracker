@@ -4,6 +4,32 @@ body {
     background-color: black;
 }
 
+#top-navigation-bar {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#top-navigation-bar li {
+    float: left;
+}
+
+#top-navigation-bar a {
+    display: block;
+    color: #ccc;
+    background-color: black;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+#top-navigation-bar a:hover {
+    color: #ccc;
+    background-color: black;
+}
+
 .lesson-part {
     text-align: center;
     color: whitesmoke;
@@ -23,7 +49,8 @@ body {
 
 .container {
     display: grid;
-    margin-left: 15%;
+    float: left;
+    width: 85%;
     grid-template: repeat(6, 5vh auto) / 80% 20%;
 }
 
