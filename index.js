@@ -1,66 +1,55 @@
 const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"];
-const lessonParts = ["Do Now", "Number Talk", "Launch", "Engage", "Summary", "Exit Ticket"]
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
-const colors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
+const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
+const textColors = ["", "black", "black", "", "black", ""];
 const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
 // const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
+const numLessonParts = 6;
 
 const periods = [
     // 1st period
     [
         new Student(0, "Joseph", "Logwood", 1),
         new Student(1, "Makaiden", "Vongphrachanh", 1),
-        new Student(2, "Carly", "Guerrero", 1),
+        new Student(2, "Braylani", "Hammond", 1),
     ],
     // 2nd period
     [
-        new Student(3, "Uavalu", "Kauvaka", 2),
-        new Student(4, "Navie", "Davis", 2),
-        new Student(5, "Prince", "Leggett", 2),
-        new Student(6, "Jay'Lon", "Andrades", 2)
+        new Student(3, "Navie", "Davis", 2),
+        new Student(4, "Prince", "Leggett", 2),
+        new Student(5, "Jay'Lon", "Andrades", 2)
     ],
     // 3rd period
     [
-        new Student(7, "Benjamin", "Inthavong", 3),
-        new Student(8, "Emmanuel", "Garcia Ponce", 3),
-        new Student(9, "Alexandra", "Covian Perez", 3),
-        new Student(10, "Emeri", "Hewitt", 3),
-        new Student(11, "Alexa", "Padilla Garcia", 3),
-        new Student(12, "Elias", "The-Boy", 3),
+        new Student(6, "Alexandra", "Covian Perez", 3),
+        new Student(7, "Emeri", "Hewitt", 3),
+        new Student(8, "Brian", "Cisneros", 3),
+        new Student(9, "Himelda", "Ahilon-Pablo", 3),
     ],
     // 4th period
     [
-        new Student(13, "John", "Solozano", 4),
-        new Student(14, "David", "Hernandez", 4),
-        new Student(15, "Juliana", "Ignacio Tinajero", 4),
-        new Student(16, "Zacchaeus", "Evans", 4),
-        new Student(17, "Saniyah", "Sims", 4),
+        new Student(10, "David", "Hernandez", 4),
+        new Student(11, "Juliana", "Ignacio Tinajero", 4),
+        new Student(12, "Roselyn", "Sanchez-Flores", 4),
     ],
     // 6th period
     [
-        new Student(18, "Nhi", "Truong", 6),
-        new Student(19, "Brenda", "Calmo Calmo", 6),
-        new Student(20, "Luis", "Chang Chilel", 6),
-        new Student(21, "Caleb", "Pablo", 6),
-        new Student(22, "Alex", "Pablo Ramirez", 6),
-        new Student(23, "Lawrence", "Ward", 6),
+        new Student(13, "Luis", "Chang Chilel", 6),
+        new Student(14, "Caleb", "Pablo", 6),
+        new Student(15, "Alex", "Pablo Ramirez", 6),
+        new Student(16, "Lawrence", "Ward", 6),
     ],
     // 7th period
     [
-        new Student(24, "Carlos", "Moran Flores", 6),
-        new Student(25, "Arodi", "Granados Funes", 6),
-        new Student(26, "John", "Martin-Garcia", 6),
-        new Student(27, "Tysean", "Kelly", 6),
-        new Student(28, "Khloe", "Pierce", 6),
-        new Student(29, "Rebecca", "Chales Pablo", 6),
+        new Student(17, "Arodi", "Granados Funes", 6),
+        new Student(18, "John", "Martin-Garcia", 6),
+        new Student(19, "Elmer", "Calmo Carrillo", 6),
+        new Student(20, "Khloe", "Pierce", 6),
     ]
 ]
 
-const div = document.querySelector("div");
-const lessonLabel = document.querySelector("h1");
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
-const startButton = document.getElementById("start");
 let lessonTimerId = null;
 let hallpassTimerId = null;
 
@@ -69,8 +58,8 @@ setupHallpassTimer();
 setupPeriods();
 
 function setupLessonTimer() {
-    div.style.background = colors[0];
-    lessonLabel.innerText = lessonParts[0];    
+    lessonTimerLabel.style.background = backgroundColors[0];
+    lessonTimerLabel.style.color = textColors[0];
     const timeInMS = timesInMS[0];
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
@@ -88,23 +77,30 @@ function setupHallpassTimer() {
 
 function setupPeriods() {
     const container = document.getElementsByClassName("container")[0];
+    setupNotesSection(container);
+
     for (period in periods) {
         setupPeriodHeader(container, period);
-        
-        // add students of the current period
-        const students = periods[period];
-        for (student of students) {
-            const div = document.createElement("div");
-            div.classList.add("item");
-            setupStudentImage(div, student);
-            setupStudentName(div, student);
-            setupAttendanceDropDownMenu(div);
-            addBreakHTMLElement(div);
-            setupGradeInput(div);
-            addBreakHTMLElement(div);
-            setupGradesButtons(div);
-            container.appendChild(div);
-        }
+        setupStudentsForPeriod(container, period);
+    }
+}
+
+function setupStudentsForPeriod(container, period) {
+    const flexContainer = document.createElement("div");
+    flexContainer.classList.add("flex-container");
+    container.appendChild(flexContainer);
+
+    // add students of the current period
+    const students = periods[period];
+    for (student of students) {
+        const div = document.createElement("div");
+        div.classList.add("flex-item");
+        setupStudentImage(div, student);
+        setupStudentName(div, student);
+        setupAttendanceDropDownMenu(div);
+        setupGradeInput(div);
+        setupGradesButtons(div);
+        flexContainer.appendChild(div);
     }
 }
 
@@ -125,6 +121,13 @@ function setupPeriodHeader(container, period) {
     div.appendChild(h1);
     div.appendChild(uploadButton);
     container.appendChild(div);
+}
+
+function setupNotesSection(container) {
+    const textArea = document.createElement("textarea");
+    textArea.classList.add("notes-container");
+    textArea.name = "notes";
+    container.appendChild(textArea);
 }
 
 function setupStudentImage(div, student) {
@@ -174,11 +177,6 @@ function setupAttendanceDropDownMenu(div) {
     div.appendChild(select);
 }
 
-function addBreakHTMLElement(div) {
-    const br = document.createElement("br");
-    div.append(br);
-}
-
 function setupGradeInput(div) {
     const gradeInput = document.createElement("input");
     gradeInput.type = "number";
@@ -217,7 +215,7 @@ function setupGradesButtons(div) {
 function startButtonClicked() {
     startLessonTimer();
     startHallpassTimer();
-    startButton.disabled = true;
+    lessonTimerLabel.style.pointerEvents = "none";
 }
 
 function startLessonTimer() {
@@ -231,7 +229,7 @@ function startLessonTimer() {
         secs = (timeInMS - mins * 60000) / 1000;
     
         if (mins == 0 && secs === 0) {
-            if (i == lessonParts.length - 1) {
+            if (i == numLessonParts - 1) {
                 clearInterval(lessonTimerId);
             }
             else {
@@ -240,9 +238,9 @@ function startLessonTimer() {
                 alarmSound.play();
                 // update the lesson part
                 i++;
-                lessonLabel.innerText = lessonParts[i];
                 // update background color
-                div.style.background = colors[i];
+                lessonTimerLabel.style.background = backgroundColors[i];
+                lessonTimerLabel.style.color = textColors[i];
                 // update the time in the new part
                 timeInMS = timesInMS[i];
                 mins = parseInt(timeInMS / 60000);
@@ -472,5 +470,5 @@ function resetButtonClicked() {
     clearInterval(hallpassTimerId);
     setupLessonTimer()
     setupHallpassTimer()
-    startButton.disabled = false;
+    lessonTimerLabel.style.pointerEvents = "auto";
 }

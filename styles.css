@@ -4,6 +4,32 @@ body {
     background-color: black;
 }
 
+#top-navigation-bar {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#top-navigation-bar li {
+    float: left;
+}
+
+#top-navigation-bar a {
+    display: block;
+    color: #ccc;
+    background-color: black;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+#top-navigation-bar a:hover {
+    color: #ccc;
+    background-color: black;
+}
+
 .lesson-part {
     text-align: center;
     color: whitesmoke;
@@ -23,35 +49,97 @@ body {
 
 .container {
     display: grid;
-    /* background-color: gray; */
-    grid-template: repeat(6, auto 1fr) / repeat(6, 1fr);
-    /* row-gap: 10px; */
-    column-gap: 10px;
+    float: left;
+    width: 85%;
+    grid-template: repeat(6, 5vh auto) / 80% 20%;
 }
 
-.item {
-    background-color: gray;
+.navigation-bar {
+    position: sticky;
+    top: 0;
+}
+
+ul {
+    list-style-type: none;
     text-align: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    width: 15%;
+    margin: 0;
+    padding: 0;
+    float: left;
 }
 
-.period-header-container {
-    grid-column: span 6;
-    color: whitesmoke;
-    background-color: cornflowerblue;
-    padding: 10px;
+li a {
+    display: block;
+    color: #ccc;
+    padding: 8px 16px;
+    text-decoration: none;
 }
 
-.period-header {
-    display: inline;
+li a:hover {
+    background-color: #ccc;
+    color: black;
 }
 
-.upload {
-    float: right;
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    grid-column-start: 1;
+    grid-column-end: 2;
+    text-align: center;
+}
+
+.flex-item {
+    background-color: gray;
+    width: 15vw;
+    padding: 10px 0;
 }
 
 img {
     width: 50%;
-    height: 50%;
+    height: auto;
+}
+
+h3 {
+    margin: 10px 0;
+}
+
+div select {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div input {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.period-header-container {
+    display: flex;
+    justify-content: space-between;
+    grid-column-start: 1;
+    grid-column-end: 2;
+    color: whitesmoke;
+    background-color: cornflowerblue;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.period-header {
+    align-self: center;
+}
+
+.upload {
+    align-self: center;
+}
+
+.notes-container {
+    background-color: black;
+    color: #ccc;
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 13;
 }
