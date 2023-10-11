@@ -1,7 +1,7 @@
 const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"];
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
 const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
-const textColors = ["", "", "black", "", "black", ""];
+const textColors = ["", "black", "black", "", "black", ""];
 const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
 // const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
 const numLessonParts = 6;
