@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "dotenv-webpack": "^8.0.1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
   }
 }
