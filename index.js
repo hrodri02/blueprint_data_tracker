@@ -2,60 +2,14 @@ const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"]
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
 const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
 const textColors = ["", "black", "black", "", "black", ""];
-const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
-// const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
+// const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
+const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
 const numLessonParts = 6;
-
-const periods = [
-    // 1st period
-    [
-        new Student(0, "Joseph", "Logwood", 1),
-        new Student(1, "Makaiden", "Vongphrachanh", 1),
-        new Student(2, "Braylani", "Hammond", 1),
-    ],
-    // 2nd period
-    [
-        new Student(3, "Navie", "Davis", 2),
-        new Student(4, "Prince", "Leggett", 2),
-        new Student(5, "Jay'Lon", "Andrades", 2)
-    ],
-    // 3rd period
-    [
-        new Student(6, "Alexandra", "Covian Perez", 3),
-        new Student(7, "Emeri", "Hewitt", 3),
-        new Student(8, "Brian", "Cisneros", 3),
-        new Student(9, "Himelda", "Ahilon-Pablo", 3),
-    ],
-    // 4th period
-    [
-        new Student(10, "David", "Hernandez", 4),
-        new Student(11, "Juliana", "Ignacio Tinajero", 4),
-        new Student(12, "Roselyn", "Sanchez-Flores", 4),
-    ],
-    // 6th period
-    [
-        new Student(13, "Luis", "Chang Chilel", 6),
-        new Student(14, "Caleb", "Pablo", 6),
-        new Student(15, "Alex", "Pablo Ramirez", 6),
-        new Student(16, "Lawrence", "Ward", 6),
-    ],
-    // 7th period
-    [
-        new Student(17, "Arodi", "Granados Funes", 6),
-        new Student(18, "John", "Martin-Garcia", 6),
-        new Student(19, "Elmer", "Calmo Carrillo", 6),
-        new Student(20, "Khloe", "Pierce", 6),
-    ]
-]
 
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 let lessonTimerId = null;
 let hallpassTimerId = null;
-
-setupLessonTimer();
-setupHallpassTimer();
-setupPeriods();
 
 function setupLessonTimer() {
     lessonTimerLabel.style.background = backgroundColors[0];
@@ -73,143 +27,6 @@ function setupHallpassTimer() {
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
     hallpassTimerLabel.innerText = `${mins}:${secsString}`;
-}
-
-function setupPeriods() {
-    const container = document.getElementsByClassName("container")[0];
-    setupNotesSection(container);
-
-    for (period in periods) {
-        setupPeriodHeader(container, period);
-        setupStudentsForPeriod(container, period);
-    }
-}
-
-function setupStudentsForPeriod(container, period) {
-    const flexContainer = document.createElement("div");
-    flexContainer.classList.add("flex-container");
-    container.appendChild(flexContainer);
-
-    // add students of the current period
-    const students = periods[period];
-    for (student of students) {
-        const div = document.createElement("div");
-        div.classList.add("flex-item");
-        setupStudentImage(div, student);
-        setupStudentName(div, student);
-        setupAttendanceDropDownMenu(div);
-        setupGradeInput(div);
-        setupGradesButtons(div);
-        flexContainer.appendChild(div);
-    }
-}
-
-function setupPeriodHeader(container, period) {
-    // add period header
-    const div = document.createElement("div");
-    div.classList.add("period-header-container");
-    div.id = periodStrings[period];
-    const h1 = document.createElement("h1");
-    h1.classList.add("period-header");
-    const headerText = document.createTextNode(`${periodStrings[period]} Period`);
-    const uploadButton = document.createElement("button");
-    uploadButton.classList.add("upload");
-    uploadButton.onclick = uploadButtonClicked;
-    const buttonText = document.createTextNode("Upload");
-    uploadButton.appendChild(buttonText);
-    h1.appendChild(headerText);
-    div.appendChild(h1);
-    div.appendChild(uploadButton);
-    container.appendChild(div);
-}
-
-function setupNotesSection(container) {
-    const textArea = document.createElement("textarea");
-    textArea.classList.add("notes-container");
-    textArea.name = "notes";
-    container.appendChild(textArea);
-}
-
-function setupStudentImage(div, student) {
-    div.id = student.id;
-    const img = document.createElement("img");
-    img.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png";
-    div.appendChild(img);
-}
-
-function setupStudentName(div, student) {
-    const h3 = document.createElement("h3");
-    const name = document.createTextNode(student.first_name);
-    h3.appendChild(name);
-    div.appendChild(h3);
-}
-
-function setupAttendanceDropDownMenu(div) {
-    const select = document.createElement("select");
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.text = "--Attendance--";
-    select.options.add(defaultOption);
-    const presentOption = document.createElement("option");
-    presentOption.value = "Present";
-    presentOption.text = "Present";
-    select.options.add(presentOption);
-    const tardyOption = document.createElement("option");
-    tardyOption.value = "Tardy";
-    tardyOption.text = "Tardy";
-    select.options.add(tardyOption);
-    const leftEarlyOption = document.createElement("option");
-    leftEarlyOption.value = "Left Early";
-    leftEarlyOption.text = "Left Early";
-    select.options.add(leftEarlyOption);
-    const absentOption = document.createElement("option");
-    absentOption.value = "Absent";
-    absentOption.text = "Absent";
-    select.options.add(absentOption);
-    const noSessionOption = document.createElement("option");
-    noSessionOption.value = "No Session";
-    noSessionOption.text = "No Session";
-    select.options.add(noSessionOption);
-    const noSchoolOption = document.createElement("option");
-    noSchoolOption.value = "No School";
-    noSchoolOption.text = "No School";
-    select.options.add(noSchoolOption);
-    div.appendChild(select);
-}
-
-function setupGradeInput(div) {
-    const gradeInput = document.createElement("input");
-    gradeInput.type = "number";
-    gradeInput.min = 0;
-    gradeInput.max = 4;
-    div.appendChild(gradeInput);
-}
-
-function setupGradesButtons(div) {
-    const g = document.createElement("button");
-    g.textContent = "G";
-    g.onclick = gradeButtonClick;
-    div.appendChild(g);
-    const r = document.createElement("button");
-    r.textContent = "R";
-    r.onclick = gradeButtonClick;
-    div.appendChild(r);
-    const a = document.createElement("button");
-    a.textContent = "A";
-    a.onclick = gradeButtonClick;
-    div.appendChild(a);
-    const d = document.createElement("button");
-    d.textContent = "D";
-    d.onclick = gradeButtonClick;
-    div.appendChild(d);
-    const e = document.createElement("button");
-    e.textContent = "E";
-    e.onclick = gradeButtonClick;
-    div.appendChild(e);
-    const s = document.createElement("button");
-    s.textContent = "S";
-    s.onclick = gradeButtonClick;
-    div.appendChild(s);
 }
 
 function startButtonClicked() {
@@ -309,8 +126,8 @@ function gradeButtonClick() {
 }
 
 function findStudentWith(studentID) {
-    for (i in periods) {
-        for (student of periods[i]) {
+    for (i in students) {
+        for (student of students[i]) {
             if (student.id == studentID) {
                 return student;
             }
@@ -323,10 +140,10 @@ function uploadButtonClicked() {
     const button = event.srcElement;
     const period = button.parentElement.id;
     const index = periodStrings.indexOf(period);
-    const students = periods[index];
+    const studentsInPeriod = students[index];
     let ranges = [];
     let values = [];
-    for (student of students) {
+    for (student of studentsInPeriod) {
         const row = student.row;
         // any row less than 3 should not be written to on the data tracker
         if (row < 3) {
@@ -352,7 +169,7 @@ function uploadButtonClicked() {
                       values,
                       "RAW", 
                       (res) => {
-                        resetGrades(students);                               
+                        resetGrades(studentsInPeriod);                               
                       });
 }
 
