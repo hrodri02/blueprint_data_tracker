@@ -20,7 +20,7 @@ body {
 #top-navigation-bar a {
     display: block;
     color: #ccc;
-    background-color: black;
+    /* background-color: black; */
     padding: 14px 16px;
     text-decoration: none;
 }
@@ -28,6 +28,10 @@ body {
 #top-navigation-bar a:hover {
     color: #ccc;
     background-color: black;
+}
+
+#timerLabel {
+    background-color: blue;
 }
 
 .lesson-part {

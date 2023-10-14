@@ -1,6 +1,6 @@
  // TODO(developer): Set to client ID and API key from the Developer Console
  const CLIENT_ID = '';
- const API_KEY = '';
+ const API_KEY = ''; 
 
  // Discovery doc URL for APIs used by the quickstart
  const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
@@ -111,17 +111,17 @@
    }
    
    // convert 2D array to 1D array
-   let students = [];
+   let all_students = [];
    for (i in range.values) {
-    students = students.concat(range.values[i]);
+    all_students = all_students.concat(range.values[i]);
    }
 
    // set sheet row for each student
-   for (i in periods) {
-      for (j in periods[i]) {
-        const student = periods[i][j];
+   for (i in students) {
+      for (j in students[i]) {
+        const student = students[i][j];
         const name = student.last_name + ", " + student.first_name;
-        const index = containsSubstring(students, name);
+        const index = containsSubstring(all_students, name);
         student.row = index + 3;
       }
    }
