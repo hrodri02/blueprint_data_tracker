@@ -2,14 +2,44 @@ const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"]
 const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
 const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
 const textColors = ["", "black", "black", "", "black", ""];
-// const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
-const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
+const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
+// const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
 const numLessonParts = 6;
 
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 let lessonTimerId = null;
 let hallpassTimerId = null;
+let studentRows = null;
+/*
+    idToStudentData = {
+        0: [
+                [],
+                [],
+                [],    
+            ]
+    }
+*/
+const rowToStudentData = {};
+
+function getStudentRows() {
+    fetch('http://localhost:8000/students/rows').then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        studentRows = data;
+        for (row of studentRows) {
+            rowToStudentData[row] = [[], [], []];
+        }
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+}
+
+async function fetchAsync (url) {
+    let response = await fetch(url);
+    let data = await response.json();
+    return data;
+}
 
 function setupLessonTimer() {
     lessonTimerLabel.style.background = backgroundColors[0];
@@ -106,121 +136,109 @@ function startHallpassTimer() {
     }, 1000);
 }
 
+function onAttendanceValueChanged() {
+    const select = event.srcElement;
+    const studentID = select.parentElement.id;
+    const row = studentRows[studentID];
+    if (select.value !== '') {
+        rowToStudentData[row][0] = [select.value];
+    }
+    else {
+        rowToStudentData[row][0] = [];
+    }
+}
+
+function onExitTicketGradeChanged() {
+    const input = event.srcElement;
+    const studentID = input.parentElement.id;
+    const row = studentRows[studentID];
+    if (input.value !== '') {
+        rowToStudentData[row][1] = [Number(input.value)];
+    }
+    else {
+        rowToStudentData[row][1] = [];
+    }
+}
+
 function gradeButtonClick() {
     const button = event.srcElement;
     const color = button.style.backgroundColor;
     const studentID = button.parentElement.id;
-    const student = findStudentWith(studentID);
+    const row = studentRows[studentID];
 
+    const grades = rowToStudentData[row][2];
     if (color == "green") {
-        // remove letter grade
         button.style.backgroundColor = "";
-        const index = student["grades"].indexOf(button.textContent);
-        student.grades.splice(index, 1);
+        // remove letter grade
+        const index = grades.indexOf(button.textContent);
+        grades.splice(index, 1);
     }
     else {
-        // add letter grade
         button.style.backgroundColor = "green";
-        student.grades.push(button.textContent);
+        // add letter grade
+        grades.push(button.textContent);
     }
-}
-
-function findStudentWith(studentID) {
-    for (i in students) {
-        for (student of students[i]) {
-            if (student.id == studentID) {
-                return student;
-            }
-        }
-    }
-    return null;
 }
 
 function uploadButtonClicked() {
     const button = event.srcElement;
     const period = button.parentElement.id;
-    const index = periodStrings.indexOf(period);
-    const studentsInPeriod = students[index];
-    let ranges = [];
-    let values = [];
-    for (student of studentsInPeriod) {
-        const row = student.row;
+    const periodHeader = document.getElementById(period);
+    const periodDiv = periodHeader.nextElementSibling;
+
+    const ranges = [];
+    const values = [];
+    for (child of periodDiv.childNodes) {
+        const studentID =  child.id;
+        const row = studentRows[studentID];
         // any row less than 3 should not be written to on the data tracker
         if (row < 3) {
             continue;
         }
 
-        let arr = [];
-        const attendance = getAttendance(student);
-        arr.push(attendance);
-        const exitTicketGrade = getExitTicketGrade(student);
-        arr.push(exitTicketGrade);
-        const participationGrade = getParticipationGrade(student);
-        arr.push(participationGrade);
-        values.push(arr);
+        validateExitTicketGrade(studentID);
+        sortParticipationGrades(studentID);
+        values.push(rowToStudentData[row]);
 
         const col = getColumn();
         const range = `${col}${row}:${col}${row+2}`;
         ranges.push(range);
     }
 
-    batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
-                      ranges,
-                      values,
-                      "RAW", 
-                      (res) => {
-                        resetGrades(studentsInPeriod);                               
-                      });
+    const body = JSON.stringify({period: period,ranges: ranges, values: values});
+    post('http://localhost:8000/students/dailydata', body);
 }
 
-function getAttendance(student) {
-    const div = document.getElementById(student.id);
-    const attendance = [];
-    for (child of div.childNodes) {
-        if (child.tagName == "SELECT") {
-            const index = child.selectedIndex;
-            const selectedOption = child.options[index];
-            const value = selectedOption.value;
-            // check if user selected a value for the attendance
-            try {
-                if (value === "") throw "Please select a value for the attendance";  
-                attendance.push(value);
-            }
-            catch (err) {
-                // TODO: show this message in a pop-up
-                console.log(err);
-            }
-        }
+function post(url, body) {
+    fetch(url, {method: "POST", body: body, headers: {
+        "Content-Type": "application/json",
+      }}).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const period = data['period'];
+        resetGrades(period);
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
+}
+
+function validateExitTicketGrade(studentID) {
+    const row = studentRows[studentID];
+    const value = rowToStudentData[row][1];
+
+    try {    
+        if (value < 0) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+        if (value > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
     }
-
-    return attendance;
-}
-
-function getExitTicketGrade(student) {
-    const div = document.getElementById(student.id);
-    const grade = [];
-    for (child of div.childNodes) {
-        if (child.tagName == "INPUT") {
-            try {
-                const value = child.value;
-                if (value !== "" && Number(value) < 0) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
-                if (value !== "" && Number(value) > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
-                if (value !== "") {
-                    grade.push(Number(value));
-                }
-            }
-            catch (err) {
-                // TODO: show this message in a pop-up
-                console.log(err);
-            }
-        }
+    catch (err) {
+        // TODO: show this message in a pop-up
+        console.log(err);
     }
-
-    return grade;
 }
 
-function getParticipationGrade(student) {
-    const studentsLetters = student.grades;
+function sortParticipationGrades(studentID) {
+    const row = studentRows[studentID];
+    const studentsLetters = rowToStudentData[row][2];
     const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
     const grades = letters.reduce((str, letter) => {
         if (studentsLetters.includes(letter)) {
@@ -229,12 +247,12 @@ function getParticipationGrade(student) {
         return str;
     }, "");
 
-    return (grades == "")? [] : [grades];
+    rowToStudentData[row][2] = (grades === "")? [] : [grades];
 }
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date();
+    const date2 = new Date("10/23/2023");
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -262,12 +280,17 @@ function getColumn() {
     return column_name;
 }
 
-function resetGrades(students) {
-    // clear the grades array for each student
-    for (i in students) {
-        students[i].grades = []
-        // update the colors of the grades buttons   
-        const div = document.getElementById(students[i].id)
+function resetGrades(period) {
+    const periodHeader = document.getElementById(period);
+    const periodDiv = periodHeader.nextElementSibling;
+    // clear student data for every student of that period
+    for (div of periodDiv.childNodes) {
+        const studentID = div.id;
+        const row = studentRows[studentID];
+        rowToStudentData[row][0] = [];
+        rowToStudentData[row][1] = [];
+        rowToStudentData[row][2] = [];
+        // update the colors of the grades buttons
         for (node of div.childNodes) {
             if (node.tagName === "BUTTON") {
                 node.style.backgroundColor = "";
