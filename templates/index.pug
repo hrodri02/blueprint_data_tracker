@@ -37,7 +37,7 @@ html(lang="en-us")
             div(class='flex-item' id=students[i][j].id)
               img(src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png')
               h3= students[i][j].first_name
-              select
+              select(onchange='onAttendanceValueChanged()')
                 option(value="") --Attendance--
                 option(value="Present") Present
                 option(value="Tardy") Tardy
@@ -45,14 +45,14 @@ html(lang="en-us")
                 option(value="Absent") Absent
                 option(value="No Session") No Session
                 option(value="No School") No School
-              input(type='number' min=0, max=4)
+              input(type='number' min=0, max=4, onchange='onExitTicketGradeChanged()')
               button(onclick='gradeButtonClick()') G
               button(onclick='gradeButtonClick()') R
               button(onclick='gradeButtonClick()') A
               button(onclick='gradeButtonClick()') D
               button(onclick='gradeButtonClick()') E
               button(onclick='gradeButtonClick()') S
-      script(type='text/javascript', src='../index.js')
-      script(type='text/javascript', src='../gapi.js')
-      script(async defer src='https://apis.google.com/js/api.js' onload='gapiLoaded()')
-      script(async defer src='https://accounts.google.com/gsi/client' onload='gisLoaded()')
+      script(type='text/javascript', src='../index.js', onload='getStudentRows()')
+      //- script(type='text/javascript', src='../gapi.js')
+      //- script(async defer src='https://apis.google.com/js/api.js' onload='gapiLoaded()')
+      //- script(async defer src='https://accounts.google.com/gsi/client' onload='gisLoaded()')
