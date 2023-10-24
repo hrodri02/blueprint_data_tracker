@@ -5,7 +5,7 @@ const express = require('express');
 const { google } = require('googleapis');
 const path = require('path');
 const url = require('url');
-const students = require('./student');
+const students = require('./routes/students');
 
  /**
  * App Variables
@@ -18,7 +18,7 @@ const port = process.env.PORT || 8000;
 const oauth2Client = new google.auth.OAuth2(
   CLIENT_ID,
   CLIENT_SECRET,
-  'http://localhost:8000/oauth2callback'
+  'http://localhost:8000/students'
 );
 
 // Access scopes for read-only Drive activity.
@@ -51,18 +51,17 @@ const periods = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"];
 /**
  *  App Configuration
  */
-app.set('views', './templates');
-app.set('view engine', 'pug');
-app.use(express.static(path.join(__dirname, 'templates')));
-app.use(express.static(path.join(__dirname, 'static')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, '.')));
 app.use(express.json());
+app.use('/students', students);
 
 /**
  * Routes Definitions
  */
 app.get('/', (req, res) => {
   res.writeHead(301, {"Location": authorizationUrl });
+  console.log(authorizationUrl);
   res.send();
 });
 
@@ -89,106 +88,8 @@ app.get('/oauth2callback', async (req, res) => {
     userCredential = tokens;
   }
 
-  res.redirect('/students');
+  res.send('done');
 });
-
-app.get('/students/rows', async (req, res) => {
-  // Example of using Sheets API to list filenames in user's Drive.
-  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-  let response;
-  try {
-    response = await sheets.spreadsheets.values.get({
-      spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
-      range: 'Daily Data!B3:B300',
-    });
-  }
-  catch (err) {
-    console.log(err);
-    return;
-  }
-
-  const range = response.data;
-
-  if (!range || !range.values || range.values.length == 0) {
-    return;
-  }
-
-  // convert 2D array to 1D array
-  let all_students = [];
-  for (i in range.values) {
-    all_students = all_students.concat(range.values[i]);
-  }
-
-  // set sheet row for each student
-  const rows = []
-  for (i in students) {
-    for (j in students[i]) {
-      const student = students[i][j];
-      const name = student.last_name + ", " + student.first_name;
-      const index = containsSubstring(all_students, name);
-      rows.push(index + 3);
-    }
-  }
-
-  res.send(rows);
-});
-
-function containsSubstring(array, str) {
-  let i = 0;
-  for (substr of array) {
-    if (str.includes(substr)) {
-      return i;
-    }
-    i++;
-  }
-  return -1;
-}
-
-app.get('/students', (req, res) => {
-  res.render('index', {periods: periods, students: students});
-});
-
-app.post('/students/dailydata', (req, res) => {
-  const period = req.body['period'];
-  const ranges = req.body['ranges'];
-  const values = req.body['values'];
-  batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
-                      ranges,
-                      values,
-                      'RAW', 
-                      (response) => {
-                        res.send({period: period});
-                      });
-});
-
-function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption, callback) {
-  const data = [];
-
-  for (i in values) {
-    data.push({
-      range: "Daily Data!" + ranges[i],
-      values: values[i],
-    });
-  }
-  
-  const body = {
-    data: data,
-    valueInputOption: valueInputOption,
-  };
-  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-  try {
-    sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: spreadsheetId,
-      resource: body,
-    }).then((response) => {
-      const data = response.data;
-      console.log(`${data.totalUpdatedCells} cells updated.`);
-      if (callback) callback(response);
-    });
-  } catch (err) {
-    console.log(err.message);
-  }
-}
 
 /**
  * Server Activation
