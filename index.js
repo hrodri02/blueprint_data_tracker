@@ -8,6 +8,7 @@ const numLessonParts = 6;
 
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
+const container = document.getElementsByClassName("container")[0];
 let lessonTimerId = null;
 let hallpassTimerId = null;
 let studentRows = null;
@@ -22,13 +23,15 @@ let studentRows = null;
 */
 const rowToStudentData = {};
 
-function getStudentRows() {
-    fetch('http://localhost:8000/students/rows').then(function(response) {
+getStudents();
+
+function getStudents() {
+    fetch('http://localhost:8000/students').then(function(response) {
         return response.json();
       }).then(function(data) {
-        studentRows = data;
-        for (row of studentRows) {
-            rowToStudentData[row] = [[], [], []];
+        for (period in data) {
+            createPeriodHeader(period);
+            createPeriod(data[period]);
         }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
@@ -39,6 +42,100 @@ async function fetchAsync (url) {
     let response = await fetch(url);
     let data = await response.json();
     return data;
+}
+
+function createPeriodHeader(period) {
+    const periodHeaderContainer = document.createElement("div");
+    periodHeaderContainer.classList.add("period-header-container");
+    const periodHeader = document.createElement("h1");
+    periodHeader.classList.add("period-header");
+    periodHeader.innerHTML = periodStrings[period];
+    periodHeaderContainer.appendChild(periodHeader);
+    const uploadButton = document.createElement("button");
+    uploadButton.classList.add("upload");
+    uploadButton.innerHTML = "Upload";
+    uploadButton.onclick = uploadButtonClicked;
+    periodHeaderContainer.appendChild(uploadButton);
+    container.appendChild(periodHeaderContainer);
+}
+
+function createPeriod(students) {
+    const flexContainer = document.createElement("div");
+    flexContainer.classList.add("flex-container");
+    container.appendChild(flexContainer);
+    for (student of students) {
+        const flexItem = document.createElement("div");
+        flexItem.classList.add("flex-item");
+        // <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'>
+        const img = document.createElement("img");
+        img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png';
+        flexItem.appendChild(img);
+        const nameHeader = document.createElement("h3");
+        nameHeader.innerHTML = student['first_name'];
+        flexItem.appendChild(nameHeader);
+        const select = document.createElement("select");
+        select.onchange = onAttendanceValueChanged;
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.innerHTML = "--Attendance--";
+        select.options.add(emptyOption);
+        const presentOption = document.createElement("option");
+        presentOption.value = "Present";
+        presentOption.innerHTML = "Present";
+        select.options.add(presentOption);
+        const tardyOption = document.createElement("option");
+        tardyOption.value = "Tardy";
+        tardyOption.innerHTML = "Tardy";
+        select.options.add(tardyOption);
+        const leftEarlyOption = document.createElement("option");
+        leftEarlyOption.value = "Left Early";
+        leftEarlyOption.innerHTML = "Left Early";
+        select.options.add(leftEarlyOption);
+        const absentOption = document.createElement("option");
+        absentOption.value = "Absent";
+        absentOption.innerHTML = "Absent";
+        select.options.add(absentOption);
+        const noSessionOption = document.createElement("option");
+        noSessionOption.value = "No Session";
+        noSessionOption.innerHTML = "No Session";
+        select.options.add(noSessionOption);
+        const noSchoolOption = document.createElement("option");
+        noSchoolOption.value = "No School";
+        noSchoolOption.innerHTML = "No School";
+        select.options.add(noSchoolOption);
+        flexItem.appendChild(select);
+        const gradeInput = document.createElement("input");
+        gradeInput.type = 'number';
+        gradeInput.min = 0;
+        gradeInput.max = 4;
+        gradeInput.onchange = onExitTicketGradeChanged;
+        flexItem.appendChild(gradeInput);
+        const gButton = document.createElement("button");
+        gButton.onclick = gradeButtonClick;
+        gButton.innerHTML = "G";
+        flexItem.appendChild(gButton);
+        const rButton = document.createElement("button");
+        rButton.onclick = gradeButtonClick;
+        rButton.innerHTML = "R";
+        flexItem.appendChild(rButton);
+        const aButton = document.createElement("button");
+        aButton.onclick = gradeButtonClick;
+        aButton.innerHTML = "A";
+        flexItem.appendChild(aButton);
+        const dButton = document.createElement("button");
+        dButton.onclick = gradeButtonClick;
+        dButton.innerHTML = "D";
+        flexItem.appendChild(dButton);
+        const eButton = document.createElement("button");
+        eButton.onclick = gradeButtonClick;
+        eButton.innerHTML = "E";
+        flexItem.appendChild(eButton);
+        const sButton = document.createElement("button");
+        sButton.onclick = gradeButtonClick;
+        sButton.innerHTML = "S";
+        flexItem.appendChild(sButton);
+        flexContainer.appendChild(flexItem);
+    }
 }
 
 function setupLessonTimer() {
