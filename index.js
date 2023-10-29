@@ -11,7 +11,7 @@ const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const container = document.getElementsByClassName("container")[0];
 let lessonTimerId = null;
 let hallpassTimerId = null;
-let studentRows = null;
+const studentRows = [];
 /*
     idToStudentData = {
         0: [
@@ -46,6 +46,7 @@ async function fetchAsync (url) {
 
 function createPeriodHeader(period) {
     const periodHeaderContainer = document.createElement("div");
+    periodHeaderContainer.id = periodStrings[period];
     periodHeaderContainer.classList.add("period-header-container");
     const periodHeader = document.createElement("h1");
     periodHeader.classList.add("period-header");
@@ -64,8 +65,12 @@ function createPeriod(students) {
     flexContainer.classList.add("flex-container");
     container.appendChild(flexContainer);
     for (student of students) {
+        const row = student["row"];
+        rowToStudentData[row] = [[],[],[]];
+        studentRows.push(row);
         const flexItem = document.createElement("div");
         flexItem.classList.add("flex-item");
+        flexItem.id = student['id'];
         // <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'>
         const img = document.createElement("img");
         img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png';
@@ -349,7 +354,7 @@ function sortParticipationGrades(studentID) {
 
 function getColumn() {
     const date1 = new Date("08/07/2023");
-    const date2 = new Date("10/23/2023");
+    const date2 = new Date();
         
     // calculate the time difference of two dates
     const difference_in_time = date2.getTime() - date1.getTime();
@@ -369,8 +374,8 @@ function getColumn() {
 
     // Note: every column name will have two letters, since we are past 8/30/23
     let column_name = "";
-    const index_of_first = Math.floor(total / 26);
-    const index_of_second = total % 26;
+    const index_of_first = Math.floor((total - 1) / 26);
+    const index_of_second = (total % 26 == 0)? 26 : total % 26;
     column_name += String.fromCharCode(65 + index_of_first);
     column_name += String.fromCharCode(65 + index_of_second - 1);
         
