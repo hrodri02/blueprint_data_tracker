@@ -9,6 +9,7 @@ const numLessonParts = 6;
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const container = document.getElementsByClassName("container")[0];
+const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
 const studentRows = [];
@@ -23,7 +24,20 @@ const studentRows = [];
 */
 const rowToStudentData = {};
 
+setupDate();
 getStudents();
+
+function setupDate() {
+    const today = new Date();
+    // Get year, month, and day part from the date
+    const year = today.toLocaleString("default", { year: "numeric" });
+    const month = today.toLocaleString("default", { month: "2-digit" });
+    const day = today.toLocaleString("default", { day: "2-digit" });
+
+    // Generate yyyy-mm-dd date string
+    const formattedDate = year + "-" + month + "-" + day;
+    dateControl.value = formattedDate;
+}
 
 function getStudents() {
     fetch('http://localhost:8000/students').then(function(response) {
@@ -283,45 +297,38 @@ function gradeButtonClick() {
 }
 
 function uploadButtonClicked() {
-    const button = event.srcElement;
-    const period = button.parentElement.id;
-    const periodHeader = document.getElementById(period);
-    const periodDiv = periodHeader.nextElementSibling;
+    try {
+        const button = event.srcElement;
+        const period = button.parentElement.id;
+        const periodHeader = document.getElementById(period);
+        const periodDiv = periodHeader.nextElementSibling;
+        // throws error if no date is selected
+        const col = getColumn();
 
-    const ranges = [];
-    const values = [];
-    for (child of periodDiv.childNodes) {
-        const studentID =  child.id;
-        const row = studentRows[studentID];
-        // any row less than 3 should not be written to on the data tracker
-        if (row < 3) {
-            continue;
+        const ranges = [];
+        const values = [];
+        for (child of periodDiv.childNodes) {
+            const studentID =  child.id;
+            const row = studentRows[studentID];
+            // any row less than 3 should not be written to on the data tracker
+            if (row < 3) {
+                continue;
+            }
+
+            validateExitTicketGrade(studentID);
+            sortParticipationGrades(studentID);
+            values.push(rowToStudentData[row]);
+
+            const range = `${col}${row}:${col}${row+2}`;
+            ranges.push(range);
         }
 
-        validateExitTicketGrade(studentID);
-        sortParticipationGrades(studentID);
-        values.push(rowToStudentData[row]);
-
-        const col = getColumn();
-        const range = `${col}${row}:${col}${row+2}`;
-        ranges.push(range);
+        const body = JSON.stringify({period: period,ranges: ranges, values: values});
+        post('http://localhost:8000/students/dailydata', body);
     }
-
-    const body = JSON.stringify({period: period,ranges: ranges, values: values});
-    post('http://localhost:8000/students/dailydata', body);
-}
-
-function post(url, body) {
-    fetch(url, {method: "POST", body: body, headers: {
-        "Content-Type": "application/json",
-      }}).then(function(response) {
-        return response.json();
-      }).then(function(data) {
-        const period = data['period'];
-        resetGrades(period);
-      }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
-      });
+    catch (err) {
+        alert(err.message);
+    }
 }
 
 function validateExitTicketGrade(studentID) {
@@ -353,33 +360,68 @@ function sortParticipationGrades(studentID) {
 }
 
 function getColumn() {
-    const date1 = new Date("08/07/2023");
-    const date2 = new Date();
-        
-    // calculate the time difference of two dates
-    const difference_in_time = date2.getTime() - date1.getTime();
+    try {
+        const date1 = new Date("08/07/2023");
+        // throws error if no date is selected
+        const date2 = getDate();
 
-    // calculate the no. of days between two dates
-    const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
+        // calculate the time difference of two dates
+        const difference_in_time = date2.getTime() - date1.getTime();
 
-    // calculate the no. of wekeends between two dates
-    const no_weekends = Math.floor(difference_in_days / 7);
+        // calculate the no. of days between two dates
+        const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
 
-    // the number of columns away the current one is from column Z
-    const total = 70 + difference_in_days - no_weekends - 90;
-    // To display the final no. of days (result)
-    // console.log("difference = " + difference_in_days + 
-    //             "\nweekends = " + no_weekends +
-    //             "\ntotal = " + total);
+        // calculate the no. of wekeends between two dates
+        const no_weekends = Math.floor(difference_in_days / 7);
 
-    // Note: every column name will have two letters, since we are past 8/30/23
-    let column_name = "";
-    const index_of_first = Math.floor((total - 1) / 26);
-    const index_of_second = (total % 26 == 0)? 26 : total % 26;
-    column_name += String.fromCharCode(65 + index_of_first);
-    column_name += String.fromCharCode(65 + index_of_second - 1);
-        
-    return column_name;
+        // the number of columns away the current one is from column Z
+        const total = 70 + difference_in_days - no_weekends - 90;
+        // To display the final no. of days (result)
+        // console.log("difference = " + difference_in_days + 
+        //             "\nweekends = " + no_weekends +
+        //             "\ntotal = " + total);
+
+        // Note: every column name will have two letters, since we are past 8/30/23
+        let column_name = "";
+        const index_of_first = Math.floor((total - 1) / 26);
+        const index_of_second = (total % 26 == 0)? 26 : total % 26;
+        column_name += String.fromCharCode(65 + index_of_first);
+        column_name += String.fromCharCode(65 + index_of_second - 1);
+            
+        return column_name;
+    }
+    catch (err) {
+        throw err;
+    }
+}
+
+function getDate() {
+    const dateString = dateControl.value;
+    try {
+        if (dateString === '') throw new Error("Please select a date.");
+        const dateParts = dateString.split('-');
+        const year = Number(dateParts[0]);
+        const month = Number(dateParts[1]) - 1;
+        const day = Number(dateParts[2]);
+        const date = new Date(year, month, day);
+        return date;
+    }
+    catch (err) {
+        throw err;
+    }
+}
+
+function post(url, body) {
+    fetch(url, {method: "POST", body: body, headers: {
+        "Content-Type": "application/json",
+      }}).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        const period = data['period'];
+        resetGrades(period);
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
 }
 
 function resetGrades(period) {
