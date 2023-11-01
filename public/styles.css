@@ -4,6 +4,16 @@ body {
     background-color: black;
 }
 
+input[type="date"] {
+    background-color: black;
+    color: #ccc;
+    height: 100%;
+}
+
+::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
 #top-navigation-bar {
     list-style-type: none;
     display: flex;
