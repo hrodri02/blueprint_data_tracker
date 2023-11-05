@@ -12,9 +12,8 @@ const container = document.getElementsByClassName("container")[0];
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
-const studentRows = [];
 /*
-    idToStudentData = {
+    rowToStudentData = {
         0: [
                 [],
                 [],
@@ -23,6 +22,7 @@ const studentRows = [];
     }
 */
 const rowToStudentData = {};
+const idToRow = {};
 
 setupDate();
 getStudents();
@@ -40,7 +40,7 @@ function setupDate() {
 }
 
 function getStudents() {
-    fetch('http://localhost:8000/students').then(function(response) {
+    fetch('http://localhost:8000/students/1').then(function(response) {
         return response.json();
       }).then(function(data) {
         for (period in data) {
@@ -79,18 +79,18 @@ function createPeriod(students) {
     flexContainer.classList.add("flex-container");
     container.appendChild(flexContainer);
     for (student of students) {
-        const row = student["row"];
+        const row = student['sheets_row'];
         rowToStudentData[row] = [[],[],[]];
-        studentRows.push(row);
+        idToRow[student['id']] = row;
         const flexItem = document.createElement("div");
         flexItem.classList.add("flex-item");
         flexItem.id = student['id'];
-        // <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'>
         const img = document.createElement("img");
         img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png';
         flexItem.appendChild(img);
         const nameHeader = document.createElement("h3");
-        nameHeader.innerHTML = student['first_name'];
+        const firstName = student['name'].split(",")[1];
+        nameHeader.innerHTML = firstName;
         flexItem.appendChild(nameHeader);
         const select = document.createElement("select");
         select.onchange = onAttendanceValueChanged;
@@ -255,7 +255,7 @@ function startHallpassTimer() {
 function onAttendanceValueChanged() {
     const select = event.srcElement;
     const studentID = select.parentElement.id;
-    const row = studentRows[studentID];
+    const row = idToRow[studentID];
     if (select.value !== '') {
         rowToStudentData[row][0] = [select.value];
     }
@@ -267,7 +267,7 @@ function onAttendanceValueChanged() {
 function onExitTicketGradeChanged() {
     const input = event.srcElement;
     const studentID = input.parentElement.id;
-    const row = studentRows[studentID];
+    const row = idToRow[studentID];
     if (input.value !== '') {
         rowToStudentData[row][1] = [Number(input.value)];
     }
@@ -280,7 +280,7 @@ function gradeButtonClick() {
     const button = event.srcElement;
     const color = button.style.backgroundColor;
     const studentID = button.parentElement.id;
-    const row = studentRows[studentID];
+    const row = idToRow[studentID];
 
     const grades = rowToStudentData[row][2];
     if (color == "green") {
@@ -308,8 +308,8 @@ function uploadButtonClicked() {
         const ranges = [];
         const values = [];
         for (child of periodDiv.childNodes) {
-            const studentID =  child.id;
-            const row = studentRows[studentID];
+            const studentID = child.id;
+            const row = idToRow[studentID];
             // any row less than 3 should not be written to on the data tracker
             if (row < 3) {
                 continue;
@@ -332,7 +332,7 @@ function uploadButtonClicked() {
 }
 
 function validateExitTicketGrade(studentID) {
-    const row = studentRows[studentID];
+    const row = idToRow[studentID];
     const value = rowToStudentData[row][1];
 
     try {    
@@ -346,7 +346,7 @@ function validateExitTicketGrade(studentID) {
 }
 
 function sortParticipationGrades(studentID) {
-    const row = studentRows[studentID];
+    const row = idToRow[studentID];
     const studentsLetters = rowToStudentData[row][2];
     const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
     const grades = letters.reduce((str, letter) => {
@@ -430,7 +430,7 @@ function resetGrades(period) {
     // clear student data for every student of that period
     for (div of periodDiv.childNodes) {
         const studentID = div.id;
-        const row = studentRows[studentID];
+        const row = idToRow[studentID];
         rowToStudentData[row][0] = [];
         rowToStudentData[row][1] = [];
         rowToStudentData[row][2] = [];

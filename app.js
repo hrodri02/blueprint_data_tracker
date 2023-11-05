@@ -1,39 +1,20 @@
 /**
  * Required External Modules
  */
-const fs = require('fs').promises;
 const process = require('process');
 const express = require('express');
-const {google} = require('googleapis');
+const oauth2Client = require('./google');
 const path = require('path');
 const url = require('url');
 const students = require('./routes/students');
+const db = require('./db/database');
+const dbDebugger = require('debug')('app:db');
 
  /**
  * App Variables
  */
 const app = express();
 const port = process.env.PORT || 8000;
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  'http://localhost:8000/oauth2callback'
-);
-
-oauth2Client.on('tokens', (tokens) => {
-  if (tokens.refresh_token) {
-    // TODO: - store refresh token in a database
-    try { 
-      fs.writeFile('refreshToken.txt', tokens.refresh_token); 
-      console.log("File has been saved.");
-    } catch (error) { 
-      console.error(err); 
-    } 
-  }
-  // console.log(tokens.access_token);
-});
 
 // Access scopes for read-only Drive activity.
 const SCOPES = [
@@ -85,3 +66,19 @@ app.get('/oauth2callback', async (req, res) => {
  * Server Activation
  */
 app.listen(port, () => console.log(`Listening on port ${port}...`));
+
+/**
+ * Server Deactivation
+ */
+process.on('SIGINT', () => {
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      dbDebugger(err.message);
+    }
+    else {
+      dbDebugger('DB closed.');
+    }
+    process.exit(1);
+  });
+});
