@@ -40,7 +40,7 @@ function setupDate() {
 }
 
 function getStudents() {
-    fetch('http://localhost:8000/students').then(function(response) {
+    fetch('http://localhost:8000/students/1').then(function(response) {
         return response.json();
       }).then(function(data) {
         for (period in data) {
