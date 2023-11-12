@@ -41,14 +41,24 @@ function setupDate() {
 
 function getStudents() {
     fetch('http://localhost:8000/students').then(function(response) {
-        return response.json();
+        if (!response.ok) {
+            if (response.status == 401) {
+                window.location.href = 'http://localhost:8000/signup.html';
+            }
+            else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        }
+        else {
+            return response.json();
+        }
       }).then(function(data) {
         for (period in data) {
             createPeriodHeader(period);
             createPeriod(data[period]);
         }
       }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
+        console.log(err);
       });
 }
 
