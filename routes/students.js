@@ -7,6 +7,7 @@ const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const googleDebugger = require('debug')('app:google');
 const {google} = require('googleapis');
+const auth = require('../middleware/auth');
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
@@ -23,7 +24,7 @@ router.post('/', async (req, res) => {
   res.send(studentInDB);
 });
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   // TODO: sheet_row will be outdated when new students are added to the spreadsheet
   const students = [];
   const periods = await getPeriods();
