@@ -68,15 +68,6 @@ async function insertFellow(id, email, name) {
 
 router.get('/signout', (req, res) => {
   req.session.destroy();
-  const tokenFile = path.join(__dirname, '../refreshToken.txt');
-  fs.unlink(tokenFile, (err) => {
-    if (err) {
-      fsDebugger(err);
-    }
-    else {
-      fsDebugger('Deleted refresh token');
-    }
-  });
   res.send();
 });
 
