@@ -200,6 +200,7 @@ router.post('/dailydata', async (req, res) => {
       // Enable incremental authorization. Recommended as a best practice.
       include_granted_scopes: true
     });
+    googleDebugger(err.message);
     res.status(401).send({authorizationUrl: authorizationUrl});
   }
 });
