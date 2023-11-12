@@ -4,38 +4,36 @@ const router = express.Router();
 const CLIENT_ID = process.env.CLIENT_ID;
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
-const fsDebugger = require('debug')('app:fs');
-const fs = require('fs');
-const path = require('path');
 
 router.post('/signup', async (req, res) => {
     const client = new OAuth2Client();
     const token = req.body['credential'];
-    const ticket = await client.verifyIdToken({
+
+    try {
+      const ticket = await client.verifyIdToken({
         idToken: token,
         audience: CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const googleUserID = payload['sub'];
-    const email = payload['email'];
-    const name = payload['name'];
-    // check if user is in DB
-    let user = await getFellow(googleUserID);
-    // if user is new, save them in the DB
-    if (user == null) {
-        try {
-            const id = await insertFellow(googleUserID, email, name);
-            user = await getFellow(id);
-        }
-        catch (err) {
-            dbDebugger(err);
-        }
+      });
+      const payload = ticket.getPayload();
+      const googleUserID = payload['sub'];
+      const email = payload['email'];
+      const name = payload['name'];
+      // check if user is in DB
+      let user = await getFellow(googleUserID);
+      // if user is new, save them in the DB
+      if (user == null) {
+        const id = await insertFellow(googleUserID, email, name);
+        user = await getFellow(id);
+      }
+      req.session.user = user;
+
+      // TODO: move hostname to a varaible
+      res.redirect('http://localhost:8000/students.html');
     }
-
-    req.session.user = user;
-
-    // TODO: move hostname to a varaible
-    res.redirect('http://localhost:8000/students.html');
+    catch (err) {
+      dbDebugger(err.message);
+      res.status(400).send({error: err.message});
+    }
 });
 
 async function getFellow(id) {
