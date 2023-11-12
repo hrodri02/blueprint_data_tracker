@@ -5,6 +5,11 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
+const googleDebugger = require('debug')('app:google');
+const {google} = require('googleapis');
+const SCOPES = [
+  'https://www.googleapis.com/auth/spreadsheets'
+];
 
 router.post('/', async (req, res) => {
   const student = req.body;
@@ -18,15 +23,14 @@ router.post('/', async (req, res) => {
   res.send(studentInDB);
 });
 
-router.get('/:fellowID', async (req, res) => {
+router.get('/', async (req, res) => {
   // TODO: sheet_row will be outdated when new students are added to the spreadsheet
   const students = [];
   const periods = await getPeriods();
   for (let i = 0; i < periods; i++) {
     students.push([]);
   }
-
-  const fellowID = req.params.fellowID;
+  const fellowID = req.session.user.id;
   const rows = await getStudentsForFellow(fellowID);
   for (row of rows) {
     if (row.period < 5) {
@@ -175,20 +179,32 @@ function validateStudent(student) {
   return result;
 }
 
-router.post('/dailydata', (req, res) => {
+router.post('/dailydata', async (req, res) => {
   const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
-  batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
+  try {
+    await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                     ranges,
                     values,
-                    'RAW', 
-                    (response) => {
-                      res.send({period: period});
-                    });
+                    'RAW');
+    res.send({period: period});
+  }
+  catch (err) {
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      // 'online' (default) or 'offline' (gets refresh_token)
+      access_type: 'offline',
+     /** Pass in the scopes array defined above.
+        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+      scope: SCOPES,
+      // Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes: true
+    });
+    res.status(401).send({authorizationUrl: authorizationUrl});
+  }
 });
 
-async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption, callback) {
+async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption) {
   const data = [];
 
   for (i in values) {
@@ -211,16 +227,14 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
       refresh_token: refreshToken
     });
 
-    sheets.spreadsheets.values.batchUpdate({
+    const response = await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: spreadsheetId,
       resource: body,
-    }).then((response) => {
-      const data = response.data;
-      console.log(`${data.totalUpdatedCells} cells updated.`);
-      if (callback) callback(response);
     });
+    googleDebugger(`${response.data.totalUpdatedCells} cells updated.`);
+    return response;
   } catch (err) {
-    console.log(err.message);
+    throw err;
   }
 }
 
