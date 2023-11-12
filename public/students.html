@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en-us"></html>
   <head>
-    <link href='/styles.css' rel='stylesheet'></link>
+    <link href='styles.css' rel='stylesheet'></link>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
 <body>
     <body>
-        <nav>
-            <ul id='top-navigation-bar'>
+        <nav class='top-navigation-bar'>
+            <div class='top-left-flex-container'>
+            </div>
+            <ul class='top-center-flex-container'>
                 <li><a id='timerLabel' href='javascript:startButtonClicked()'>5:00</a></li>
                 <li><a id='hallpassTimerLabel'>15:00</a></li>
                 <li><a id='reset' href='javascript:resetButtonClicked()'>Reset</a></li>
                 <li><input type='date' id='date'/></li>
             </ul>
+            <div class='top-right-flex-container'>
+                <button id='signout' onclick='signoutButtonClicked()'>Sign out</button>
+            </div>
         </nav>
-        <nav class='navigation-bar'>
+        <nav class='left-navigation-bar'>
             <ul>
                 <li><a href='#First'>First Period</a></li>
                 <li><a href='#Second'>Second Period</a></li>
