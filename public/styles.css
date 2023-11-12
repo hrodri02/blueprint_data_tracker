@@ -1,3 +1,7 @@
+* {
+    box-sizing: border-box; 
+}
+
 body {
     padding: 0;
     margin: 0;
@@ -14,30 +18,48 @@ input[type="date"] {
     filter: invert(1);
 }
 
-#top-navigation-bar {
+.top-navigation-bar {
+    display: flex;
+}
+
+.top-left-flex-container {
+    justify-content: flex-start;
+    width: 20%;
+}
+
+.top-center-flex-container {
     list-style-type: none;
     display: flex;
     justify-content: center;
     margin: 0;
     padding: 0;
-    width: 100%;
+    width: 60%;
 }
 
-#top-navigation-bar li {
+.top-center-flex-container li {
     float: left;
 }
 
-#top-navigation-bar a {
+.top-center-flex-container a {
     display: block;
     color: #ccc;
-    /* background-color: black; */
     padding: 14px 16px;
     text-decoration: none;
 }
 
-#top-navigation-bar a:hover {
+.top-center-flex-container a:hover {
     color: #ccc;
     background-color: black;
+}
+
+.top-right-flex-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 20%;
+}
+
+#signout {
+    padding: 14px 16px;
 }
 
 #timerLabel {
@@ -49,7 +71,6 @@ input[type="date"] {
     color: whitesmoke;
     padding-top: 20px;
     padding-bottom: 20px;
-    box-sizing: border-box;
 }
 
 #hallpass {
@@ -58,7 +79,6 @@ input[type="date"] {
     color: whitesmoke;
     padding-top: 20px;
     padding-bottom: 20px;
-    box-sizing: border-box;
 }
 
 .container {
@@ -68,7 +88,7 @@ input[type="date"] {
     grid-template: repeat(6, 5vh auto) / 80% 20%;
 }
 
-.navigation-bar {
+.left-navigation-bar {
     position: sticky;
     top: 0;
 }
@@ -138,7 +158,6 @@ div input {
     color: whitesmoke;
     background-color: cornflowerblue;
     padding: 0 10px;
-    box-sizing: border-box;
 }
 
 .period-header {
