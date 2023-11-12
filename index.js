@@ -40,7 +40,7 @@ function setupDate() {
 }
 
 function getStudents() {
-    fetch('http://localhost:8000/students/1').then(function(response) {
+    fetch('http://localhost:8000/students').then(function(response) {
         return response.json();
       }).then(function(data) {
         for (period in data) {
@@ -50,12 +50,6 @@ function getStudents() {
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
       });
-}
-
-async function fetchAsync (url) {
-    let response = await fetch(url);
-    let data = await response.json();
-    return data;
 }
 
 function createPeriodHeader(period) {
@@ -340,8 +334,7 @@ function validateExitTicketGrade(studentID) {
         if (value > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
     }
     catch (err) {
-        // TODO: show this message in a pop-up
-        console.log(err);
+        alert(err);
     }
 }
 
@@ -417,8 +410,13 @@ function post(url, body) {
       }}).then(function(response) {
         return response.json();
       }).then(function(data) {
-        const period = data['period'];
-        resetGrades(period);
+        if (data['authorizationUrl']) {
+            window.location.href = data['authorizationUrl'];
+        }
+        else {
+            const period = data['period'];
+            resetGrades(period);
+        }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
       });
@@ -455,4 +453,10 @@ function resetButtonClicked() {
     setupLessonTimer()
     setupHallpassTimer()
     lessonTimerLabel.style.pointerEvents = "auto";
+}
+
+function signoutButtonClicked() {
+    fetch('http://localhost:8000/users/signout')
+        .then(window.location.href = 'http://localhost:8000/signup.html')
+        .catch((err) => console.log(err.message));
 }
