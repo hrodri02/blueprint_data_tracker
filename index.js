@@ -340,8 +340,8 @@ function validateExitTicketGrade(studentID) {
     const value = rowToStudentData[row][1];
 
     try {    
-        if (value < 0) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
-        if (value > 4) throw "Invalid: Exit Ticket grade must be an integer between 0 and 4.";
+        if (value < 0) throw new Error("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
+        if (value > 4) throw new Error("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
     }
     catch (err) {
         alert(err);
