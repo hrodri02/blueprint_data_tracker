@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, '.')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(session({
-  secret: "thisismysecrctekey",
+  secret: process.env.SESSION_SECRET,
   saveUninitialized: false,
   cookie: { maxAge: oneDay },
   resave: false
