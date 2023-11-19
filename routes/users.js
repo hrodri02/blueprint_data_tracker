@@ -4,6 +4,7 @@ const router = express.Router();
 const CLIENT_ID = process.env.CLIENT_ID;
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
+const sessionDebugger = require('debug')('app:session');
 
 router.post('/signup', async (req, res) => {
     const client = new OAuth2Client();
@@ -25,10 +26,9 @@ router.post('/signup', async (req, res) => {
         const id = await insertFellow(googleUserID, email, name);
         user = await getFellow(id);
       }
+      
       req.session.user = user;
-
-      // TODO: move hostname to a varaible
-      res.redirect('http://localhost:8000/students.html');
+      res.redirect('/');
     }
     catch (err) {
       dbDebugger(err.message);
@@ -65,8 +65,12 @@ async function insertFellow(id, email, name) {
 }
 
 router.get('/signout', (req, res) => {
-  req.session.destroy();
-  res.send();
+  req.session.destroy((err) => {
+    if (err) {
+      sessionDebugger(err.message);
+    }
+    res.end();
+  });
 });
 
 module.exports = router;
