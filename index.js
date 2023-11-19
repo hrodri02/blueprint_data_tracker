@@ -467,6 +467,4 @@ function resetButtonClicked() {
 
 function signoutButtonClicked() {
     fetch('http://localhost:8000/users/signout')
-        .then(window.location.href = 'http://localhost:8000/signup.html')
-        .catch((err) => console.log(err.message));
 }
