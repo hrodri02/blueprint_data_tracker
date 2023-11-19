@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const fs = require('fs').promises;
-const oauth2Client = require('../google');
+const {oauth2Client} = require('./google');
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
