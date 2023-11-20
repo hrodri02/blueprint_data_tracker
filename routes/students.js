@@ -4,10 +4,10 @@ const {oauth2Client} = require('./google');
 const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
-const dbDebugger = require('debug')('app:db');
 const googleDebugger = require('debug')('app:google');
 const {google} = require('googleapis');
 const auth = require('../middleware/auth');
+const sheets_row = require('../middleware/sheets_row');
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
@@ -19,20 +19,19 @@ router.post('/', async (req, res) => {
     return res.status(400).send(error.details[0].message);
   }
 
-  const id = await insertStudent(student);
-  const studentInDB = await getStudent(id);
+  const id = await db.insertStudent(student);
+  const studentInDB = await db.getStudent(id);
   res.send(studentInDB);
 });
 
-router.get('/', auth, async (req, res) => {
-  // TODO: sheet_row will be outdated when new students are added to the spreadsheet
+router.get('/', [auth, sheets_row], async (req, res) => {
   const students = [];
-  const periods = await getPeriods();
+  const periods = await db.getPeriods();
   for (let i = 0; i < periods; i++) {
     students.push([]);
   }
   const fellowID = req.session.user.id;
-  const rows = await getStudentsForFellow(fellowID);
+  const rows = await db.getStudentsForFellow(fellowID);
   for (row of rows) {
     if (row.period < 5) {
       students[row.period - 1].push(row);
@@ -46,7 +45,7 @@ router.get('/', auth, async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const id = req.params.id;
-  const result = await getStudent(id);
+  const result = await db.getStudent(id);
   if (!result) {
     return res.status(404).send('Student with given ID not found.');
   }
@@ -57,115 +56,21 @@ router.put('/:id', async (req, res) => {
   }
 
   const student = req.body;
-  await updateStudent(student);
-  const studentInDB = await getStudent(id);
+  await db.updateStudent(student);
+  const studentInDB = await db.getStudent(id);
   res.send(studentInDB);
 });
 
 router.delete('/:id', async (req, res) => {
   const id = req.params.id;
-  const result = await getStudent(id);
+  const result = await db.getStudent(id);
   if (!result) {
     return res.status(404).send('Student with given ID not found.');
   }
 
-  await deleteStudent(id);
+  await db.deleteStudent(id);
   res.send(result);  
 });
-
-async function getPeriods() {
-  return new Promise((resolve, reject) => {
-    const sql = 'SELECT COUNT(DISTINCT period) as periods FROM students';
-    db.get(sql, [], (err, row) => {
-      if (err) {
-        reject(err.message);
-      }
-      else {
-        resolve(row.periods);
-      }
-    });
-  });
-}
-
-async function getStudentsForFellow(fellowID) {
-  return new Promise((resolve, reject) => {
-    const getStudents = 'SELECT * FROM students WHERE fellow_id = ?';
-    db.all(getStudents, [fellowID], (err, rows) => {
-      if (err) {
-        reject(err.message);
-      }
-      else {
-        resolve(rows);
-      }
-    });
-  });
-}
-
-async function insertStudent(student) {
-  return new Promise((resolve, reject) =>{
-    // insert one row into the students table
-    const name = student['name'];
-    const period = student['period'];
-    const sheets_row = student['sheets_row'];
-    const fellow_id = student['fellow_id'];
-    db.run(`INSERT INTO students(name, period, sheets_row, fellow_id) VALUES(?, ?, ?, ?)`, 
-          [name, period, sheets_row, fellow_id], function(err) {
-      if (err) {
-        dbDebugger(err.message);
-        reject(err.message);
-      }
-      else {
-        resolve(this.lastID);
-      }
-    });
-  });
-}
-
-async function getStudent(id) {
-  return new Promise((resolve, reject) => {
-    const sql = 'SELECT * FROM students WHERE id = ?';
-    db.get(sql, [id], (err, row) => {
-      if (err) {
-        reject(err.message);
-      }
-      else {
-        resolve(row);
-      }
-    });
-  });
-}
-
-async function updateStudent(student) {
-  return new Promise((resolve, reject) => {
-    const id = student['id'];
-    const name = student['name'];
-    const period = student['period'];
-    const sheets_row = student['sheets_row'];
-    const fellow_id = student['fellow_id'];
-    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ? WHERE id = ?`, 
-          [name, period, sheets_row, fellow_id, id], function(err) {
-      if (err) {
-        reject(err.message);
-      }
-      else {
-        resolve();
-      }
-    });
-  });
-}
-
-async function deleteStudent(id) {
-  return new Promise((resolve, reject) => {
-    db.run(`DELETE FROM students WHERE id = ?`, [id], function(err) {
-      if (err) {
-        reject(err.message);
-      }
-      else {
-        resolve();
-      }
-    });
-  });
-}
 
 function validateStudent(student) {
   const schema = Joi.object({
