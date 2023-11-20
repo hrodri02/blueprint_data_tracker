@@ -1,7 +1,7 @@
 const {OAuth2Client} = require('google-auth-library');
 const express = require('express');
 const router = express.Router();
-const CLIENT_ID = process.env.CLIENT_ID;
+const config = require('config');
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const sessionDebugger = require('debug')('app:session');
@@ -13,7 +13,7 @@ router.post('/signup', async (req, res) => {
     try {
       const ticket = await client.verifyIdToken({
         idToken: token,
-        audience: CLIENT_ID,
+        audience: config.get('google.client_id'),
       });
       const payload = ticket.getPayload();
       const googleUserID = payload['sub'];

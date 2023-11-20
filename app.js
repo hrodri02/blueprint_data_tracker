@@ -11,6 +11,7 @@ const users = require('./routes/users');
 const db = require('./db/database');
 const dbDebugger = require('debug')('app:db');
 const session = require('express-session');
+const config = require('config');
 
  /**
  * App Variables
@@ -27,7 +28,7 @@ app.use(express.static(path.join(__dirname, '.')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: config.get('session_secret'),
   saveUninitialized: false,
   cookie: { maxAge: oneDay },
   resave: false
