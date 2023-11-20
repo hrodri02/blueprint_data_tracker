@@ -55,7 +55,7 @@ router.get('/oauth2callback', async (req, res) => {
     oauth2Client.setCredentials(tokens);
   }
 
-  res.redirect('http://localhost:8000/students.html');
+  res.redirect('/');
 });
 
 module.exports.oauth2Client = oauth2Client;
