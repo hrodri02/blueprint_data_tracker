@@ -4,15 +4,14 @@ const fs = require('fs').promises;
 const url = require('url');
 const {google} = require('googleapis');
 const googleDebugger = require('debug')('app:google');
+const config = require('config');
 
-const CLIENT_ID = process.env.CLIENT_ID;
-const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
 const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
+  config.get('google.client_id'),
+  config.get('google.client_secret'),
   'http://localhost:8000/google/oauth2callback'
 );
 
