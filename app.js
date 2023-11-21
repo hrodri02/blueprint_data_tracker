@@ -1,15 +1,12 @@
 /**
  * Required External Modules
  */
-const process = require('process');
 const express = require('express');
 const {google} = require('./routes/google');
 const path = require('path');
 const home = require('./routes/home');
 const students = require('./routes/students');
 const users = require('./routes/users');
-const db = require('./db/database');
-const dbDebugger = require('debug')('app:db');
 const session = require('express-session');
 const config = require('config');
 
@@ -50,15 +47,3 @@ app.listen(port, () => console.log(`Listening on port ${port}...`));
 /**
  * Server Deactivation
  */
-process.on('SIGINT', () => {
-  // close the database connection
-  db.close((err) => {
-    if (err) {
-      dbDebugger(err.message);
-    }
-    else {
-      dbDebugger('DB closed.');
-    }
-    process.exit(1);
-  });
-});

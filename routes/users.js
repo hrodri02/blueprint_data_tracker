@@ -20,11 +20,11 @@ router.post('/signup', async (req, res) => {
       const email = payload['email'];
       const name = payload['name'];
       // check if user is in DB
-      let user = await getFellow(googleUserID);
+      let user = await db.getFellow(googleUserID);
       // if user is new, save them in the DB
       if (user == null) {
-        const id = await insertFellow(googleUserID, email, name);
-        user = await getFellow(id);
+        const id = await db.insertFellow(googleUserID, email, name);
+        user = await db.getFellow(id);
       }
       
       req.session.user = user;
@@ -35,34 +35,6 @@ router.post('/signup', async (req, res) => {
       res.status(400).send({error: err.message});
     }
 });
-
-async function getFellow(id) {
-    return new Promise((resolve, reject) => {
-      const sql = 'SELECT * FROM fellows WHERE id = ?';
-      db.get(sql, [id], (err, row) => {
-        if (err) {
-          reject(err.message);
-        }
-        else {
-          resolve(row);
-        }
-      });
-    });
-}
-
-async function insertFellow(id, email, name) {
-    return new Promise((resolve, reject) => {
-      const sql = 'INSERT INTO fellows(id, email, name) VALUES(?, ?, ?)';
-      db.run(sql, [id, email, name], (err, row) => {
-        if (err) {
-          reject(err.message);
-        }
-        else {
-          resolve(this.lastID);
-        }
-      });
-    });
-}
 
 router.get('/signout', (req, res) => {
   req.session.destroy((err) => {
