@@ -55,14 +55,7 @@ module.exports = async function (req, res, next) {
         }
 
         // update necessary sheets rows
-        for (student of studentsToUpdate) {
-            try {
-                await db.updateStudent(student);
-            }
-            catch (err) {
-                dbDebugger(err);
-            }
-        }
+        db.updateStudents(studentsToUpdate);
 
         next();
     } 
