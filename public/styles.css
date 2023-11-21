@@ -60,6 +60,13 @@ input[type="date"] {
 
 #signout {
     padding: 14px 16px;
+    color: #ccc;
+    background-color: black;
+    border: none;
+}
+
+#signout:hover {
+    background-color: red;
 }
 
 #timerLabel {
