@@ -63,19 +63,12 @@ function getStudents() {
 }
 
 function createPeriodHeader(period) {
-    const periodHeaderContainer = document.createElement("div");
-    periodHeaderContainer.id = periodStrings[period];
-    periodHeaderContainer.classList.add("period-header-container");
-    const periodHeader = document.createElement("h1");
-    periodHeader.classList.add("period-header");
-    periodHeader.innerHTML = periodStrings[period];
-    periodHeaderContainer.appendChild(periodHeader);
-    const uploadButton = document.createElement("button");
-    uploadButton.classList.add("upload");
-    uploadButton.innerHTML = "Upload";
-    uploadButton.onclick = uploadButtonClicked;
-    periodHeaderContainer.appendChild(uploadButton);
-    container.appendChild(periodHeaderContainer);
+    container.innerHTML += `
+        <div class="period-header-container" id="${periodStrings[period]}">
+            <h1 class="period-header">${periodStrings[period]}</h1>
+            <button class="upload" onclick="uploadButtonClicked()">Upload</button>
+        </div>   
+    `
 }
 
 function createPeriod(students) {
@@ -84,80 +77,30 @@ function createPeriod(students) {
     container.appendChild(flexContainer);
     for (student of students) {
         const row = student['sheets_row'];
-        rowToStudentData[row] = [[],[],[]];
         idToRow[student['id']] = row;
-        const flexItem = document.createElement("div");
-        flexItem.classList.add("flex-item");
-        flexItem.id = student['id'];
-        const img = document.createElement("img");
-        img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png';
-        flexItem.appendChild(img);
-        const nameHeader = document.createElement("h3");
+        rowToStudentData[row] = [[],[],[]];
         const firstName = student['name'].split(",")[1];
-        nameHeader.innerHTML = firstName;
-        flexItem.appendChild(nameHeader);
-        const select = document.createElement("select");
-        select.onchange = onAttendanceValueChanged;
-        const emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.innerHTML = "--Attendance--";
-        select.options.add(emptyOption);
-        const presentOption = document.createElement("option");
-        presentOption.value = "Present";
-        presentOption.innerHTML = "Present";
-        select.options.add(presentOption);
-        const tardyOption = document.createElement("option");
-        tardyOption.value = "Tardy";
-        tardyOption.innerHTML = "Tardy";
-        select.options.add(tardyOption);
-        const leftEarlyOption = document.createElement("option");
-        leftEarlyOption.value = "Left Early";
-        leftEarlyOption.innerHTML = "Left Early";
-        select.options.add(leftEarlyOption);
-        const absentOption = document.createElement("option");
-        absentOption.value = "Absent";
-        absentOption.innerHTML = "Absent";
-        select.options.add(absentOption);
-        const noSessionOption = document.createElement("option");
-        noSessionOption.value = "No Session";
-        noSessionOption.innerHTML = "No Session";
-        select.options.add(noSessionOption);
-        const noSchoolOption = document.createElement("option");
-        noSchoolOption.value = "No School";
-        noSchoolOption.innerHTML = "No School";
-        select.options.add(noSchoolOption);
-        flexItem.appendChild(select);
-        const gradeInput = document.createElement("input");
-        gradeInput.type = 'number';
-        gradeInput.min = 0;
-        gradeInput.max = 4;
-        gradeInput.onchange = onExitTicketGradeChanged;
-        flexItem.appendChild(gradeInput);
-        const gButton = document.createElement("button");
-        gButton.onclick = gradeButtonClick;
-        gButton.innerHTML = "G";
-        flexItem.appendChild(gButton);
-        const rButton = document.createElement("button");
-        rButton.onclick = gradeButtonClick;
-        rButton.innerHTML = "R";
-        flexItem.appendChild(rButton);
-        const aButton = document.createElement("button");
-        aButton.onclick = gradeButtonClick;
-        aButton.innerHTML = "A";
-        flexItem.appendChild(aButton);
-        const dButton = document.createElement("button");
-        dButton.onclick = gradeButtonClick;
-        dButton.innerHTML = "D";
-        flexItem.appendChild(dButton);
-        const eButton = document.createElement("button");
-        eButton.onclick = gradeButtonClick;
-        eButton.innerHTML = "E";
-        flexItem.appendChild(eButton);
-        const sButton = document.createElement("button");
-        sButton.onclick = gradeButtonClick;
-        sButton.innerHTML = "S";
-        flexItem.appendChild(sButton);
-        flexContainer.appendChild(flexItem);
+        flexContainer.innerHTML += `
+            <div class="flex-item" id=${student['id']}>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
+                <a href="student.html?title=${firstName}"><h3>${firstName}</h3></a>
+                <select onchange="onAttendanceValueChanged()">
+                    <option value="">--Attendance--</option>
+                    <option value="Present">Present</option>
+                    <option value="Tardy">Tardy</option>
+                    <option value="Left Early">Left Early</option>
+                    <option value="No Session">No Session</option>
+                    <option value="No School">No School</option>
+                </select>
+                <input type="number" min="0" max="4" onchange="onExitTicketGradeChanged()">
+                <button onclick="gradeButtonClick()">G</button>
+                <button onclick="gradeButtonClick()">R</button>
+                <button onclick="gradeButtonClick()">A</button>
+                <button onclick="gradeButtonClick()">D</button>
+                <button onclick="gradeButtonClick()">E</button>
+                <button onclick="gradeButtonClick()">S</button>
+            </div>
+        `;
     }
 }
 
