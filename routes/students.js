@@ -145,4 +145,49 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
   }
 }
 
+router.get('/:id/dailydata', async (req, res) => {
+  try {
+    // get user with id
+    const user = await db.getStudent(req.params.id);
+    // get sheets row for user
+    const sheets_row = user['sheets_row'];
+    // use google api to read daily data
+    const start = req.query.start;
+    const end = req.query.end;
+    const data = await fs.readFile('refreshToken.txt');
+    const refreshToken = data.toString();
+
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken
+    });
+  
+    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+    let response;
+    response = await sheets.spreadsheets.values.get({
+      spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+      range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
+    });
+  
+    const range = response.data;
+  
+    if (!range || !range.values || range.values.length == 0) {
+      res.send([]);
+    }
+    res.send(range.values);
+  }
+  catch (err) {
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      // 'online' (default) or 'offline' (gets refresh_token)
+      access_type: 'offline',
+     /** Pass in the scopes array defined above.
+        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+      scope: SCOPES,
+      // Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes: true
+    });
+    googleDebugger(err.message);
+    res.status(401).send({authorizationUrl: authorizationUrl});
+  }
+});
+
 module.exports = router;
