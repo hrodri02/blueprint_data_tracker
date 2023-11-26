@@ -157,13 +157,13 @@ h3 {
     margin: 10px 0;
 }
 
-div select {
+.flex-item select {
     display: block;
     margin-left: auto;
     margin-right: auto;
 }
 
-div input {
+.flex-item input {
     display: block;
     margin-left: auto;
     margin-right: auto;
@@ -202,4 +202,8 @@ div input {
     justify-content: space-between;
     text-align: center;
     padding: 0 10%;
+}
+
+.time-select {
+    width: 25%;
 }
