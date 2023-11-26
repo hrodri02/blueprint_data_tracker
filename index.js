@@ -77,16 +77,18 @@ function createPeriod(students) {
     container.appendChild(flexContainer);
     for (student of students) {
         const row = student['sheets_row'];
-        idToRow[student['id']] = row;
+        const id = student['id'];
+        idToRow[id] = row;
         rowToStudentData[row] = [[],[],[]];
         const firstName = student['name'].split(",")[1];
         flexContainer.innerHTML += `
-            <div class="flex-item" id=${student['id']}>
+            <div class="flex-item" id=${id}>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
-                <a href="student.html?title=${firstName}"><h3>${firstName}</h3></a>
+                <a href="student.html?id=${id}&title=${firstName}"><h3>${firstName}</h3></a>
                 <select onchange="onAttendanceValueChanged()">
                     <option value="">--Attendance--</option>
                     <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
                     <option value="Tardy">Tardy</option>
                     <option value="Left Early">Left Early</option>
                     <option value="No Session">No Session</option>
