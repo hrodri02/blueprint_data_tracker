@@ -149,6 +149,8 @@ router.get('/:id/dailydata', async (req, res) => {
   try {
     // get user with id
     const user = await db.getStudent(req.params.id);
+    // get student's goal
+    const goal = user['goal'];
     // get sheets row for user
     const sheets_row = user['sheets_row'];
     // use google api to read daily data
@@ -173,7 +175,48 @@ router.get('/:id/dailydata', async (req, res) => {
     if (!range || !range.values || range.values.length == 0) {
       res.send([]);
     }
-    res.send(range.values);
+    res.send({goal: goal, studentData: range.values});
+  }
+  catch (err) {
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      // 'online' (default) or 'offline' (gets refresh_token)
+      access_type: 'offline',
+     /** Pass in the scopes array defined above.
+        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+      scope: SCOPES,
+      // Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes: true
+    });
+    googleDebugger(err.message);
+    res.status(401).send({authorizationUrl: authorizationUrl});
+  }
+});
+
+router.put('/:id/dailydata', async (req, res) => {
+  try {
+    // get student from db
+    const id = req.params.id;
+    const student = await db.getStudent(id);
+    // update student goal
+    const goal = req.body.goal;
+    student['goal'] = goal;
+    await db.updateStudent(student);
+    const studentInDB = await db.getStudent(id);
+    // update student daily data
+    const columns = req.body['columns'];
+    const row = student['sheets_row'];
+    const ranges = [];
+    for (col of columns) {
+      const range = `${col}${row}:${col}${row + 2}`;
+      ranges.push(range);
+    }
+    const values = req.body['values'];
+    
+    await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
+                    ranges,
+                    values,
+                    'RAW');
+    res.send({student: studentInDB, values: values});
   }
   catch (err) {
     const authorizationUrl = oauth2Client.generateAuthUrl({
