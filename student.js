@@ -1,13 +1,22 @@
 const url = new URL(location.href); 
 const studentID = url.searchParams.get("id");
 const studentName = url.searchParams.get("title");
+const studentGoal = url.searchParams.get("goal");
 
 const h1 = document.querySelector('h1');
 h1.innerText = studentName;
 
+const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
 const monday = new Date();
 const friday = new Date();
+const columns = [];
+/*
+[
+    [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]
+]
+*/
+const studentData = [];
 
 setMinDate();
 setMaxDate();
@@ -38,18 +47,13 @@ function setMaxDate() {
     }
 }
 
-/*
-[["Present","Present","Present","Present","Tardy"],
- ["","4"],
- ["GRADE","GRADES","GRADES","GRADES","GRADES"]]
-*/
 function createDays() {
     const days = createDaysArr();
     for (let i = 0; i < days.length; i++) {
         container.innerHTML += `
             <div class="flex-item" id="${i}">
                 <h3>${days[i]}</h3>
-                <select>
+                <select onchange="onAttendanceValueChanged()">
                     <option value="">--Attendance--</option>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
@@ -58,13 +62,13 @@ function createDays() {
                     <option value="No Session">No Session</option>
                     <option value="No School">No School</option>
                 </select>
-                <input type='number' min='0' max='4'>
-                <button>G</button>
-                <button>R</button>
-                <button>A</button>
-                <button>D</button>
-                <button>E</button>
-                <button>S</button>
+                <input type='number' min='0' max='4' onchange="onExitTicketGradeChanged()">
+                <button onclick="gradeButtonClick()">G</button>
+                <button onclick="gradeButtonClick()">R</button>
+                <button onclick="gradeButtonClick()">A</button>
+                <button onclick="gradeButtonClick()">D</button>
+                <button onclick="gradeButtonClick()">E</button>
+                <button onclick="gradeButtonClick()">S</button>
             </div>
         `
     }
@@ -73,10 +77,12 @@ function createDays() {
 function createDaysArr() {
     const days = [];
     const date = new Date(monday);
-    while (date.getDate() <= friday.getDate()) {
+    while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
         const month = date.getMonth() + 1;
         const day = date.getDate();
         days.push(`${month}/${day}`);
+        const column = getColumn(date);
+        columns.push(column);
         date.setDate(date.getDate() + 1);
     }
     return days;
@@ -84,9 +90,9 @@ function createDaysArr() {
 
 function getDataForCurrentTimePeriod() {
     // get time period
-    const columnForMonday = getColumn(monday);
-    const columnForFriday = getColumn(friday);
-    getStudentData(columnForMonday, columnForFriday);
+    const firstColumn = columns[0];
+    const lastColumn = columns[columns.length - 1];
+    getStudentData(firstColumn, lastColumn);
 }
 
 function getColumn(date2) {
@@ -124,6 +130,11 @@ function getColumn(date2) {
     }
 }
 
+/*
+[["Present","Present","Present","Present","Tardy"],
+ ["","4"],
+ ["GRADE","GRADES","GRADES","GRADES","GRADES"]]
+*/
 function getStudentData(start, end) {
     fetch(`http://localhost:8000/students/${studentID}/dailydata?start=${start}&end=${end}`)
     .then(function(response) {
@@ -140,18 +151,24 @@ function getStudentData(start, end) {
         }
     })
     .then(function(data) {
-        const rows = data.length;
+        const goal = data['goal'];
+        textInput.value = goal;
+        const dailyData = data['studentData'];
+        const rows = dailyData.length;
         if (rows > 0) {
-            for (i in data[0]) {
-                const dayData = [];
+            for (i in dailyData[0]) {
+                studentData.push([]);
                 // Attendance
-                dayData.push(data[0][i]);
+                studentData[i].push([dailyData[0][i]]);
                 // ET grade
-                (rows > 1 && i < data[1].length) ? dayData.push(data[1][i]) : dayData.push("");
+                (rows > 1 && i < dailyData[1].length && dailyData[1][i] !== '') ? studentData[i].push([Number(dailyData[1][i])]) : 
+                                                                        studentData[i].push([]);
                 // Letter grades
-                (rows > 2  && i < data[2].length) ? dayData.push(data[2][i]) : dayData.push("");
-                updateDay(i, dayData);
+                (rows > 2  && i < dailyData[2].length && dailyData[2][i] !== '') ? studentData[i].push([dailyData[2][i]]) : 
+                                                                         studentData[i].push([]);
+                updateDay(i);
             }
+            console.log(studentData);
         }
     })
     .catch(function(err) {
@@ -159,18 +176,128 @@ function getStudentData(start, end) {
     });
 }
 
-function updateDay(i, dayData) {
+function updateDay(i) {
     const div = document.getElementById(i);
     const select = div.getElementsByTagName('select')[0];
-    select.value = dayData[0];
+    select.value = studentData[i][0][0];
     const input = div.getElementsByTagName('input')[0];
-    input.value = dayData[1];
+    if (studentData[i][1].length > 0) {
+        input.value = studentData[i][1][0];
+    }
     const buttons = div.getElementsByTagName('button');
-    const grades = dayData[2];
-    for (button of buttons) {
-        const letter = button.innerText;
-        if (grades.includes(letter)) {
-            button.style.backgroundColor = "green";
+    if (studentData[i][2].length > 0) {
+        const grades = studentData[i][2][0];
+        for (button of buttons) {
+            const letter = button.innerText;
+            if (grades.includes(letter)) {
+                button.style.backgroundColor = "green";
+            }
         }
     }
+}
+
+function uploadButtonClicked() {
+    try {
+        const goal = textInput.value;
+        const divs = container.getElementsByTagName("div");
+        for (let i = 0; i < divs.length; i++) {
+            if (studentData[i][1].length > 0) {
+                const etGrade = studentData[i][1][0];
+                validateExitTicketGrade(etGrade);
+            }
+            if (studentData[i][2].length > 0) {
+                sortParticipationGrades(i);
+            }
+        }
+        const body = JSON.stringify({goal: goal, columns: columns, values: studentData});
+        put(`http://localhost:8000/students/${studentID}/dailydata`, body);
+    }
+    catch (err) {
+        alert(err.message);
+    }
+}
+
+function validateExitTicketGrade(value) {
+    try {    
+        if (value < 0) throw new Error("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
+        if (value > 4) throw new Error("Invalid: Exit Ticket grade must be an integer between 0 and 4.");
+    }
+    catch (err) {
+        alert(err);
+    }
+}
+
+function sortParticipationGrades(i) {
+    const studentsLetters = studentData[i][2][0];
+    const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
+    const grades = letters.reduce((str, letter) => {
+        if (studentsLetters.includes(letter)) {
+            return str + letter;
+        }
+        return str;
+    }, "");
+
+    studentData[i][2] = (grades === "")? [] : [grades];
+}
+
+function onAttendanceValueChanged() {
+    const select = event.srcElement;
+    const id = select.parentElement.id;
+    if (select.value !== '') {
+        studentData[id][0] = [select.value];
+    }
+    else {
+        studentData[id][0] = [];
+    }
+    console.log(studentData);
+}
+
+function onExitTicketGradeChanged() {
+    const input = event.srcElement;
+    const id = input.parentElement.id;
+    if (input.value !== '') {
+        studentData[id][1] = [Number(input.value)];
+    }
+    else {
+        studentData[id][1] = [];
+    }
+    console.log(studentData);
+}
+
+function gradeButtonClick() {
+    const button = event.srcElement;
+    const color = button.style.backgroundColor;
+    const id = button.parentElement.id;
+
+    let grades = studentData[id][2][0];
+    if (color == "green") {
+        button.style.backgroundColor = "";
+        // remove letter grade
+        const index = grades.indexOf(button.textContent);
+        grades = grades.slice(0, index) + grades.slice(index + 1);
+    }
+    else {
+        button.style.backgroundColor = "green";
+        // add letter grade
+        grades += button.textContent
+    }
+    studentData[id][2] = [grades];
+    console.log(studentData);
+}
+
+function put(url, body) {
+    fetch(url, {method: "PUT", body: body, headers: {
+        "Content-Type": "application/json",
+      }}).then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        if (data['authorizationUrl']) {
+            window.location.href = data['authorizationUrl'];
+        }
+        else {
+            console.log(data);
+        }
+      }).catch(function(err) {
+        console.log('Fetch Error :-S', err);
+      });
 }
