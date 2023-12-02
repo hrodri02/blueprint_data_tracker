@@ -250,13 +250,14 @@ function uploadButtonClicked() {
         const button = event.srcElement;
         const period = button.parentElement.id;
         const periodHeader = document.getElementById(period);
-        const periodDiv = periodHeader.nextElementSibling;
+        const divs = periodHeader.nextElementSibling.getElementsByTagName('div');
         // throws error if no date is selected
         const col = getColumn();
 
         const ranges = [];
         const values = [];
-        for (child of periodDiv.childNodes) {
+        for (let i = 0; i < divs.length; i++) {
+            const child = divs[i];
             const studentID = child.id;
             const row = idToRow[studentID];
             // any row less than 3 should not be written to on the data tracker
@@ -380,8 +381,9 @@ function post(url, body) {
 function resetGrades(period) {
     const periodHeader = document.getElementById(period);
     const periodDiv = periodHeader.nextElementSibling;
+    const divs = periodDiv.getElementsByTagName('div'); 
     // clear student data for every student of that period
-    for (div of periodDiv.childNodes) {
+    for (div of divs) {
         const studentID = div.id;
         const row = idToRow[studentID];
         rowToStudentData[row][0] = [];
