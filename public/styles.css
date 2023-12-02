@@ -196,12 +196,31 @@ h3 {
     grid-row-end: 13;
 }
 
+#edit-user {
+    padding: 0 10%;
+}
+
+.form-group {
+    margin: 15px 0;
+}
+
+.form-group label {
+    color: #ccc;
+    display: block;
+    margin: 0 0 6px;
+}
+
+.form-group #goal {
+    display: block;
+    margin: 0 0 6px;
+    width: 50%;
+}
+
 .days-flex-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     text-align: center;
-    padding: 0 10%;
 }
 
 .time-select {
