@@ -106,9 +106,10 @@ async function updateStudent(student) {
     const name = student['name'];
     const period = student['period'];
     const sheets_row = student['sheets_row'];
+    const goal = student['goal'];
     const fellow_id = student['fellow_id'];
-    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ? WHERE id = ?`, 
-          [name, period, sheets_row, fellow_id, id], function(err) {
+    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ?, goal = ? WHERE id = ?`, 
+          [name, period, sheets_row, fellow_id, goal, id], function(err) {
       if (err) {
         reject(err.message);
       }
