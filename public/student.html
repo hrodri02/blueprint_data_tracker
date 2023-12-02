@@ -18,8 +18,18 @@
                 <option value="week" selected>Week</option>
                 <option value="month">Month</option>
             </select>
+            <button onclick="uploadButtonClicked()">Upload</button>
         </div>
     </nav>
-    <div class="days-flex-container"></div>
+    <div id="edit-user">
+        <div class="form-group">
+            <label for="goal"><strong>Math Goal</strong></label>
+            <input type="text" id="goal">
+        </div>
+        <div class="form-group">
+            <label for="studentData"><strong>Student Data</strong></label>
+            <div class="days-flex-container"></div>
+        </div>
+    </div>
     <script type='text/javascript', src='../student.js'></script>
 </body>
