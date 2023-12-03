@@ -61,6 +61,26 @@ router.put('/:id', async (req, res) => {
   res.send(studentInDB);
 });
 
+router.patch('/:id', async (req, res) => {
+  // get student from db
+  const id = req.params.id;
+  const student = await db.getStudent(id);
+  if (!student) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+  // validate student goal
+  const body = req.body;
+  const { error } = validateStudentGoal(body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+  // update student goal
+  body['id'] = id;
+  await db.updateStudentGoal(body);
+  const studentInDB = await db.getStudent(id);
+  res.send(studentInDB);
+});
+
 router.delete('/:id', async (req, res) => {
   const id = req.params.id;
   const result = await db.getStudent(id);
@@ -147,12 +167,16 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
 
 router.get('/:id/dailydata', async (req, res) => {
   try {
-    // get user with id
-    const user = await db.getStudent(req.params.id);
+    // get student with id
+    const student = await db.getStudent(req.params.id);
+    if (!student) {
+      return res.status(404).send('Student with given ID not found.');
+    }
+
     // get student's goal
-    const goal = user['goal'];
-    // get sheets row for user
-    const sheets_row = user['sheets_row'];
+    const goal = student['goal'];
+    // get sheets row for student
+    const sheets_row = student['sheets_row'];
     // use google api to read daily data
     const start = req.query.start;
     const end = req.query.end;
@@ -192,16 +216,14 @@ router.get('/:id/dailydata', async (req, res) => {
   }
 });
 
-router.put('/:id/dailydata', async (req, res) => {
+router.patch('/:id/dailydata', async (req, res) => {
   try {
-    // get student from db
-    const id = req.params.id;
-    const student = await db.getStudent(id);
-    // update student goal
-    const goal = req.body.goal;
-    student['goal'] = goal;
-    await db.updateStudent(student);
-    const studentInDB = await db.getStudent(id);
+    // get student with id
+    const student = await db.getStudent(req.params.id);
+    if (!student) {
+      return res.status(404).send('Student with given ID not found.');
+    }
+
     // update student daily data
     const columns = req.body['columns'];
     const row = student['sheets_row'];
@@ -216,7 +238,7 @@ router.put('/:id/dailydata', async (req, res) => {
                     ranges,
                     values,
                     'RAW');
-    res.send({student: studentInDB, values: values});
+    res.send({dailyData: values});
   }
   catch (err) {
     const authorizationUrl = oauth2Client.generateAuthUrl({
@@ -232,5 +254,13 @@ router.put('/:id/dailydata', async (req, res) => {
     res.status(401).send({authorizationUrl: authorizationUrl});
   }
 });
+
+function validateStudentGoal(goal) {
+  const schema = Joi.object({
+    goal: Joi.string().max(100),
+  });
+  const result = schema.validate(goal);
+  return result;
+}
 
 module.exports = router;
