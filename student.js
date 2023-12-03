@@ -198,7 +198,6 @@ function updateDay(i) {
 
 function uploadButtonClicked() {
     try {
-        const goal = textInput.value;
         const divs = container.getElementsByTagName("div");
         for (let i = 0; i < divs.length; i++) {
             if (studentData[i][1].length > 0) {
@@ -209,8 +208,12 @@ function uploadButtonClicked() {
                 sortParticipationGrades(i);
             }
         }
-        const body = JSON.stringify({goal: goal, columns: columns, values: studentData});
-        put(`http://localhost:8000/students/${studentID}/dailydata`, body);
+        
+        const goal = textInput.value;
+        const studentGoalBody = JSON.stringify({goal: goal});
+        patch(`http://localhost:8000/students/${studentID}`, studentGoalBody);
+        const dailyDataBody = JSON.stringify({columns: columns, values: studentData});
+        patch(`http://localhost:8000/students/${studentID}/dailydata`, dailyDataBody);
     }
     catch (err) {
         alert(err.message);
@@ -285,8 +288,8 @@ function gradeButtonClick() {
     console.log(studentData);
 }
 
-function put(url, body) {
-    fetch(url, {method: "PUT", body: body, headers: {
+function patch(url, body) {
+    fetch(url, {method: "PATCH", body: body, headers: {
         "Content-Type": "application/json",
       }}).then(function(response) {
         return response.json();
