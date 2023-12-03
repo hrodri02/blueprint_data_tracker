@@ -109,6 +109,15 @@ router.post('/dailydata', async (req, res) => {
   const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
+
+  // validate daily data
+  for (value of values) {
+    const { error } = validateDailyData(value);
+    if (error) {
+      return res.status(400).send(error);
+    }
+  }
+
   try {
     await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                     ranges,
@@ -224,6 +233,15 @@ router.patch('/:id/dailydata', async (req, res) => {
       return res.status(404).send('Student with given ID not found.');
     }
 
+    // validate daily data
+    const values = req.body['values'];
+    for (value of values) {
+      const { error } = validateDailyData(value);
+      if (error) {
+        return res.status(400).send(error);
+      }
+    }
+
     // update student daily data
     const columns = req.body['columns'];
     const row = student['sheets_row'];
@@ -232,7 +250,7 @@ router.patch('/:id/dailydata', async (req, res) => {
       const range = `${col}${row}:${col}${row + 2}`;
       ranges.push(range);
     }
-    const values = req.body['values'];
+    
     
     await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                     ranges,
@@ -260,6 +278,39 @@ function validateStudentGoal(goal) {
     goal: Joi.string().max(100),
   });
   const result = schema.validate(goal);
+  return result;
+}
+
+function validateDailyData(dailyData) {
+  const attendance = Joi.array().items(Joi.string().valid('Present', 'Absent', 'Tardy', 'Left Early', 'No Session', 'No School'));
+  const etGrade = Joi.array().items(Joi.number().min(0).max(4));
+  const letterGrades = Joi.array().items(Joi.string().max(6).pattern(/^[gradesGRADES]+$/));
+
+  const result = {'value': dailyData};
+  const errors = {};
+
+  const attendanceResult = attendance.validate(dailyData[0]);
+  if (attendanceResult.error) {
+      result['error'] = {}
+      result['error']['attendance'] = attendanceResult.error.details[0].message;
+  }
+  const etGradeResult = etGrade.validate(dailyData[1]);
+  if (etGradeResult.error) {
+      errors['Exit Ticket Grade'] = etGradeResult.error.details[0].message;
+      if (!('error' in result)) {
+          result['error'] = {}
+      }
+      result['error']['Exit Ticket Grade'] = etGradeResult.error.details[0].message;
+  }
+  const letterGradesResult = letterGrades.validate(dailyData[2]);
+  if (letterGradesResult.error) {
+      errors['Letter Grades'] = letterGradesResult.error.details[0].message;
+      if (!('error' in result)) {
+          result['error'] = {}
+      }
+      result['error']['Letter Grades'] = letterGradesResult.error.details[0].message;
+  }
+
   return result;
 }
 
