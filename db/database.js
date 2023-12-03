@@ -121,6 +121,23 @@ async function updateStudent(student) {
   });
 }
 
+async function updateStudentGoal(student) {
+  return new Promise((resolve, reject) => {
+    const id = student['id'];
+    const goal = student['goal'];
+    db.run(`UPDATE students SET goal = ? WHERE id = ?`, 
+          [goal, id], function(err) {
+      if (err) {
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`student ${id} updated`);
+        resolve();
+      }
+    });
+  });
+}
+
 async function deleteStudent(id) {
 return new Promise((resolve, reject) => {
     db.run(`DELETE FROM students WHERE id = ?`, [id], function(err) {
@@ -180,6 +197,7 @@ module.exports.getStudentsForFellow = getStudentsForFellow;
 module.exports.insertStudent = insertStudent;
 module.exports.getStudent = getStudent;
 module.exports.updateStudent = updateStudent;
+module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
