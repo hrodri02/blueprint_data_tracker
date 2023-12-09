@@ -1,58 +1,64 @@
 const url = new URL(location.href); 
 const studentID = url.searchParams.get("id");
 const studentName = url.searchParams.get("title");
-const studentGoal = url.searchParams.get("goal");
 
 const h1 = document.querySelector('h1');
-h1.innerText = studentName;
-
+const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
-const monday = new Date();
-const friday = new Date();
-const columns = [];
+
+const WEEKDAYS = 5;
+
+let year;
+let week;
+let dates = [];
 /*
 [
     [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]], [[],[],[]]
 ]
 */
-const studentData = [];
+let studentData = [];
 
-setMinDate();
-setMaxDate();
+setStudentName();
+setWeek();
+setDates();
 createDays();
-getDataForCurrentTimePeriod();
+setDatesForDays();
+getDataForCurrentWeek();
 
-function setMinDate() {
-    const day = monday.getDay();
-    if (day === 0) {
-        monday.setDate(monday.getDate() - 7 + 1);
-    }
-    else {
-        monday.setDate(monday.getDate() - day + 1);
-    }
+function setStudentName() {
+    h1.innerText = studentName;
 }
 
-function setMaxDate() {
-    const day = friday.getDay();
-    if (day === 6) {
-        friday.setDate(friday.getDate() - 1);
-    }
-    else if (day === 0) {
-        friday.setDate(friday.getDate() - 2);
-    }
-    else {
-        const offset = 5 - friday.getDay();
-        friday.setDate(friday.getDate() + offset);
+function setWeek() {
+    const today = new Date();
+    year = today.getFullYear();
+    const startDate = new Date(today.getFullYear(), 0, 1);
+    const days = Math.floor((today - startDate) / (24 * 60 * 60 * 1000));
+    week = Math.ceil(days / 7);
+    weekInput.value = `${year}-W${week}`;
+}
+
+function setDates() {
+    const monday = new Date(`1/1/${year}`);
+    const friday = new Date(`1/1/${year}`);
+    const daysBeforeWeek = (week - 1) * 7;
+    monday.setDate(monday.getDate() + daysBeforeWeek + 1);
+    friday.setDate(friday.getDate() + daysBeforeWeek + 5);
+
+    let date = monday;
+    while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
+        date = new Date(date);
+        dates.push(date);
+        date.setDate(date.getDate() + 1);
     }
 }
 
 function createDays() {
-    const days = createDaysArr();
-    for (let i = 0; i < days.length; i++) {
+    for (let i = 0; i < WEEKDAYS; i++) {
         container.innerHTML += `
             <div class="flex-item" id="${i}">
-                <h3>${days[i]}</h3>
+                <h3></h3>
                 <select onchange="onAttendanceValueChanged()">
                     <option value="">--Attendance--</option>
                     <option value="Present">Present</option>
@@ -70,28 +76,34 @@ function createDays() {
                 <button onclick="gradeButtonClick()">E</button>
                 <button onclick="gradeButtonClick()">S</button>
             </div>
-        `
+        `;
     }
 }
 
-function createDaysArr() {
-    const days = [];
-    const date = new Date(monday);
-    while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        days.push(`${month}/${day}`);
-        const column = getColumn(date);
-        columns.push(column);
-        date.setDate(date.getDate() + 1);
+function setDatesForDays() {
+    const divs = container.getElementsByClassName('flex-item');
+    for (let i = 0; i < WEEKDAYS; i++) {
+        const div = divs[i];
+        const h3 = div.getElementsByTagName('h3')[0];
+        h3.innerText = convertDateToMonthAndDay(dates[i]);
     }
-    return days;
 }
 
-function getDataForCurrentTimePeriod() {
-    // get time period
-    const firstColumn = columns[0];
-    const lastColumn = columns[columns.length - 1];
+function convertDateToMonthAndDay(date) {
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}/${day}`;
+}
+
+function getDataForCurrentWeek() {
+    const monday = new Date(`1/1/${year}`);
+    const friday = new Date(`1/1/${year}`);
+    const daysBeforeWeek = (week - 1) * 7;
+    monday.setDate(monday.getDate() + daysBeforeWeek + 1);
+    friday.setDate(friday.getDate() + daysBeforeWeek + 5);
+    // get spreadsheet columns for monday and friday
+    const firstColumn = getColumn(monday);
+    const lastColumn = getColumn(friday);
     getStudentData(firstColumn, lastColumn);
 }
 
@@ -212,6 +224,8 @@ function uploadButtonClicked() {
         const goal = textInput.value;
         const studentGoalBody = JSON.stringify({goal: goal});
         patch(`http://localhost:8000/students/${studentID}`, studentGoalBody);
+
+        const columns = getColumnsForDates();
         const dailyDataBody = JSON.stringify({columns: columns, values: studentData});
         patch(`http://localhost:8000/students/${studentID}/dailydata`, dailyDataBody);
     }
@@ -241,6 +255,15 @@ function sortParticipationGrades(i) {
     }, "");
 
     studentData[i][2] = (grades === "")? [] : [grades];
+}
+
+function getColumnsForDates() {
+    const columns = [];
+    for (date of dates) {
+        const column = getColumn(date);
+        columns.push(column);
+    }
+    return columns;
 }
 
 function onAttendanceValueChanged() {
@@ -303,4 +326,29 @@ function patch(url, body) {
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
       });
+}
+
+function onWeekChanged() {
+    const parts = weekInput.value.split('-');
+    year = parts[0];
+    week = Number(parts[1].substring(1));
+    dates = [];
+    studentData = [];
+    resetDays();
+    setDates();
+    setDatesForDays();
+    getDataForCurrentWeek();
+}
+
+function resetDays() {
+    const divs = container.getElementsByClassName('flex-item');
+    for (div of divs) {
+        const select = div.getElementsByTagName('select')[0];
+        select.value = "";
+        const etInput = div.getElementsByTagName('input')[0];
+        etInput.value = "";
+        for (button of div.getElementsByTagName('button')) {
+            button.style.backgroundColor = "";
+        }
+    }
 }
