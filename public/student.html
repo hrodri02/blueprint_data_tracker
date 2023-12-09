@@ -13,11 +13,7 @@
             <h1 style="color:#ccc"></h1>
         </ul>
         <div class='top-right-flex-container'>
-            <select class="time-select">
-                <option value="day">Day</option>
-                <option value="week" selected>Week</option>
-                <option value="month">Month</option>
-            </select>
+            <input type="week" id="week" name="week" onchange="onWeekChanged()">    
             <button onclick="uploadButtonClicked()">Upload</button>
         </div>
     </nav>
