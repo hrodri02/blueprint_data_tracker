@@ -182,8 +182,6 @@ router.get('/:id/dailydata', async (req, res) => {
       return res.status(404).send('Student with given ID not found.');
     }
 
-    // get student's goal
-    const goal = student['goal'];
     // get sheets row for student
     const sheets_row = student['sheets_row'];
     // use google api to read daily data
@@ -208,7 +206,7 @@ router.get('/:id/dailydata', async (req, res) => {
     if (!range || !range.values || range.values.length == 0) {
       res.send([]);
     }
-    res.send({goal: goal, studentData: range.values});
+    res.send(range.values);
   }
   catch (err) {
     const authorizationUrl = oauth2Client.generateAuthUrl({

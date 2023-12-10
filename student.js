@@ -175,18 +175,17 @@ function getStudentData(start, end) {
         }
     })
     .then(function(data) {
-        const dailyData = data['studentData'];
-        const rows = dailyData.length;
+        const rows = data.length;
         if (rows > 0) {
-            for (i in dailyData[0]) {
+            for (i in data[0]) {
                 studentData.push([]);
                 // Attendance
-                studentData[i].push([dailyData[0][i]]);
+                studentData[i].push([data[0][i]]);
                 // ET grade
-                (rows > 1 && i < dailyData[1].length && dailyData[1][i] !== '') ? studentData[i].push([Number(dailyData[1][i])]) : 
+                (rows > 1 && i < data[1].length && data[1][i] !== '') ? studentData[i].push([Number(data[1][i])]) : 
                                                                         studentData[i].push([]);
                 // Letter grades
-                (rows > 2  && i < dailyData[2].length && dailyData[2][i] !== '') ? studentData[i].push([dailyData[2][i]]) : 
+                (rows > 2  && i < data[2].length && data[2][i] !== '') ? studentData[i].push([data[2][i]]) : 
                                                                          studentData[i].push([]);
                 updateDay(i);
                 const date = convertDateToMonthAndDay(dates[i]);
