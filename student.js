@@ -1,6 +1,6 @@
 const url = new URL(location.href); 
-const studentID = url.searchParams.get("id");
-const studentName = url.searchParams.get("title");
+const studentID = Number(url.searchParams.get("id"));
+const period = url.searchParams.get("period");
 
 const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
@@ -18,16 +18,28 @@ let dates = [];
 ]
 */
 let studentData = [];
+let student;
+const original = {};
 
-setStudentName();
+setStudent();
 setWeek();
 setDates();
 createDays();
 setDatesForDays();
 getDataForCurrentWeek();
 
-function setStudentName() {
-    h1.innerText = studentName;
+function setStudent() {
+    const students = JSON.parse(localStorage.getItem('students'));
+    const index = (period < 5)? period - 1 : period - 2;
+    for (s of students[index]) {
+        if (s['id'] === studentID) {
+            student = s;
+            break;
+        }
+    }
+    h1.innerText = student['name'];
+    textInput.value = student['goal'];
+    hashData('goal', student['goal']);
 }
 
 function setWeek() {
@@ -43,8 +55,8 @@ function setDates() {
     const monday = new Date(`1/1/${year}`);
     const friday = new Date(`1/1/${year}`);
     const daysBeforeWeek = (week - 1) * 7;
-    monday.setDate(monday.getDate() + daysBeforeWeek + 1);
-    friday.setDate(friday.getDate() + daysBeforeWeek + 5);
+    monday.setDate(monday.getDate() + daysBeforeWeek);
+    friday.setDate(friday.getDate() + daysBeforeWeek + 4);
 
     let date = monday;
     while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
@@ -163,8 +175,6 @@ function getStudentData(start, end) {
         }
     })
     .then(function(data) {
-        const goal = data['goal'];
-        textInput.value = goal;
         const dailyData = data['studentData'];
         const rows = dailyData.length;
         if (rows > 0) {
@@ -179,6 +189,8 @@ function getStudentData(start, end) {
                 (rows > 2  && i < dailyData[2].length && dailyData[2][i] !== '') ? studentData[i].push([dailyData[2][i]]) : 
                                                                          studentData[i].push([]);
                 updateDay(i);
+                const date = convertDateToMonthAndDay(dates[i]);
+                hashData(date, studentData[i]);
             }
             console.log(studentData);
         }
@@ -208,10 +220,31 @@ function updateDay(i) {
     }
 }
 
+function hashData(key, data) {
+    const json = JSON.stringify(data);
+    const hash = rawToHex(json);
+    // console.log(`json: ${json}\nhash: ${hash}`);
+    original[key] = hash;
+}
+
+// Convert a raw string to a hex string
+function rawToHex(raw) {
+    let hex = "";
+    let hexChars = "0123456789abcdef";
+    for (let i = 0; i < raw.length; i++) {
+        let c = raw.charCodeAt(i);
+        hex += (
+        hexChars.charAt((c >>> 4) & 0x0f) +
+        hexChars.charAt(c & 0x0f));
+    }
+    return hex;
+}
+
 function uploadButtonClicked() {
     try {
-        const divs = container.getElementsByTagName("div");
-        for (let i = 0; i < divs.length; i++) {
+        const columns = [];
+        const daysModified = [];
+        for (let i = 0; i < studentData.length; i++) {
             if (studentData[i][1].length > 0) {
                 const etGrade = studentData[i][1][0];
                 validateExitTicketGrade(etGrade);
@@ -219,15 +252,25 @@ function uploadButtonClicked() {
             if (studentData[i][2].length > 0) {
                 sortParticipationGrades(i);
             }
+
+            if (isStudentDataUpdated(dates[i], studentData[i])) {
+                const column = getColumn(dates[i]);
+                columns.push(column);
+                daysModified.push(studentData[i]);
+            }
         }
         
-        const goal = textInput.value;
-        const studentGoalBody = JSON.stringify({goal: goal});
-        patch(`http://localhost:8000/students/${studentID}`, studentGoalBody);
+        if (isStudentGoalUpdated()) {
+            const goal = textInput.value;
+            hashData('goal', goal);
+            const studentGoalBody = JSON.stringify({goal: goal});
+            patch(`http://localhost:8000/students/${studentID}`, studentGoalBody);
+        }
 
-        const columns = getColumnsForDates();
-        const dailyDataBody = JSON.stringify({columns: columns, values: studentData});
-        patch(`http://localhost:8000/students/${studentID}/dailydata`, dailyDataBody);
+        if (daysModified.length > 0) {
+            const dailyDataBody = JSON.stringify({columns: columns, values: daysModified});
+            patch(`http://localhost:8000/students/${studentID}/dailydata`, dailyDataBody);
+        }
     }
     catch (err) {
         alert(err.message);
@@ -264,6 +307,34 @@ function getColumnsForDates() {
         columns.push(column);
     }
     return columns;
+}
+
+function isStudentDataUpdated(date, data) {
+    const json = JSON.stringify(data);
+    const hash = rawToHex(json);
+    // console.log(`json: ${json}\nhash: ${hash}`);
+    const monthDay = convertDateToMonthAndDay(date);
+    if (original[monthDay] === hash) {
+        console.log(`${monthDay}: data is the same.`);
+    }
+    else {
+        console.log(`${monthDay}: data changed.`);
+    }
+    return original[monthDay] !== hash;
+}
+
+function isStudentGoalUpdated() {
+    const data = textInput.value;
+    const json = JSON.stringify(data);
+    const hash = rawToHex(json);
+    // console.log(`json: ${json}\nhash: ${hash}`);
+    if (original['goal'] === hash) {
+        console.log(`goal is the same.`);
+    }
+    else {
+        console.log(`goal changed.`);
+    }
+    return original['goal'] !== hash;
 }
 
 function onAttendanceValueChanged() {
