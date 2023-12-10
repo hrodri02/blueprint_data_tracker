@@ -53,6 +53,7 @@ function getStudents() {
             return response.json();
         }
       }).then(function(data) {
+        localStorage.setItem('students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
             createPeriod(data[period]);
@@ -68,7 +69,7 @@ function createPeriodHeader(period) {
             <h1 class="period-header">${periodStrings[period]}</h1>
             <button class="upload" onclick="uploadButtonClicked()">Upload</button>
         </div>   
-    `
+    `;
 }
 
 function createPeriod(students) {
@@ -78,13 +79,14 @@ function createPeriod(students) {
     for (student of students) {
         const row = student['sheets_row'];
         const id = student['id'];
+        const period = student['period'];
         idToRow[id] = row;
         rowToStudentData[row] = [[],[],[]];
         const firstName = student['name'].split(",")[1];
         flexContainer.innerHTML += `
             <div class="flex-item" id=${id}>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
-                <a href="student.html?id=${id}&title=${firstName}"><h3>${firstName}</h3></a>
+                <a href="student.html?id=${id}&period=${period}"><h3>${firstName}</h3></a>
                 <select onchange="onAttendanceValueChanged()">
                     <option value="">--Attendance--</option>
                     <option value="Present">Present</option>
