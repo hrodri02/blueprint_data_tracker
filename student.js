@@ -6,6 +6,7 @@ const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
+const uploadButton = document.getElementById('upload');
 
 const WEEKDAYS = 5;
 
@@ -116,6 +117,7 @@ function getDataForCurrentWeek() {
     // get spreadsheet columns for monday and friday
     const firstColumn = getColumn(monday);
     const lastColumn = getColumn(friday);
+    uploadButton.disabled = true;
     getStudentData(firstColumn, lastColumn);
 }
 
@@ -191,6 +193,8 @@ function getStudentData(start, end) {
             const date = convertDateToMonthAndDay(dates[i]);
             hashData(date, studentData[i]);
         }
+        // enable upload button
+        uploadButton.disabled = false;
         console.log(studentData);
     })
     .catch(function(err) {
