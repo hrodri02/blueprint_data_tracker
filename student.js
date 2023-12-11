@@ -176,40 +176,41 @@ function getStudentData(start, end) {
     })
     .then(function(data) {
         const rows = data.length;
-        if (rows > 0) {
-            for (i in data[0]) {
-                studentData.push([]);
-                // Attendance
-                studentData[i].push([data[0][i]]);
-                // ET grade
-                (rows > 1 && i < data[1].length && data[1][i] !== '') ? studentData[i].push([Number(data[1][i])]) : 
+        for (let i = 0; i < WEEKDAYS; i++) {
+            studentData.push([]);
+            // Attendance
+            (rows > 0 && i < data[0].length && data[0][i] !== '') ? studentData[i].push([data[0][i]]) : 
+                                                                    studentData[i].push([]);
+            // ET grade
+            (rows > 1 && i < data[1].length && data[1][i] !== '') ? studentData[i].push([Number(data[1][i])]) : 
+                                                                    studentData[i].push([]);
+            // Letter grades
+            (rows > 2  && i < data[2].length && data[2][i] !== '') ? studentData[i].push([data[2][i]]) : 
                                                                         studentData[i].push([]);
-                // Letter grades
-                (rows > 2  && i < data[2].length && data[2][i] !== '') ? studentData[i].push([data[2][i]]) : 
-                                                                         studentData[i].push([]);
-                updateDay(i);
-                const date = convertDateToMonthAndDay(dates[i]);
-                hashData(date, studentData[i]);
-            }
-            console.log(studentData);
+            updateDayWithDayData(i, studentData[i]);
+            const date = convertDateToMonthAndDay(dates[i]);
+            hashData(date, studentData[i]);
         }
+        console.log(studentData);
     })
     .catch(function(err) {
         console.log(err);
     });
 }
 
-function updateDay(i) {
-    const div = document.getElementById(i);
+function updateDayWithDayData(dayIndex, data) {
+    const div = document.getElementById(dayIndex);
     const select = div.getElementsByTagName('select')[0];
-    select.value = studentData[i][0][0];
+    if (data[0].length > 0) {
+        select.value = data[0][0];
+    }
     const input = div.getElementsByTagName('input')[0];
-    if (studentData[i][1].length > 0) {
-        input.value = studentData[i][1][0];
+    if (data[1].length > 0) {
+        input.value = data[1][0];
     }
     const buttons = div.getElementsByTagName('button');
-    if (studentData[i][2].length > 0) {
-        const grades = studentData[i][2][0];
+    if (data[2].length > 0) {
+        const grades = data[2][0];
         for (button of buttons) {
             const letter = button.innerText;
             if (grades.includes(letter)) {
