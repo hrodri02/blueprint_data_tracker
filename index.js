@@ -41,6 +41,7 @@ function setupDate() {
 
 function getStudents() {
     fetch('http://localhost:8000/students').then(function(response) {
+        removeLoader();
         if (!response.ok) {
             if (response.status == 401) {
                 window.location.href = 'http://localhost:8000/signup.html';
@@ -416,4 +417,14 @@ function resetButtonClicked() {
 
 function signoutButtonClicked() {
     fetch('http://localhost:8000/users/signout')
+}
+
+function removeLoader() {
+    const loader = document.querySelector('.loader');
+    loader.classList.add('loader-hidden');
+    loader.addEventListener('transitionend', (event) => {
+        if (event.propertyName === 'visibility') {
+            document.body.removeChild(loader);
+        }
+    });
 }
