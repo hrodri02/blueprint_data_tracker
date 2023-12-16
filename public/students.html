@@ -5,33 +5,32 @@
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
 <body>
-    <body>
-        <nav class='top-navigation-bar'>
-            <div class='top-left-flex-container'>
-            </div>
-            <ul class='top-center-flex-container'>
-                <li><a id='timerLabel' href='javascript:startButtonClicked()'>5:00</a></li>
-                <li><a id='hallpassTimerLabel'>15:00</a></li>
-                <li><a id='reset' href='javascript:resetButtonClicked()'>Reset</a></li>
-                <li><input type='date' id='date'/></li>
-            </ul>
-            <div class='top-right-flex-container'>
-                <a href='/'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
-            </div>
-        </nav>
-        <nav class='left-navigation-bar'>
-            <ul>
-                <li><a href='#First'>First Period</a></li>
-                <li><a href='#Second'>Second Period</a></li>
-                <li><a href='#Third'>Third Period</a></li>
-                <li><a href='#Fourth'>Fourth Period</a></li>
-                <li><a href='#Sixth'>Sixth Period</a></li>
-                <li><a href='#Seventh'>Seventh Period</a></li>
-            </ul>
-        </nav>
-        <div class='container'>
-            <textarea class='notes-container' name='notes'></textarea>
+    <nav class='top-navigation-bar'>
+        <div class='top-left-flex-container'>
         </div>
-    </body>
+        <ul class='top-center-flex-container'>
+            <li><a id='timerLabel' href='javascript:startButtonClicked()'>5:00</a></li>
+            <li><a id='hallpassTimerLabel'>15:00</a></li>
+            <li><a id='reset' href='javascript:resetButtonClicked()'>Reset</a></li>
+            <li><input type='date' id='date'/></li>
+        </ul>
+        <div class='top-right-flex-container'>
+            <a href='/'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
+        </div>
+    </nav>
+    <nav class='left-navigation-bar'>
+        <ul>
+            <li><a href='#First'>First Period</a></li>
+            <li><a href='#Second'>Second Period</a></li>
+            <li><a href='#Third'>Third Period</a></li>
+            <li><a href='#Fourth'>Fourth Period</a></li>
+            <li><a href='#Sixth'>Sixth Period</a></li>
+            <li><a href='#Seventh'>Seventh Period</a></li>
+        </ul>
+    </nav>
+    <div class="loader"></div>
+    <div class='container'>
+        <textarea class='notes-container' name='notes'></textarea>
+    </div>
     <script type='text/javascript', src='../index.js'></script>
 </body>
