@@ -6,7 +6,6 @@ const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
-const uploadButton = document.getElementById('upload');
 
 const WEEKDAYS = 5;
 
@@ -117,7 +116,6 @@ function getDataForCurrentWeek() {
     // get spreadsheet columns for monday and friday
     const firstColumn = getColumn(monday);
     const lastColumn = getColumn(friday);
-    uploadButton.disabled = true;
     getStudentData(firstColumn, lastColumn);
 }
 
@@ -164,6 +162,7 @@ function getColumn(date2) {
 function getStudentData(start, end) {
     fetch(`http://localhost:8000/students/${studentID}/dailydata?start=${start}&end=${end}`)
     .then(function(response) {
+        removeLoader();
         if (!response.ok) {
             if (response.status == 401) {
                 window.location.href = 'http://localhost:8000/signup.html';
@@ -193,8 +192,6 @@ function getStudentData(start, end) {
             const date = convertDateToMonthAndDay(dates[i]);
             hashData(date, studentData[i]);
         }
-        // enable upload button
-        uploadButton.disabled = false;
         console.log(studentData);
     })
     .catch(function(err) {
@@ -426,4 +423,14 @@ function resetDays() {
             button.style.backgroundColor = "";
         }
     }
+}
+
+function removeLoader() {
+    const loader = document.querySelector('.loader');
+    loader.classList.add('loader-hidden');
+    loader.addEventListener('transitionend', (event) => {
+        if (event.propertyName === 'visibility') {
+            document.body.removeChild(loader);
+        }
+    });
 }
