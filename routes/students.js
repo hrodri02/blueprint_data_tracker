@@ -7,7 +7,6 @@ const db = require('../db/database');
 const googleDebugger = require('debug')('app:google');
 const {google} = require('googleapis');
 const auth = require('../middleware/auth');
-const sheets_row = require('../middleware/sheets_row');
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
@@ -24,7 +23,7 @@ router.post('/', async (req, res) => {
   res.send(studentInDB);
 });
 
-router.get('/', [auth, sheets_row], async (req, res) => {
+router.get('/', [auth], async (req, res) => {
   const students = [];
   const periods = await db.getPeriods();
   for (let i = 0; i < periods; i++) {
