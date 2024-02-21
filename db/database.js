@@ -138,6 +138,14 @@ async function updateStudentGoal(student) {
   });
 }
 
+async function deleteStudents(studentIDs) {
+  db.parallelize(() => {
+    for (id of studentIDs) {
+      deleteStudent(id);
+    }
+  });
+}
+
 async function deleteStudent(id) {
 return new Promise((resolve, reject) => {
     db.run(`DELETE FROM students WHERE id = ?`, [id], function(err) {
@@ -199,6 +207,7 @@ module.exports.getStudent = getStudent;
 module.exports.updateStudent = updateStudent;
 module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
+module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
 module.exports.insertFellow = insertFellow;
