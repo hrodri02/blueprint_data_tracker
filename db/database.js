@@ -26,7 +26,7 @@ async function getPeriods() {
     });
   }
 
-async function getStudentsForFellow(fellowID) {
+async function getStudentsForFellowByPeriod(fellowID, numPeriods) {
     return new Promise((resolve, reject) => {
       const getStudents = 'SELECT * FROM students WHERE fellow_id = ?';
       db.all(getStudents, [fellowID], (err, rows) => {
@@ -34,7 +34,20 @@ async function getStudentsForFellow(fellowID) {
           reject(err.message);
         }
         else {
-          resolve(rows);
+          const students = [];
+          for (let i = 0; i < numPeriods; i++) {
+            students.push([]);
+          }
+
+          for (row of rows) {
+            if (row.period < 5) {
+              students[row.period - 1].push(row);
+            }
+            else {
+              students[row.period - 2].push(row);
+            }
+          }
+          resolve(students);
         }
       });
     });
@@ -201,7 +214,7 @@ process.on('SIGINT', () => {
 });
 
 module.exports.getPeriods = getPeriods;
-module.exports.getStudentsForFellow = getStudentsForFellow;
+module.exports.getStudentsForFellowByPeriod = getStudentsForFellowByPeriod;
 module.exports.insertStudent = insertStudent;
 module.exports.getStudent = getStudent;
 module.exports.updateStudent = updateStudent;
