@@ -441,7 +441,7 @@ function removeLoader() {
 
 function synchronizeButtonClicked() {
     const body = JSON.stringify({});
-    post('http://localhost:8000/google/synchronizeStudentRows', body, (data) => {
+    post('http://localhost:8000/google/synchronizeDB', body, (data) => {
         updateStudentsUI(data);
     });
 }
