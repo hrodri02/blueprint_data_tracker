@@ -9,6 +9,7 @@ const numLessonParts = 6;
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const container = document.getElementsByClassName("container")[0];
+const studentsContainer = document.getElementsByClassName("students-container")[0];
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
@@ -26,6 +27,7 @@ const idToRow = {};
 
 setupDate();
 getStudents();
+getColumnNames();
 
 function setupDate() {
     const today = new Date();
@@ -64,8 +66,32 @@ function getStudents() {
       });
 }
 
+function getColumnNames() {
+    fetch('http://localhost:8000/google/columnsForDates').then(function(response) {
+        removeLoader();
+        if (!response.ok) {
+            if (response.status == 401) {
+                window.location.href = 'http://localhost:8000/signup.html';
+            }
+            else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        }
+        else {
+            return response.json();
+        }
+      }).then(function(data) {
+        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+        if (dateToColumn === null) {
+            localStorage.setItem('dateToColumn', JSON.stringify(data));
+        }
+      }).catch(function(err) {
+        console.log(err);
+      });
+}
+
 function createPeriodHeader(period) {
-    container.innerHTML += `
+    studentsContainer.innerHTML += `
         <div class="period-header-container" id="${periodStrings[period]}">
             <h1 class="period-header">${periodStrings[period]}</h1>
             <button class="upload" onclick="uploadButtonClicked()">Upload</button>
@@ -76,7 +102,7 @@ function createPeriodHeader(period) {
 function createPeriod(students) {
     const flexContainer = document.createElement("div");
     flexContainer.classList.add("flex-container");
-    container.appendChild(flexContainer);
+    studentsContainer.appendChild(flexContainer);
     for (student of students) {
         const row = student['sheets_row'];
         const id = student['id'];
@@ -256,7 +282,6 @@ function uploadButtonClicked() {
         const divs = periodHeader.nextElementSibling.getElementsByTagName('div');
         // throws error if no date is selected
         const col = getColumn();
-
         const ranges = [];
         const values = [];
         for (let i = 0; i < divs.length; i++) {
@@ -277,7 +302,10 @@ function uploadButtonClicked() {
         }
 
         const body = JSON.stringify({period: period,ranges: ranges, values: values});
-        post('http://localhost:8000/students/dailydata', body);
+        post('http://localhost:8000/students/dailydata', body, (data) => {
+            const period = data['period'];
+            resetGrades(period);
+        });
     }
     catch (err) {
         alert(err.message);
@@ -313,34 +341,17 @@ function sortParticipationGrades(studentID) {
 
 function getColumn() {
     try {
-        const date1 = new Date("08/07/2023");
         // throws error if no date is selected
-        const date2 = getDate();
-
-        // calculate the time difference of two dates
-        const difference_in_time = date2.getTime() - date1.getTime();
-
-        // calculate the no. of days between two dates
-        const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
-
-        // calculate the no. of wekeends between two dates
-        const no_weekends = Math.floor(difference_in_days / 7);
-
-        // the number of columns away the current one is from column Z
-        const total = 70 + difference_in_days - no_weekends - 90;
-        // To display the final no. of days (result)
-        // console.log("difference = " + difference_in_days + 
-        //             "\nweekends = " + no_weekends +
-        //             "\ntotal = " + total);
-
-        // Note: every column name will have two letters, since we are past 8/30/23
-        let column_name = "";
-        const index_of_first = Math.floor((total - 1) / 26);
-        const index_of_second = (total % 26 == 0)? 26 : total % 26;
-        column_name += String.fromCharCode(65 + index_of_first);
-        column_name += String.fromCharCode(65 + index_of_second - 1);
-            
-        return column_name;
+        const date = getDate();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const dateString = `${month}/${day}/${year}`;
+        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+        if (dateString in dateToColumn) {
+            return dateToColumn[dateString];
+        }
+        throw new Error(`There is no column for ${dateString}`);
     }
     catch (err) {
         throw err;
@@ -363,7 +374,7 @@ function getDate() {
     }
 }
 
-function post(url, body) {
+function post(url, body = JSON.stringify({}), callback = (data) => {}) {
     fetch(url, {method: "POST", body: body, headers: {
         "Content-Type": "application/json",
       }}).then(function(response) {
@@ -373,8 +384,7 @@ function post(url, body) {
             window.location.href = data['authorizationUrl'];
         }
         else {
-            const period = data['period'];
-            resetGrades(period);
+            callback(data);
         }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
@@ -427,4 +437,19 @@ function removeLoader() {
             document.body.removeChild(loader);
         }
     });
+}
+
+function synchronizeButtonClicked() {
+    const body = JSON.stringify({});
+    post('http://localhost:8000/google/synchronizeStudentRows', body, (data) => {
+        updateStudentsUI(data);
+    });
+}
+
+function updateStudentsUI(students) {
+    studentsContainer.innerHTML = '';
+    for (period in students) {
+        createPeriodHeader(period);
+        createPeriod(students[period]);
+    }
 }
