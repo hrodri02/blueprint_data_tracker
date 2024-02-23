@@ -9,6 +9,7 @@ const numLessonParts = 6;
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const container = document.getElementsByClassName("container")[0];
+const studentsContainer = document.getElementsByClassName("students-container")[0];
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
@@ -26,6 +27,7 @@ const idToRow = {};
 
 setupDate();
 getStudents();
+getColumnNames();
 
 function setupDate() {
     const today = new Date();
@@ -41,6 +43,7 @@ function setupDate() {
 
 function getStudents() {
     fetch('http://localhost:8000/students').then(function(response) {
+        removeLoader();
         if (!response.ok) {
             if (response.status == 401) {
                 window.location.href = 'http://localhost:8000/signup.html';
@@ -53,6 +56,7 @@ function getStudents() {
             return response.json();
         }
       }).then(function(data) {
+        localStorage.setItem('students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
             createPeriod(data[period]);
@@ -62,102 +66,72 @@ function getStudents() {
       });
 }
 
+function getColumnNames() {
+    fetch('http://localhost:8000/google/columnsForDates').then(function(response) {
+        removeLoader();
+        if (!response.ok) {
+            if (response.status == 401) {
+                window.location.href = 'http://localhost:8000/signup.html';
+            }
+            else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        }
+        else {
+            return response.json();
+        }
+      }).then(function(data) {
+        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+        if (dateToColumn === null) {
+            localStorage.setItem('dateToColumn', JSON.stringify(data));
+        }
+      }).catch(function(err) {
+        console.log(err);
+      });
+}
+
 function createPeriodHeader(period) {
-    const periodHeaderContainer = document.createElement("div");
-    periodHeaderContainer.id = periodStrings[period];
-    periodHeaderContainer.classList.add("period-header-container");
-    const periodHeader = document.createElement("h1");
-    periodHeader.classList.add("period-header");
-    periodHeader.innerHTML = periodStrings[period];
-    periodHeaderContainer.appendChild(periodHeader);
-    const uploadButton = document.createElement("button");
-    uploadButton.classList.add("upload");
-    uploadButton.innerHTML = "Upload";
-    uploadButton.onclick = uploadButtonClicked;
-    periodHeaderContainer.appendChild(uploadButton);
-    container.appendChild(periodHeaderContainer);
+    studentsContainer.innerHTML += `
+        <div class="period-header-container" id="${periodStrings[period]}">
+            <h1 class="period-header">${periodStrings[period]}</h1>
+            <button class="upload" onclick="uploadButtonClicked()">Upload</button>
+        </div>   
+    `;
 }
 
 function createPeriod(students) {
     const flexContainer = document.createElement("div");
     flexContainer.classList.add("flex-container");
-    container.appendChild(flexContainer);
+    studentsContainer.appendChild(flexContainer);
     for (student of students) {
         const row = student['sheets_row'];
+        const id = student['id'];
+        const period = student['period'];
+        idToRow[id] = row;
         rowToStudentData[row] = [[],[],[]];
-        idToRow[student['id']] = row;
-        const flexItem = document.createElement("div");
-        flexItem.classList.add("flex-item");
-        flexItem.id = student['id'];
-        const img = document.createElement("img");
-        img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png';
-        flexItem.appendChild(img);
-        const nameHeader = document.createElement("h3");
         const firstName = student['name'].split(",")[1];
-        nameHeader.innerHTML = firstName;
-        flexItem.appendChild(nameHeader);
-        const select = document.createElement("select");
-        select.onchange = onAttendanceValueChanged;
-        const emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.innerHTML = "--Attendance--";
-        select.options.add(emptyOption);
-        const presentOption = document.createElement("option");
-        presentOption.value = "Present";
-        presentOption.innerHTML = "Present";
-        select.options.add(presentOption);
-        const tardyOption = document.createElement("option");
-        tardyOption.value = "Tardy";
-        tardyOption.innerHTML = "Tardy";
-        select.options.add(tardyOption);
-        const leftEarlyOption = document.createElement("option");
-        leftEarlyOption.value = "Left Early";
-        leftEarlyOption.innerHTML = "Left Early";
-        select.options.add(leftEarlyOption);
-        const absentOption = document.createElement("option");
-        absentOption.value = "Absent";
-        absentOption.innerHTML = "Absent";
-        select.options.add(absentOption);
-        const noSessionOption = document.createElement("option");
-        noSessionOption.value = "No Session";
-        noSessionOption.innerHTML = "No Session";
-        select.options.add(noSessionOption);
-        const noSchoolOption = document.createElement("option");
-        noSchoolOption.value = "No School";
-        noSchoolOption.innerHTML = "No School";
-        select.options.add(noSchoolOption);
-        flexItem.appendChild(select);
-        const gradeInput = document.createElement("input");
-        gradeInput.type = 'number';
-        gradeInput.min = 0;
-        gradeInput.max = 4;
-        gradeInput.onchange = onExitTicketGradeChanged;
-        flexItem.appendChild(gradeInput);
-        const gButton = document.createElement("button");
-        gButton.onclick = gradeButtonClick;
-        gButton.innerHTML = "G";
-        flexItem.appendChild(gButton);
-        const rButton = document.createElement("button");
-        rButton.onclick = gradeButtonClick;
-        rButton.innerHTML = "R";
-        flexItem.appendChild(rButton);
-        const aButton = document.createElement("button");
-        aButton.onclick = gradeButtonClick;
-        aButton.innerHTML = "A";
-        flexItem.appendChild(aButton);
-        const dButton = document.createElement("button");
-        dButton.onclick = gradeButtonClick;
-        dButton.innerHTML = "D";
-        flexItem.appendChild(dButton);
-        const eButton = document.createElement("button");
-        eButton.onclick = gradeButtonClick;
-        eButton.innerHTML = "E";
-        flexItem.appendChild(eButton);
-        const sButton = document.createElement("button");
-        sButton.onclick = gradeButtonClick;
-        sButton.innerHTML = "S";
-        flexItem.appendChild(sButton);
-        flexContainer.appendChild(flexItem);
+        flexContainer.innerHTML += `
+            <div class="flex-item" id=${id}>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
+                <a href="student.html?id=${id}&period=${period}"><h3>${firstName}</h3></a>
+                <select onchange="onAttendanceValueChanged()">
+                    <option value="">--Attendance--</option>
+                    <option value="Present">Present</option>
+                    <option value="Absent">Absent</option>
+                    <option value="Tardy">Tardy</option>
+                    <option value="Left Early">Left Early</option>
+                    <option value="No Session">No Session</option>
+                    <option value="No School">No School</option>
+                </select>
+                <input type="number" min="0" max="4" onchange="onExitTicketGradeChanged()">
+                <button onclick="gradeButtonClick()">G</button>
+                <button onclick="gradeButtonClick()">R</button>
+                <button onclick="gradeButtonClick()">A</button>
+                <button onclick="gradeButtonClick()">D</button>
+                <button onclick="gradeButtonClick()">E</button>
+                <button onclick="gradeButtonClick()">S</button>
+            </div>
+        `;
     }
 }
 
@@ -305,13 +279,13 @@ function uploadButtonClicked() {
         const button = event.srcElement;
         const period = button.parentElement.id;
         const periodHeader = document.getElementById(period);
-        const periodDiv = periodHeader.nextElementSibling;
+        const divs = periodHeader.nextElementSibling.getElementsByTagName('div');
         // throws error if no date is selected
         const col = getColumn();
-
         const ranges = [];
         const values = [];
-        for (child of periodDiv.childNodes) {
+        for (let i = 0; i < divs.length; i++) {
+            const child = divs[i];
             const studentID = child.id;
             const row = idToRow[studentID];
             // any row less than 3 should not be written to on the data tracker
@@ -328,7 +302,10 @@ function uploadButtonClicked() {
         }
 
         const body = JSON.stringify({period: period,ranges: ranges, values: values});
-        post('http://localhost:8000/students/dailydata', body);
+        post('http://localhost:8000/students/dailydata', body, (data) => {
+            const period = data['period'];
+            resetGrades(period);
+        });
     }
     catch (err) {
         alert(err.message);
@@ -364,34 +341,17 @@ function sortParticipationGrades(studentID) {
 
 function getColumn() {
     try {
-        const date1 = new Date("08/07/2023");
         // throws error if no date is selected
-        const date2 = getDate();
-
-        // calculate the time difference of two dates
-        const difference_in_time = date2.getTime() - date1.getTime();
-
-        // calculate the no. of days between two dates
-        const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
-
-        // calculate the no. of wekeends between two dates
-        const no_weekends = Math.floor(difference_in_days / 7);
-
-        // the number of columns away the current one is from column Z
-        const total = 70 + difference_in_days - no_weekends - 90;
-        // To display the final no. of days (result)
-        // console.log("difference = " + difference_in_days + 
-        //             "\nweekends = " + no_weekends +
-        //             "\ntotal = " + total);
-
-        // Note: every column name will have two letters, since we are past 8/30/23
-        let column_name = "";
-        const index_of_first = Math.floor((total - 1) / 26);
-        const index_of_second = (total % 26 == 0)? 26 : total % 26;
-        column_name += String.fromCharCode(65 + index_of_first);
-        column_name += String.fromCharCode(65 + index_of_second - 1);
-            
-        return column_name;
+        const date = getDate();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const dateString = `${month}/${day}/${year}`;
+        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+        if (dateString in dateToColumn) {
+            return dateToColumn[dateString];
+        }
+        throw new Error(`There is no column for ${dateString}`);
     }
     catch (err) {
         throw err;
@@ -414,7 +374,7 @@ function getDate() {
     }
 }
 
-function post(url, body) {
+function post(url, body = JSON.stringify({}), callback = (data) => {}) {
     fetch(url, {method: "POST", body: body, headers: {
         "Content-Type": "application/json",
       }}).then(function(response) {
@@ -424,8 +384,7 @@ function post(url, body) {
             window.location.href = data['authorizationUrl'];
         }
         else {
-            const period = data['period'];
-            resetGrades(period);
+            callback(data);
         }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
@@ -435,8 +394,9 @@ function post(url, body) {
 function resetGrades(period) {
     const periodHeader = document.getElementById(period);
     const periodDiv = periodHeader.nextElementSibling;
+    const divs = periodDiv.getElementsByTagName('div'); 
     // clear student data for every student of that period
-    for (div of periodDiv.childNodes) {
+    for (div of divs) {
         const studentID = div.id;
         const row = idToRow[studentID];
         rowToStudentData[row][0] = [];
@@ -467,4 +427,29 @@ function resetButtonClicked() {
 
 function signoutButtonClicked() {
     fetch('http://localhost:8000/users/signout')
+}
+
+function removeLoader() {
+    const loader = document.querySelector('.loader');
+    loader.classList.add('loader-hidden');
+    loader.addEventListener('transitionend', (event) => {
+        if (event.propertyName === 'visibility') {
+            document.body.removeChild(loader);
+        }
+    });
+}
+
+function synchronizeButtonClicked() {
+    const body = JSON.stringify({});
+    post('http://localhost:8000/google/synchronizeDB', body, (data) => {
+        updateStudentsUI(data);
+    });
+}
+
+function updateStudentsUI(students) {
+    studentsContainer.innerHTML = '';
+    for (period in students) {
+        createPeriodHeader(period);
+        createPeriod(students[period]);
+    }
 }

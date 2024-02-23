@@ -7,7 +7,6 @@ const db = require('../db/database');
 const googleDebugger = require('debug')('app:google');
 const {google} = require('googleapis');
 const auth = require('../middleware/auth');
-const sheets_row = require('../middleware/sheets_row');
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
@@ -24,22 +23,10 @@ router.post('/', async (req, res) => {
   res.send(studentInDB);
 });
 
-router.get('/', [auth, sheets_row], async (req, res) => {
-  const students = [];
-  const periods = await db.getPeriods();
-  for (let i = 0; i < periods; i++) {
-    students.push([]);
-  }
+router.get('/', [auth], async (req, res) => {
+  const numPeriods = await db.getPeriods();
   const fellowID = req.session.user.id;
-  const rows = await db.getStudentsForFellow(fellowID);
-  for (row of rows) {
-    if (row.period < 5) {
-      students[row.period - 1].push(row);
-    }
-    else {
-      students[row.period - 2].push(row);
-    }
-  }
+  const students = await db.getStudentsForFellowByPeriod(fellowID, numPeriods);
   res.send(students);
 });
 
@@ -57,6 +44,26 @@ router.put('/:id', async (req, res) => {
 
   const student = req.body;
   await db.updateStudent(student);
+  const studentInDB = await db.getStudent(id);
+  res.send(studentInDB);
+});
+
+router.patch('/:id', async (req, res) => {
+  // get student from db
+  const id = req.params.id;
+  const student = await db.getStudent(id);
+  if (!student) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+  // validate student goal
+  const body = req.body;
+  const { error } = validateStudentGoal(body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+  // update student goal
+  body['id'] = id;
+  await db.updateStudentGoal(body);
   const studentInDB = await db.getStudent(id);
   res.send(studentInDB);
 });
@@ -89,6 +96,15 @@ router.post('/dailydata', async (req, res) => {
   const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
+
+  // validate daily data
+  for (value of values) {
+    const { error } = validateDailyData(value);
+    if (error) {
+      return res.status(400).send(error);
+    }
+  }
+
   try {
     await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
                     ranges,
@@ -143,6 +159,144 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
   } catch (err) {
     throw err;
   }
+}
+
+router.get('/:id/dailydata', async (req, res) => {
+  try {
+    // get student with id
+    const student = await db.getStudent(req.params.id);
+    if (!student) {
+      return res.status(404).send('Student with given ID not found.');
+    }
+
+    // get sheets row for student
+    const sheets_row = student['sheets_row'];
+    // use google api to read daily data
+    const start = req.query.start;
+    const end = req.query.end;
+    const data = await fs.readFile('refreshToken.txt');
+    const refreshToken = data.toString();
+
+    oauth2Client.setCredentials({
+      refresh_token: refreshToken
+    });
+  
+    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+    let response;
+    response = await sheets.spreadsheets.values.get({
+      spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+      range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
+    });
+  
+    const range = response.data;
+  
+    if (!range || !range.values || range.values.length == 0) {
+      res.send([]);
+    }
+    res.send(range.values);
+  }
+  catch (err) {
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      // 'online' (default) or 'offline' (gets refresh_token)
+      access_type: 'offline',
+     /** Pass in the scopes array defined above.
+        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+      scope: SCOPES,
+      // Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes: true
+    });
+    googleDebugger(err.message);
+    res.status(401).send({authorizationUrl: authorizationUrl});
+  }
+});
+
+router.patch('/:id/dailydata', async (req, res) => {
+  try {
+    // get student with id
+    const student = await db.getStudent(req.params.id);
+    if (!student) {
+      return res.status(404).send('Student with given ID not found.');
+    }
+
+    // validate daily data
+    const values = req.body['values'];
+    for (value of values) {
+      const { error } = validateDailyData(value);
+      if (error) {
+        return res.status(400).send(error);
+      }
+    }
+
+    // update student daily data
+    const columns = req.body['columns'];
+    const row = student['sheets_row'];
+    const ranges = [];
+    for (col of columns) {
+      const range = `${col}${row}:${col}${row + 2}`;
+      ranges.push(range);
+    }
+    
+    
+    await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
+                    ranges,
+                    values,
+                    'RAW');
+    res.send({dailyData: values});
+  }
+  catch (err) {
+    const authorizationUrl = oauth2Client.generateAuthUrl({
+      // 'online' (default) or 'offline' (gets refresh_token)
+      access_type: 'offline',
+     /** Pass in the scopes array defined above.
+        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+      scope: SCOPES,
+      // Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes: true
+    });
+    googleDebugger(err.message);
+    res.status(401).send({authorizationUrl: authorizationUrl});
+  }
+});
+
+function validateStudentGoal(goal) {
+  const schema = Joi.object({
+    goal: Joi.string().max(100),
+  });
+  const result = schema.validate(goal);
+  return result;
+}
+
+function validateDailyData(dailyData) {
+  const attendance = Joi.array().items(Joi.string().valid('Present', 'Absent', 'Tardy', 'Left Early', 'No Session', 'No School'));
+  const etGrade = Joi.array().items(Joi.number().min(0).max(4));
+  const letterGrades = Joi.array().items(Joi.string().max(6).pattern(/^[gradesGRADES]+$/));
+
+  const result = {'value': dailyData};
+  const errors = {};
+
+  const attendanceResult = attendance.validate(dailyData[0]);
+  if (attendanceResult.error) {
+      result['error'] = {}
+      result['error']['attendance'] = attendanceResult.error.details[0].message;
+  }
+  const etGradeResult = etGrade.validate(dailyData[1]);
+  if (etGradeResult.error) {
+      errors['Exit Ticket Grade'] = etGradeResult.error.details[0].message;
+      if (!('error' in result)) {
+          result['error'] = {}
+      }
+      result['error']['Exit Ticket Grade'] = etGradeResult.error.details[0].message;
+  }
+  const letterGradesResult = letterGrades.validate(dailyData[2]);
+  if (letterGradesResult.error) {
+      errors['Letter Grades'] = letterGradesResult.error.details[0].message;
+      if (!('error' in result)) {
+          result['error'] = {}
+      }
+      result['error']['Letter Grades'] = letterGradesResult.error.details[0].message;
+  }
+
+  return result;
 }
 
 module.exports = router;

@@ -26,7 +26,7 @@ async function getPeriods() {
     });
   }
 
-async function getStudentsForFellow(fellowID) {
+async function getStudentsForFellowByPeriod(fellowID, numPeriods) {
     return new Promise((resolve, reject) => {
       const getStudents = 'SELECT * FROM students WHERE fellow_id = ?';
       db.all(getStudents, [fellowID], (err, rows) => {
@@ -34,7 +34,20 @@ async function getStudentsForFellow(fellowID) {
           reject(err.message);
         }
         else {
-          resolve(rows);
+          const students = [];
+          for (let i = 0; i < numPeriods; i++) {
+            students.push([]);
+          }
+
+          for (row of rows) {
+            if (row.period < 5) {
+              students[row.period - 1].push(row);
+            }
+            else {
+              students[row.period - 2].push(row);
+            }
+          }
+          resolve(students);
         }
       });
     });
@@ -106,9 +119,10 @@ async function updateStudent(student) {
     const name = student['name'];
     const period = student['period'];
     const sheets_row = student['sheets_row'];
+    const goal = student['goal'];
     const fellow_id = student['fellow_id'];
-    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ? WHERE id = ?`, 
-          [name, period, sheets_row, fellow_id, id], function(err) {
+    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ?, goal = ? WHERE id = ?`, 
+          [name, period, sheets_row, fellow_id, goal, id], function(err) {
       if (err) {
         reject(err.message);
       }
@@ -117,6 +131,31 @@ async function updateStudent(student) {
         resolve();
       }
     });
+  });
+}
+
+async function updateStudentGoal(student) {
+  return new Promise((resolve, reject) => {
+    const id = student['id'];
+    const goal = student['goal'];
+    db.run(`UPDATE students SET goal = ? WHERE id = ?`, 
+          [goal, id], function(err) {
+      if (err) {
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`student ${id} updated`);
+        resolve();
+      }
+    });
+  });
+}
+
+async function deleteStudents(studentIDs) {
+  db.parallelize(() => {
+    for (id of studentIDs) {
+      deleteStudent(id);
+    }
   });
 }
 
@@ -175,11 +214,13 @@ process.on('SIGINT', () => {
 });
 
 module.exports.getPeriods = getPeriods;
-module.exports.getStudentsForFellow = getStudentsForFellow;
+module.exports.getStudentsForFellowByPeriod = getStudentsForFellowByPeriod;
 module.exports.insertStudent = insertStudent;
 module.exports.getStudent = getStudent;
 module.exports.updateStudent = updateStudent;
+module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
+module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
 module.exports.insertFellow = insertFellow;
