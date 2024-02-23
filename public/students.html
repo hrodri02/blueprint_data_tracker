@@ -15,6 +15,7 @@
             <li><input type='date' id='date'/></li>
         </ul>
         <div class='top-right-flex-container'>
+            <button id='synchronize' onclick='synchronizeButtonClicked()'>Synchronize</button>
             <a href='/'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
         </div>
     </nav>
@@ -30,6 +31,7 @@
     </nav>
     <div class="loader"></div>
     <div class='container'>
+        <div class='students-container'></div>
         <textarea class='notes-container' name='notes'></textarea>
     </div>
     <script type='text/javascript', src='../index.js'></script>
