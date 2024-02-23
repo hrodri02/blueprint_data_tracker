@@ -104,7 +104,13 @@ input[type="date"] {
     display: grid;
     float: left;
     width: 85%;
-    grid-template: repeat(6, 5vh auto) / 80% 20%;
+    grid-template-columns: 80% 20%;
+}
+
+.students-container {
+    display: grid;
+    float: left;
+    grid-template-rows: repeat(6, 5vh auto);
 }
 
 .left-navigation-bar {
