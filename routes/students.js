@@ -24,21 +24,9 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/', [auth], async (req, res) => {
-  const students = [];
-  const periods = await db.getPeriods();
-  for (let i = 0; i < periods; i++) {
-    students.push([]);
-  }
+  const numPeriods = await db.getPeriods();
   const fellowID = req.session.user.id;
-  const rows = await db.getStudentsForFellow(fellowID);
-  for (row of rows) {
-    if (row.period < 5) {
-      students[row.period - 1].push(row);
-    }
-    else {
-      students[row.period - 2].push(row);
-    }
-  }
+  const students = await db.getStudentsForFellowByPeriod(fellowID, numPeriods);
   res.send(students);
 });
 
