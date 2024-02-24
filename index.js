@@ -68,7 +68,6 @@ function getStudents() {
 
 function getColumnNames() {
     fetch('http://localhost:8000/google/columnsForDates').then(function(response) {
-        removeLoader();
         if (!response.ok) {
             if (response.status == 401) {
                 window.location.href = 'http://localhost:8000/signup.html';
