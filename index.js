@@ -428,6 +428,12 @@ function signoutButtonClicked() {
     fetch('http://localhost:8000/users/signout')
 }
 
+function createLoader() {
+    const loader = document.createElement("div");
+    loader.classList.add('loader');
+    document.body.appendChild(loader);
+}
+
 function removeLoader() {
     const loader = document.querySelector('.loader');
     loader.classList.add('loader-hidden');
@@ -440,7 +446,9 @@ function removeLoader() {
 
 function synchronizeButtonClicked() {
     const body = JSON.stringify({});
+    createLoader();
     post('http://localhost:8000/google/synchronizeDB', body, (data) => {
+        removeLoader();
         updateStudentsUI(data);
     });
 }
