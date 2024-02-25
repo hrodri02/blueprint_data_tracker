@@ -48,7 +48,7 @@ function setWeek() {
     const startDate = new Date(today.getFullYear(), 0, 1);
     const days = Math.floor((today - startDate) / (24 * 60 * 60 * 1000));
     week = Math.ceil(days / 7);
-    weekInput.value = `${year}-W${week}`;
+    weekInput.value = (week < 10)? `${year}-W0${week}` : `${year}-W${week}`;
 }
 
 function setDates() {
@@ -111,43 +111,26 @@ function getDataForCurrentWeek() {
     const monday = new Date(`1/1/${year}`);
     const friday = new Date(`1/1/${year}`);
     const daysBeforeWeek = (week - 1) * 7;
-    monday.setDate(monday.getDate() + daysBeforeWeek + 1);
-    friday.setDate(friday.getDate() + daysBeforeWeek + 5);
+    monday.setDate(monday.getDate() + daysBeforeWeek);
+    friday.setDate(friday.getDate() + daysBeforeWeek + 4);
     // get spreadsheet columns for monday and friday
     const firstColumn = getColumn(monday);
     const lastColumn = getColumn(friday);
     getStudentData(firstColumn, lastColumn);
 }
 
-function getColumn(date2) {
+function getColumn(date) {
     try {
-        const date1 = new Date("08/07/2023");
         // throws error if no date is selected
-
-        // calculate the time difference of two dates
-        const difference_in_time = date2.getTime() - date1.getTime();
-
-        // calculate the no. of days between two dates
-        const difference_in_days = Math.floor(difference_in_time / (1000 * 3600 * 24));
-
-        // calculate the no. of wekeends between two dates
-        const no_weekends = Math.floor(difference_in_days / 7);
-
-        // the number of columns away the current one is from column Z
-        const total = 70 + difference_in_days - no_weekends - 90;
-        // To display the final no. of days (result)
-        // console.log("difference = " + difference_in_days + 
-        //             "\nweekends = " + no_weekends +
-        //             "\ntotal = " + total);
-
-        // Note: every column name will have two letters, since we are past 8/30/23
-        let column_name = "";
-        const index_of_first = Math.floor((total - 1) / 26);
-        const index_of_second = (total % 26 == 0)? 26 : total % 26;
-        column_name += String.fromCharCode(65 + index_of_first);
-        column_name += String.fromCharCode(65 + index_of_second - 1);
-            
-        return column_name;
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const dateString = `${month}/${day}/${year}`;
+        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+        if (dateString in dateToColumn) {
+            return dateToColumn[dateString];
+        }
+        throw new Error(`There is no column for ${dateString}`);
     }
     catch (err) {
         throw err;
