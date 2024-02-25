@@ -123,7 +123,7 @@ router.post('/synchronizeDB', async (req, res) => {
         }
 
         const expected_period = studentToInfo[name]['period'];
-        if (expected_period === 'Dropped') {
+        if (isNaN(expected_period)) {
           studentsToDelete.push(student['id']);
         }
         else {
