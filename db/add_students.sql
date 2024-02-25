@@ -36,6 +36,6 @@ INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Tiueli, Sidn
 INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Villanueva, Derrick', 6, 111, 2100869597832416050983);
 -- seventh period
 INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Martin-Garcia, John', 7, 186, 100869597832416050983);
-INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Jeronimo Gomez, Abima', 6, 138, 2100869597832416050983);
-INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Nuno Torres, Angelica', 6, 141, 2100869597832416050983);
-INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Romero Villagomez, Mayumi', 6, 144, 2100869597832416050983);
+INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Jeronimo Gomez, Abima', 7, 138, 2100869597832416050983);
+INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Nuno Torres, Angelica', 7, 141, 2100869597832416050983);
+INSERT INTO students (name, period, sheets_row, fellow_id) VALUES ('Romero Villagomez, Mayumi', 7, 144, 2100869597832416050983);
