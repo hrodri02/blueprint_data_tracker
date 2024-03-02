@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
   const student = req.body;
   const { error } = validateStudent(student);
   if (error) {
-    return res.status(400).send(error.details[0].message);
+    return res.status(400).send({error_message: error.details[0].message});
   }
 
   const id = await db.insertStudent(student);
@@ -85,7 +85,7 @@ function validateStudent(student) {
     name: Joi.string().min(3).required(),
     period: Joi.number().min(0).max(7).required(),
     sheets_row: Joi.number().min(1).max(300).required(),
-    fellow_id: Joi.number().min(1).max(4).required()
+    fellow_id: Joi.string().min(1).required()
   });
 
   const result = schema.validate(student);
