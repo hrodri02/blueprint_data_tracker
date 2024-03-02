@@ -28,7 +28,8 @@ async function getPeriods() {
 
 async function getStudentsForFellowByPeriod(fellowID, numPeriods) {
     return new Promise((resolve, reject) => {
-      const getStudents = `SELECT * FROM students WHERE fellow_id = ${fellowID}`;
+      dbDebugger(fellowID);
+      const getStudents = `SELECT * FROM students WHERE fellow_id = '${fellowID}'`;
       db.all(getStudents, (err, rows) => {
         if (err) {
           reject(err.message);
