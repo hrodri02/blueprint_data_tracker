@@ -349,9 +349,13 @@ function addNewStudentButtonClicked(periodIndex) {
 }
 
 function createAddNewStudentUI() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
     const div = document.createElement('div');
     div.innerHTML = `
         <div class="add-new-student-top-nav">
+            <h3>Add New Student</h3>
             <button class="cancel-button" onclick="cancelAddNewStudent()"><i class="fa-solid fa-x"></i></button>        
         </div>
         <div class="add-new-student-form-container">
@@ -364,7 +368,7 @@ function createAddNewStudentUI() {
             </form>
         </div>
     `;
-    div.classList.add('addNewStudent');
+    div.classList.add("addNewStudent");
     document.body.appendChild(div);
 }
 
@@ -391,6 +395,8 @@ function uploadNewStudent() {
 }
 
 function cancelAddNewStudent() {
+    const blackContainer = document.querySelector('.black-container');
+    document.body.removeChild(blackContainer);
     const div = document.querySelector('.addNewStudent');
     document.body.removeChild(div);
 }
