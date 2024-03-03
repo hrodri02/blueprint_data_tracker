@@ -24,8 +24,10 @@ let hallpassTimerId = null;
 */
 const rowToStudentData = {};
 const idToRow = {};
+const newStudent = {};
 
 setupDate();
+getCurrentUser();
 getStudents();
 getColumnNames();
 
@@ -39,6 +41,26 @@ function setupDate() {
     // Generate yyyy-mm-dd date string
     const formattedDate = year + "-" + month + "-" + day;
     dateControl.value = formattedDate;
+}
+
+function getCurrentUser() {
+    fetch('http://localhost:8000/users/me').then(function(response) {
+        if (!response.ok) {
+            if (response.status == 401) {
+                window.location.href = 'http://localhost:8000/signup.html';
+            }
+            else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        }
+        else {
+            return response.json();
+        }
+      }).then(function(data) {
+        localStorage.setItem('fellow_id', JSON.stringify(data['fellow_id']));
+      }).catch(function(err) {
+        console.log(err);
+      });
 }
 
 function getStudents() {
@@ -93,7 +115,14 @@ function createPeriodHeader(period) {
     studentsContainer.innerHTML += `
         <div class="period-header-container" id="${periodStrings[period]}">
             <h1 class="period-header">${periodStrings[period]}</h1>
-            <button class="upload" onclick="uploadButtonClicked()">Upload</button>
+            <div class="dropdown">
+                <button class="dropbtn"><i class="fas fa-bars"></i></button>
+                <div class="dropdown-content">
+                <a href="#" onclick="uploadButtonClicked()">Upload</a>
+                <a href="#" onclick="addNewStudentButtonClicked(${period})">Add new student</a>
+                <a href="#" onclick="addExistingStudentButtonClicked()">Add existing student</a>
+                </div>
+            </div>
         </div>   
     `;
 }
@@ -275,9 +304,10 @@ function gradeButtonClick() {
 
 function uploadButtonClicked() {
     try {
-        const button = event.srcElement;
-        const period = button.parentElement.id;
-        const periodHeader = document.getElementById(period);
+        hideDropDown(event);
+        const a = event.srcElement;
+        const periodHeader = a.parentElement.parentElement.parentElement;
+        const period = periodHeader.id;
         const divs = periodHeader.nextElementSibling.getElementsByTagName('div');
         // throws error if no date is selected
         const col = getColumn();
@@ -309,6 +339,81 @@ function uploadButtonClicked() {
     catch (err) {
         alert(err.message);
     }
+}
+
+function addNewStudentButtonClicked(periodIndex) {
+    hideDropDown(event);
+    createAddNewStudentUI();
+    setPeriodOfNewStudent(periodIndex);
+    setFellowOfNewStudent();
+}
+
+function createAddNewStudentUI() {
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="add-new-student-top-nav">
+            <button class="cancel-button" onclick="cancelAddNewStudent()"><i class="fa-solid fa-x"></i></button>        
+        </div>
+        <div class="add-new-student-form-container">
+            <form>
+                <label for="name">Name:</label><br>
+                <input placeholder="Name" onchange="onNameChanged()"></input><br>
+                <label for="sheetsRow">Sheets Row:</label><br>
+                <input placeholder="Sheets Row" onchange="onSheetsRowChanged()"></input><br>
+                <button onclick="addNewStudent()">Submit</button>
+            </form>
+        </div>
+    `;
+    div.classList.add('addNewStudent');
+    document.body.appendChild(div);
+}
+
+function setPeriodOfNewStudent(periodIndex) {
+    newStudent['period'] = (periodIndex < 4)? periodIndex + 1 : periodIndex + 2;
+}
+
+function setFellowOfNewStudent() {
+    const fellow_id = JSON.parse(localStorage.getItem('fellow_id'));
+    newStudent['fellow_id'] = fellow_id;
+}
+
+function addNewStudent() {
+    event.preventDefault();
+    uploadNewStudent();
+    cancelAddNewStudent();
+}
+
+function uploadNewStudent() {
+    const studentJSON = body = JSON.stringify(newStudent);
+    post('http://localhost:8000/students', studentJSON, (res) => {
+        console.log(res);
+    })
+}
+
+function cancelAddNewStudent() {
+    const div = document.querySelector('.addNewStudent');
+    document.body.removeChild(div);
+}
+
+function addExistingStudentButtonClicked() {
+    hideDropDown(event);
+    console.log('addExistingStudentButtonClicked');
+}
+
+function hideDropDown(event) {
+    // Prevent the page from scrolling up after clicking on an anchor
+    event.preventDefault();
+    const a = event.srcElement;
+    const dropdownContent = a.parentElement;
+    dropdownContent.style.display = 'none';
+    const dropdown = dropdownContent.parentElement;
+    dropdown.addEventListener('mouseover', () => {
+        dropdownContent.style.display = 'block';
+    });  
+
+    dropdown.addEventListener('mouseleave', () => {
+        dropdownContent.style.display = 'none';
+    });  
 }
 
 function validateExitTicketGrade(studentID) {
@@ -378,12 +483,15 @@ function post(url, body = JSON.stringify({}), callback = (data) => {}) {
         "Content-Type": "application/json",
       }}).then(function(response) {
         return response.json();
-      }).then(function(data) {
-        if (data['authorizationUrl']) {
-            window.location.href = data['authorizationUrl'];
+      }).then(function(res) {
+        if (res['authorizationUrl']) {
+            window.location.href = res['authorizationUrl'];
+        }
+        else if (res['error_message']) {
+            alert(res['error_message']);
         }
         else {
-            callback(data);
+            callback(res);
         }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
@@ -393,7 +501,7 @@ function post(url, body = JSON.stringify({}), callback = (data) => {}) {
 function resetGrades(period) {
     const periodHeader = document.getElementById(period);
     const periodDiv = periodHeader.nextElementSibling;
-    const divs = periodDiv.getElementsByTagName('div'); 
+    const divs = periodDiv.getElementsByTagName('div');
     // clear student data for every student of that period
     for (div of divs) {
         const studentID = div.id;
@@ -459,4 +567,14 @@ function updateStudentsUI(students) {
         createPeriodHeader(period);
         createPeriod(students[period]);
     }
+}
+
+function onNameChanged() {
+    const input = event.srcElement;
+    newStudent['name'] = input.value;
+}
+
+function onSheetsRowChanged() {
+    const input = event.srcElement;
+    newStudent['sheets_row'] = input.value;
 }
