@@ -26,10 +26,13 @@ async function getPeriods() {
     });
   }
 
-async function getStudentsForFellowByPeriod(fellowID, numPeriods) {
+async function getStudentsByPeriod(numPeriods, fellowID = null) {
     return new Promise((resolve, reject) => {
       dbDebugger(fellowID);
-      const getStudents = `SELECT * FROM students WHERE fellow_id = '${fellowID}'`;
+      let getStudents = `SELECT * FROM students`;
+      if (fellowID !== null) {
+        getStudents += ` WHERE fellow_id = '${fellowID}'`;
+      }
       db.all(getStudents, (err, rows) => {
         if (err) {
           reject(err.message);
@@ -215,7 +218,7 @@ process.on('SIGINT', () => {
 });
 
 module.exports.getPeriods = getPeriods;
-module.exports.getStudentsForFellowByPeriod = getStudentsForFellowByPeriod;
+module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudent = insertStudent;
 module.exports.getStudent = getStudent;
 module.exports.updateStudent = updateStudent;
