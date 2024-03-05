@@ -28,7 +28,8 @@ const newStudent = {};
 
 setupDate();
 getCurrentUser();
-getStudents();
+getMyStudents();
+getAllStudents()
 getColumnNames();
 
 function setupDate() {
@@ -44,71 +45,35 @@ function setupDate() {
 }
 
 function getCurrentUser() {
-    fetch('http://localhost:8000/users/me').then(function(response) {
-        if (!response.ok) {
-            if (response.status == 401) {
-                window.location.href = 'http://localhost:8000/signup.html';
-            }
-            else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        }
-        else {
-            return response.json();
-        }
-      }).then(function(data) {
+    get('http://localhost:8000/users/me', (data) => {
         localStorage.setItem('fellow_id', JSON.stringify(data['fellow_id']));
-      }).catch(function(err) {
-        console.log(err);
-      });
+    });
 }
 
-function getStudents() {
-    fetch('http://localhost:8000/students').then(function(response) {
+function getMyStudents() {
+    get('http://localhost:8000/students/fellow', (data) => {
         removeLoader();
-        if (!response.ok) {
-            if (response.status == 401) {
-                window.location.href = 'http://localhost:8000/signup.html';
-            }
-            else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        }
-        else {
-            return response.json();
-        }
-      }).then(function(data) {
-        localStorage.setItem('students', JSON.stringify(data));
+        localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
             createPeriod(data[period]);
         }
-      }).catch(function(err) {
-        console.log(err);
-      });
+    });
+}
+
+function getAllStudents() {
+    get('http://localhost:8000/students', (data) => {
+        localStorage.setItem('all_students', JSON.stringify(data));
+    });
 }
 
 function getColumnNames() {
-    fetch('http://localhost:8000/google/columnsForDates').then(function(response) {
-        if (!response.ok) {
-            if (response.status == 401) {
-                window.location.href = 'http://localhost:8000/signup.html';
-            }
-            else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        }
-        else {
-            return response.json();
-        }
-      }).then(function(data) {
+    get('http://localhost:8000/google/columnsForDates', (data) => {
         const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
         if (dateToColumn === null) {
             localStorage.setItem('dateToColumn', JSON.stringify(data));
         }
-      }).catch(function(err) {
-        console.log(err);
-      });
+    });
 }
 
 function createPeriodHeader(period) {
@@ -120,7 +85,7 @@ function createPeriodHeader(period) {
                 <div class="dropdown-content">
                 <a href="#" onclick="uploadButtonClicked()">Upload</a>
                 <a href="#" onclick="addNewStudentButtonClicked(${period})">Add new student</a>
-                <a href="#" onclick="addExistingStudentButtonClicked()">Add existing student</a>
+                <a href="#" onclick="addExistingStudentButtonClicked(${period})">Add existing student</a>
                 </div>
             </div>
         </div>   
@@ -132,34 +97,7 @@ function createPeriod(students) {
     flexContainer.classList.add("flex-container");
     studentsContainer.appendChild(flexContainer);
     for (student of students) {
-        const row = student['sheets_row'];
-        const id = student['id'];
-        const period = student['period'];
-        idToRow[id] = row;
-        rowToStudentData[row] = [[],[],[]];
-        const firstName = student['name'].split(",")[1];
-        flexContainer.innerHTML += `
-            <div class="flex-item" id=${id}>
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
-                <a href="student.html?id=${id}&period=${period}"><h3>${firstName}</h3></a>
-                <select onchange="onAttendanceValueChanged()">
-                    <option value="">--Attendance--</option>
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Tardy">Tardy</option>
-                    <option value="Left Early">Left Early</option>
-                    <option value="No Session">No Session</option>
-                    <option value="No School">No School</option>
-                </select>
-                <input type="number" min="0" max="4" onchange="onExitTicketGradeChanged()">
-                <button onclick="gradeButtonClick()">G</button>
-                <button onclick="gradeButtonClick()">R</button>
-                <button onclick="gradeButtonClick()">A</button>
-                <button onclick="gradeButtonClick()">D</button>
-                <button onclick="gradeButtonClick()">E</button>
-                <button onclick="gradeButtonClick()">S</button>
-            </div>
-        `;
+        addStudentToPeriodContainer(student, flexContainer);
     }
 }
 
@@ -401,9 +339,9 @@ function cancelAddNewStudent() {
     document.body.removeChild(div);
 }
 
-function addExistingStudentButtonClicked() {
+function addExistingStudentButtonClicked(periodIndex) {
     hideDropDown(event);
-    console.log('addExistingStudentButtonClicked');
+    displayStudentsForPeriod(periodIndex);
 }
 
 function hideDropDown(event) {
@@ -420,6 +358,153 @@ function hideDropDown(event) {
     dropdown.addEventListener('mouseleave', () => {
         dropdownContent.style.display = 'none';
     });  
+}
+
+function displayStudentsForPeriod(periodIndex) {
+    const all_students = JSON.parse(localStorage.getItem('all_students'));
+    const selected_students = JSON.parse(localStorage.getItem('selected_students'));
+    const unselected_students = all_students[periodIndex].filter((student) => !containsStudent(student, selected_students[periodIndex]));
+    createAddExistingStudentsUI(unselected_students);
+}
+
+function containsStudent(student, students) {
+    for (s of students) {
+        if (s['id'] === student['id']) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function createAddExistingStudentsUI(students) {
+    addBlackContainer();
+
+    const div = document.createElement('div');
+    div.classList.add("add-existing-student");
+    addHeaderToPopUp(div);
+
+    const studentsDiv = document.createElement('div');
+    studentsDiv.classList.add('add-existing-student-body');
+    addStudentsToContainer(students, studentsDiv);
+    addButtonToStudentsContainer(studentsDiv)
+    div.appendChild(studentsDiv);
+
+    document.body.appendChild(div);
+}
+
+function addBlackContainer() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+}
+
+function addHeaderToPopUp(div) {
+    div.innerHTML = `
+        <div class="add-existing-student-top-nav">
+            <h3>Add Existing Student</h3>
+            <button class="cancel-button" onclick="cancelAddExistingStudent()"><i class="fa-solid fa-x"></i></button>        
+        </div>
+    `;
+}
+
+function addStudentsToContainer(students, div) {
+    for (student of students) {
+        const studentDiv = document.createElement('div');
+        studentDiv.innerHTML = `
+            <input type="checkbox" id="${student['id']}" name="${student['id']}" value="${student['period']}">
+            <label>${student['name']}</label><br>
+        `;
+        div.appendChild(studentDiv);
+    }
+}
+
+function addButtonToStudentsContainer(div) {
+    const button = document.createElement('button');
+    button.innerHTML = "Submit";
+    button.onclick = addExistingStudents;
+    div.appendChild(button);
+}
+
+/*
+TODO:
+    1. If the number of students exceeds what can be displayed, 
+       make the flex container scrollable
+    2. Only reset the selected students when a user logs out and logs back in
+*/
+function addExistingStudents() {
+    const studentsDiv = document.querySelector('.add-existing-student-body');
+    const divs = studentsDiv.getElementsByTagName('div');
+    for (div of divs) {
+        const input = div.getElementsByTagName('input')[0];
+        if (input.checked) {
+            const period = Number(input.value);
+            const studentID = Number(input.id);
+            const periodIndex = (period > 5)? period - 2 : period - 1;
+            const targetStudent = getSelectedStudent(studentID, periodIndex);
+            saveSelectedStudentToLocalStorage(targetStudent, periodIndex);
+            const container = getStudentsContainerForPeriod(periodIndex);
+            addStudentToPeriodContainer(targetStudent, container);
+        }
+    }
+    cancelAddExistingStudent();
+}
+
+function getSelectedStudent(id, periodIndex) {
+    const students = JSON.parse(localStorage.getItem('all_students'));
+    const studentsOfPeriod = students[periodIndex];
+    const targetStudent = studentsOfPeriod.filter((student) => student['id'] === id)[0];
+    return targetStudent;
+}
+
+function saveSelectedStudentToLocalStorage(student, periodIndex) {
+    const selected_students = JSON.parse(localStorage.getItem('selected_students'));
+    selected_students[periodIndex].push(student);
+    localStorage.setItem('selected_students', JSON.stringify(selected_students));
+}
+
+function getStudentsContainerForPeriod(periodIndex) {
+    const periodString = periodStrings[periodIndex];
+    const periodHeader = document.getElementById(periodString);
+    const container = periodHeader.nextElementSibling;
+    return container;
+}
+
+function cancelAddExistingStudent() {
+    const blackContainer = document.querySelector('.black-container');
+    document.body.removeChild(blackContainer);
+    const div = document.querySelector('.add-existing-student');
+    document.body.removeChild(div);
+}
+
+function addStudentToPeriodContainer(student, container) {
+    const row = student['sheets_row'];
+    const id = student['id'];
+    const period = student['period'];
+    idToRow[id] = row;
+    rowToStudentData[row] = [[],[],[]];
+    const firstName = student['name'].split(",")[1];
+    container.innerHTML += `
+        <div class="flex-item" id=${id}>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
+            <a href="student.html?id=${id}&period=${period}"><h3>${firstName}</h3></a>
+            <select onchange="onAttendanceValueChanged()">
+                <option value="">--Attendance--</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Tardy">Tardy</option>
+                <option value="Left Early">Left Early</option>
+                <option value="No Session">No Session</option>
+                <option value="No School">No School</option>
+            </select>
+            <input type="number" min="0" max="4" onchange="onExitTicketGradeChanged()">
+            <button onclick="gradeButtonClick()">G</button>
+            <button onclick="gradeButtonClick()">R</button>
+            <button onclick="gradeButtonClick()">A</button>
+            <button onclick="gradeButtonClick()">D</button>
+            <button onclick="gradeButtonClick()">E</button>
+            <button onclick="gradeButtonClick()">S</button>
+        </div>
+    `;
 }
 
 function validateExitTicketGrade(studentID) {
@@ -484,7 +569,7 @@ function getDate() {
     }
 }
 
-function post(url, body = JSON.stringify({}), callback = (data) => {}) {
+function post(url, body = JSON.stringify({}), callback = () => {}) {
     fetch(url, {method: "POST", body: body, headers: {
         "Content-Type": "application/json",
       }}).then(function(response) {
@@ -501,6 +586,26 @@ function post(url, body = JSON.stringify({}), callback = (data) => {}) {
         }
       }).catch(function(err) {
         console.log('Fetch Error :-S', err);
+      });
+}
+
+function get(url, callback = () => {}) {
+    fetch(url).then(function(response) {
+        if (!response.ok) {
+            if (response.status == 401) {
+                window.location.href = 'http://localhost:8000/signup.html';
+            }
+            else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        }
+        else {
+            return response.json();
+        }
+      }).then(function(data) {
+        callback(data);
+      }).catch(function(err) {
+        console.log(err);
       });
 }
 
