@@ -25,6 +25,12 @@ router.post('/', async (req, res) => {
 
 router.get('/', [auth], async (req, res) => {
   const numPeriods = await db.getPeriods();
+  const students = await db.getStudents(numPeriods);
+  res.send(students);
+});
+
+router.get('/fellow', [auth], async (req, res) => {
+  const numPeriods = await db.getPeriods();
   const fellowID = req.session.user.id;
   const students = await db.getStudentsForFellowByPeriod(fellowID, numPeriods);
   res.send(students);
