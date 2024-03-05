@@ -337,6 +337,27 @@ h3 {
     align-items: center;
 }
 
+.add-existing-student-top-nav {
+    display: flex;
+}
+
+.add-existing-student-top-nav h3 {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.add-existing-student {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 37.5%;
+    left: 37.5%;
+    width: 25%;
+    height: 25%;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
 .cancel-button {
     border: none;
     background: none;
