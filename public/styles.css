@@ -142,10 +142,11 @@ li a:hover {
 .flex-container {
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    column-gap: 20px;
     grid-column-start: 1;
     grid-column-end: 2;
     text-align: center;
+    overflow: auto;
 }
 
 .flex-item {
