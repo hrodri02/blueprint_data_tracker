@@ -668,16 +668,40 @@ function synchronizeButtonClicked() {
     createLoader();
     post('http://localhost:8000/google/synchronizeDB', body, (data) => {
         removeLoader();
-        updateStudentsUI(data);
+        saveUpdatatedStudents(data);
+        updateStudentsUI();
     });
 }
 
-function updateStudentsUI(students) {
-    studentsContainer.innerHTML = '';
-    for (period in students) {
-        createPeriodHeader(period);
-        createPeriod(students[period]);
+function saveUpdatatedStudents(students) {
+    localStorage.setItem('all_students', JSON.stringify(students));
+    const selectedStudents = JSON.parse(localStorage.getItem('selected_students'));
+    const numPeriods = selectedStudents.length;
+    for (let period = 0; period < numPeriods; period++) {
+        for (i in selectedStudents[period]) {
+            const selectedStudent = selectedStudents[period][i];
+            const studentsOfPeriod = students[period];
+            for (updatedStudent of studentsOfPeriod) {
+                if (updatedStudent['id'] === selectedStudent['id']) {
+                    selectedStudents[period][i] = updatedStudent;
+                }
+            }
+        }
     }
+    localStorage.setItem('selected_students', JSON.stringify(selectedStudents));
+}
+
+function updateStudentsUI() {
+    studentsContainer.innerHTML = '';
+    const selectedStudents = getSelectedStudents();
+    for (period in selectedStudents) {
+        createPeriodHeader(period);
+        createPeriod(selectedStudents[period]);
+    }
+}
+
+function getSelectedStudents() {
+    return JSON.parse(localStorage.getItem('selected_students'));
 }
 
 function onNameChanged() {
