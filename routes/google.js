@@ -60,6 +60,11 @@ router.get('/oauth2callback', async (req, res) => {
   res.redirect('/');
 });
 
+/*
+TODO:
+  1. If a student was added to the spreadsheet, add it to the database.
+  2. BUG: after synchronizing the DB, Jameel gets deleted.
+*/
 router.post('/synchronizeDB', async (req, res) => {
   try { 
     const data = await fs.readFile('refreshToken.txt');
@@ -102,9 +107,8 @@ router.post('/synchronizeDB', async (req, res) => {
     }
 
     // read students from db
-    const fellowID = req.session.user.id;
     const numPeriods = await db.getPeriods();
-    const periods = await db.getStudentsForFellowByPeriod(fellowID, numPeriods);
+    const periods = await db.getStudentsByPeriod(numPeriods);
 
     // compare sheet row of students in the db to actual sheet rows
     const studentsToUpdate = [];
@@ -144,7 +148,7 @@ router.post('/synchronizeDB', async (req, res) => {
     await db.updateStudents(studentsToUpdate);
     // delete rows
     await db.deleteStudents(studentsToDelete);
-    const students = await db.getStudentsForFellowByPeriod(fellowID, numPeriods);
+    const students = await db.getStudentsByPeriod(numPeriods);
     res.send(students);
   } 
   catch (err) {
