@@ -63,7 +63,6 @@ router.get('/oauth2callback', async (req, res) => {
 /*
 TODO:
   1. If a student was added to the spreadsheet, add it to the database.
-  2. BUG: after synchronizing the DB, Jameel gets deleted.
 */
 router.post('/synchronizeDB', async (req, res) => {
   try { 
@@ -101,9 +100,11 @@ router.post('/synchronizeDB', async (req, res) => {
       const period = range.values[i][0];
       const name = range.values[i][1];
       const sheetRow = i + 3;
-      studentToInfo[name] = {};
-      studentToInfo[name]['sheets_row'] = sheetRow;
-      studentToInfo[name]['period'] = Number(period);
+      if (!(name in studentToInfo)) {
+        studentToInfo[name] = {};
+        studentToInfo[name]['sheets_row'] = sheetRow;
+        studentToInfo[name]['period'] = Number(period);
+      }
     }
 
     // read students from db
