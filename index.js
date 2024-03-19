@@ -427,9 +427,7 @@ function addButtonToStudentsContainer(div) {
 
 /*
 TODO:
-    1. If the number of students exceeds what can be displayed, 
-       make the flex container scrollable
-    2. Only reset the selected students when a user logs out and logs back in
+    1. Only reset the selected students when a user logs out and logs back in
 */
 function addExistingStudents() {
     const studentsDiv = document.querySelector('.add-existing-student-body');
