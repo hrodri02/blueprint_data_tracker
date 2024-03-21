@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "build": "webpack"
   },
   "engines": {
     "node": "16.19.0"
@@ -14,5 +15,8 @@
     "googleapis": "^127.0.0",
     "joi": "^17.11.0",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "webpack": "^5.91.0"
   }
 }
