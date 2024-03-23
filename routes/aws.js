@@ -15,22 +15,22 @@ router.get('/ec2-public-ipv4', (req, res) => {
         },
     };
 
-    const request = http.request(options, (res) => {
-        console.log(`STATUS: ${res.statusCode}`);
-        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => {
+    const request = http.request(options, (response) => {
+        console.log(`STATUS: ${response.statusCode}`);
+        console.log(`HEADERS: ${JSON.stringify(response.headers)}`);
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => {
             console.log(`BODY: ${chunk}`);
-            res.send(chunk);
+            response.send(chunk);
         });
-        res.on('end', () => {
+        response.on('end', () => {
             console.log('No more data in response.');
         });
     });
 
     request.on('error', (e) => {
         console.error(`problem with request: ${e.message}`);
-        res.send(`problem with request: ${e.message}`);
+        response.send(`problem with request: ${e.message}`);
     });
 
     request.end();
