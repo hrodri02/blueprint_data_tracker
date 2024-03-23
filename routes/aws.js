@@ -36,4 +36,4 @@ router.get('/ec2-public-ipv4', (req, res) => {
     request.end();
 });
 
-module.exports.aws = router;
+module.exports = router;
