@@ -15,7 +15,7 @@ router.get('/ec2-public-ipv4', (req, res) => {
         },
     };
 
-    const req = http.request(options, (res) => {
+    const request = http.request(options, (res) => {
         console.log(`STATUS: ${res.statusCode}`);
         console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
         res.setEncoding('utf8');
@@ -28,12 +28,12 @@ router.get('/ec2-public-ipv4', (req, res) => {
         });
     });
 
-    req.on('error', (e) => {
+    request.on('error', (e) => {
         console.error(`problem with request: ${e.message}`);
         res.send(`problem with request: ${e.message}`);
     });
 
-    req.end();
+    request.end();
 });
 
 module.exports.aws = router;
