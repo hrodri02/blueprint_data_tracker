@@ -1,4 +1,7 @@
-router.get('/aws/ec2-public-ipv4', (req, res) => {
+const express = require('express');
+const router = express.Router();
+
+router.get('/ec2-public-ipv4', (req, res) => {
     const token='curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"';
 
     const options = {
@@ -32,3 +35,5 @@ router.get('/aws/ec2-public-ipv4', (req, res) => {
 
     req.end();
 });
+
+module.exports.aws = router;
