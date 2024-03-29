@@ -25,7 +25,7 @@ let hallpassTimerId = null;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const domain = 'localhost';
+const domain = 'blueprintschoolsnetwork.com';
 
 setupDate();
 getCurrentUser();
