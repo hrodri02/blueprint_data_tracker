@@ -29,7 +29,7 @@ oauth2Client.on('tokens', (tokens) => {
           googleDebugger(`Error: ${error}`); 
         } 
     }
-    googleDebugger(tokens.access_token);
+    googleDebugger('access token:', tokens.access_token);
 });
 
 router.get('/auth', (req, res) => {
