@@ -23,13 +23,13 @@ oauth2Client.on('tokens', (tokens) => {
     if (tokens.refresh_token) {
         // TODO: - store refresh token in a database
         try { 
-        fs.writeFile('refreshToken.txt', tokens.refresh_token); 
-        console.log("File has been saved.");
+          fs.writeFile('refreshToken.txt', tokens.refresh_token); 
+          googleDebugger("File has been saved.");
         } catch (error) { 
-        console.error(err); 
+          googleDebugger(`Error: ${error}`); 
         } 
     }
-    // console.log(tokens.access_token);
+    googleDebugger(tokens.access_token);
 });
 
 router.get('/auth', (req, res) => {
