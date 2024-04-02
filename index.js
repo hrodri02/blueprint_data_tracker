@@ -46,13 +46,13 @@ function setupDate() {
 }
 
 function getCurrentUser() {
-    get(`http://${domain}:8000/users/me`, (data) => {
+    get(`https://${domain}/users/me`, (data) => {
         localStorage.setItem('fellow_id', JSON.stringify(data['fellow_id']));
     });
 }
 
 function getMyStudents() {
-    get(`http://${domain}:8000/students/fellow`, (data) => {
+    get(`https://${domain}/students/fellow`, (data) => {
         removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
@@ -63,13 +63,13 @@ function getMyStudents() {
 }
 
 function getAllStudents() {
-    get(`http://${domain}:8000/students`, (data) => {
+    get(`https://${domain}/students`, (data) => {
         localStorage.setItem('all_students', JSON.stringify(data));
     });
 }
 
 function getColumnNames() {
-    get(`http://${domain}:8000/google/columnsForDates`, (data) => {
+    get(`https://${domain}/google/columnsForDates`, (data) => {
         const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
         if (dateToColumn === null) {
             localStorage.setItem('dateToColumn', JSON.stringify(data));
@@ -270,7 +270,7 @@ function uploadButtonClicked() {
         }
 
         const body = JSON.stringify({period: period,ranges: ranges, values: values});
-        post(`http://${domain}:8000/students/dailydata`, body, (data) => {
+        post(`https://${domain}/students/dailydata`, body, (data) => {
             const period = data['period'];
             resetGrades(period);
         });
@@ -328,7 +328,7 @@ function addNewStudent() {
 
 function uploadNewStudent() {
     const studentJSON = body = JSON.stringify(newStudent);
-    post(`http://${domain}:8000/students`, studentJSON, (res) => {
+    post(`https://${domain}/students`, studentJSON, (res) => {
         console.log(res);
     })
 }
@@ -594,7 +594,7 @@ function get(url, callback = () => {}) {
     fetch(url).then(function(response) {
         if (!response.ok) {
             if (response.status == 401) {
-                window.location.href = `http://${domain}:8000/signup.html`;
+                window.location.href = `https://${domain}/signup.html`;
             }
             else {
                 throw new Error(`${response.status} ${response.statusText}`);
@@ -645,7 +645,7 @@ function resetButtonClicked() {
 }
 
 function signoutButtonClicked() {
-    fetch(`http://${domain}:8000/users/signout`)
+    fetch(`https://${domain}/users/signout`)
 }
 
 function createLoader() {
@@ -667,7 +667,7 @@ function removeLoader() {
 function synchronizeButtonClicked() {
     const body = JSON.stringify({});
     createLoader();
-    post(`http://${domain}:8000/google/synchronizeDB`, body, (data) => {
+    post(`https://${domain}/google/synchronizeDB`, body, (data) => {
         removeLoader();
         updateStudentsUI(data);
     });
