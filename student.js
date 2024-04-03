@@ -1,6 +1,7 @@
 const url = new URL(location.href); 
 const studentID = Number(url.searchParams.get("id"));
 const period = url.searchParams.get("period");
+const domain = "blueprintschoolsnetwork.com";
 
 const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
@@ -143,12 +144,12 @@ function getColumn(date) {
  ["GRADE","GRADES","GRADES","GRADES","GRADES"]]
 */
 function getStudentData(start, end) {
-    fetch(`http://localhost:8000/students/${studentID}/dailydata?start=${start}&end=${end}`)
+    fetch(`https://${domain}/students/${studentID}/dailydata?start=${start}&end=${end}`)
     .then(function(response) {
         removeLoader();
         if (!response.ok) {
             if (response.status == 401) {
-                window.location.href = 'http://localhost:8000/signup.html';
+                window.location.href = `https://${domain}/signup.html`;
             }
             else {
                 throw new Error(`${response.status} ${response.statusText}`);
@@ -248,12 +249,12 @@ function uploadButtonClicked() {
             const goal = textInput.value;
             hashData('goal', goal);
             const studentGoalBody = JSON.stringify({goal: goal});
-            patch(`http://localhost:8000/students/${studentID}`, studentGoalBody);
+            patch(`https://${domain}/students/${studentID}`, studentGoalBody);
         }
 
         if (daysModified.length > 0) {
             const dailyDataBody = JSON.stringify({columns: columns, values: daysModified});
-            patch(`http://localhost:8000/students/${studentID}/dailydata`, dailyDataBody);
+            patch(`https://${domain}/students/${studentID}/dailydata`, dailyDataBody);
         }
     }
     catch (err) {
