@@ -25,8 +25,10 @@ let hallpassTimerId = null;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const domain = 'blueprintschoolsnetwork.com';
+const protocol = 'http'; //https
+const domain = 'localhost:8000';//'blueprintschoolsnetwork.com';
 
+getDomain();
 setupDate();
 getCurrentUser();
 getMyStudents();
@@ -46,13 +48,13 @@ function setupDate() {
 }
 
 function getCurrentUser() {
-    get(`https://${domain}/users/me`, (data) => {
+    get(`${protocol}://${domain}/users/me`, (data) => {
         localStorage.setItem('fellow_id', JSON.stringify(data['fellow_id']));
     });
 }
 
 function getMyStudents() {
-    get(`https://${domain}/students/fellow`, (data) => {
+    get(`${protocol}://${domain}/students/fellow`, (data) => {
         removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
@@ -63,13 +65,13 @@ function getMyStudents() {
 }
 
 function getAllStudents() {
-    get(`https://${domain}/students`, (data) => {
+    get(`${protocol}://${domain}/students`, (data) => {
         localStorage.setItem('all_students', JSON.stringify(data));
     });
 }
 
 function getColumnNames() {
-    get(`https://${domain}/google/columnsForDates`, (data) => {
+    get(`${protocol}://${domain}/google/columnsForDates`, (data) => {
         const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
         if (dateToColumn === null) {
             localStorage.setItem('dateToColumn', JSON.stringify(data));
@@ -270,7 +272,7 @@ function uploadButtonClicked() {
         }
 
         const body = JSON.stringify({period: period,ranges: ranges, values: values});
-        post(`https://${domain}/students/dailydata`, body, (data) => {
+        post(`${protocol}://${domain}/students/dailydata`, body, (data) => {
             const period = data['period'];
             resetGrades(period);
         });
@@ -328,7 +330,7 @@ function addNewStudent() {
 
 function uploadNewStudent() {
     const studentJSON = body = JSON.stringify(newStudent);
-    post(`https://${domain}/students`, studentJSON, (res) => {
+    post(`${protocol}://${domain}/students`, studentJSON, (res) => {
         console.log(res);
     })
 }
@@ -592,7 +594,7 @@ function get(url, callback = () => {}) {
     fetch(url).then(function(response) {
         if (!response.ok) {
             if (response.status == 401) {
-                window.location.href = `https://${domain}/signup.html`;
+                window.location.href = `${protocol}://${domain}/signup.html`;
             }
             else {
                 throw new Error(`${response.status} ${response.statusText}`);
@@ -643,7 +645,7 @@ function resetButtonClicked() {
 }
 
 function signoutButtonClicked() {
-    fetch(`https://${domain}/users/signout`)
+    fetch(`${protocol}://${domain}/users/signout`)
 }
 
 function createLoader() {
@@ -665,7 +667,7 @@ function removeLoader() {
 function synchronizeButtonClicked() {
     const body = JSON.stringify({});
     createLoader();
-    post(`https://${domain}/google/synchronizeDB`, body, (data) => {
+    post(`${protocol}://${domain}/google/synchronizeDB`, body, (data) => {
         removeLoader();
         saveUpdatatedStudents(data);
         updateStudentsUI();
