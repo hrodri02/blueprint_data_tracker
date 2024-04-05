@@ -1,7 +1,7 @@
 const url = new URL(location.href); 
 const studentID = Number(url.searchParams.get("id"));
 const period = url.searchParams.get("period");
-const domain = "blueprintschoolsnetwork.com";
+const domain = 'localhost:8000'; //"blueprintschoolsnetwork.com";
 
 const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
