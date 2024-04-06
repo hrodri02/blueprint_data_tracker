@@ -13,6 +13,7 @@ const studentsContainer = document.getElementsByClassName("students-container")[
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
+let isLoaderRemoved = false;
 /*
     rowToStudentData = {
         0: [
@@ -28,7 +29,6 @@ const newStudent = {};
 const protocol = 'http'; //https
 const domain = 'localhost:8000';//'blueprintschoolsnetwork.com';
 
-getDomain();
 setupDate();
 getCurrentUser();
 getMyStudents();
@@ -55,7 +55,6 @@ function getCurrentUser() {
 
 function getMyStudents() {
     get(`${protocol}://${domain}/students/fellow`, (data) => {
-        removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
@@ -590,24 +589,34 @@ function post(url, body = JSON.stringify({}), callback = () => {}) {
       });
 }
 
-function get(url, callback = () => {}) {
-    fetch(url).then(function(response) {
-        if (!response.ok) {
-            if (response.status == 401) {
-                window.location.href = `${protocol}://${domain}/signup.html`;
-            }
-            else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
+async function get(url, callback = () => {}) {
+    let json;
+    try {
+        const res = await fetch(url);
+        removeLoader();
+        if (res.ok) {
+            json = await res.json();
         }
         else {
-            return response.json();
+            throw new Error(`${res.status} ${res.statusText}`);
         }
-      }).then(function(data) {
-        callback(data);
-      }).catch(function(err) {
-        console.log(err);
-      });
+    }
+    catch (error) {
+        alert(error);
+    }
+
+    if (json) {
+        if (json['error_message']) {
+            alert(json['error_message']);
+        }
+        // case 1: user tried to access sheets, but has not given the app permission
+        else if (json['authorizationUrl']) {
+            window.location.href = json['authorizationUrl'];    
+        }
+        else {
+            callback(json);
+        }
+    }
 }
 
 function resetGrades(period) {
@@ -652,9 +661,14 @@ function createLoader() {
     const loader = document.createElement("div");
     loader.classList.add('loader');
     document.body.appendChild(loader);
+    isLoaderRemoved = false;
 }
 
+/*
+ TODO: Test that this still works with when synchronize button is clicked
+*/
 function removeLoader() {
+    if (isLoaderRemoved) return;
     const loader = document.querySelector('.loader');
     loader.classList.add('loader-hidden');
     loader.addEventListener('transitionend', (event) => {
@@ -662,6 +676,7 @@ function removeLoader() {
             document.body.removeChild(loader);
         }
     });
+    isLoaderRemoved = true;
 }
 
 function synchronizeButtonClicked() {
