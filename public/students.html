@@ -16,6 +16,9 @@
             <li><input type='date' id='date'/></li>
         </ul>
         <div class='top-right-flex-container'>
+            <span>Sheets Permissions </span>
+            <input type="checkbox" id="toggle" onclick='sheetsToggleClicked()'/>
+            <label for="toggle"><div id="circle"></div></label>
             <button id='synchronize' onclick='synchronizeButtonClicked()'>Synchronize</button>
             <a href='/'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
         </div>
