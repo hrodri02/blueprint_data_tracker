@@ -52,7 +52,7 @@ router.get('/oauth2callback', async (req, res) => {
   // Handle the OAuth 2.0 server response
   let q = url.parse(req.url, true).query;
   const fellowID = req.session.user.id;
-  const fellow = await (fellowID);
+  const fellow = await db.getFellow(fellowID);
   if (q.error) { // An error response e.g. error=access_denied
     fellow['sheets_permissions'] = 2;
     googleDebugger('Error:' + q.error);
