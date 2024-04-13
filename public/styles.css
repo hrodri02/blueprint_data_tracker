@@ -103,13 +103,6 @@ label {
     transition: transform 0.3s;
 }
 
-/* #toggle:checked + label {
-    background-color: #2196F3;
-}
-
-#toggle:checked + label::before {
-    transform: translateX(20px);
-} */
 #synchronize {
     height: 100%;
 }
