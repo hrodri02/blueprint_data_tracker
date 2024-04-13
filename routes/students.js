@@ -7,6 +7,7 @@ const db = require('../db/database');
 const googleDebugger = require('debug')('app:google');
 const {google} = require('googleapis');
 const auth = require('../middleware/auth');
+const sheets_auth = require('../middleware/sheets_auth');
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
@@ -98,7 +99,7 @@ function validateStudent(student) {
   return result;
 }
 
-router.post('/dailydata', async (req, res) => {
+router.post('/dailydata', [sheets_auth], async (req, res) => {
   const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
@@ -119,17 +120,8 @@ router.post('/dailydata', async (req, res) => {
     res.send({period: period});
   }
   catch (err) {
-    const authorizationUrl = oauth2Client.generateAuthUrl({
-      // 'online' (default) or 'offline' (gets refresh_token)
-      access_type: 'offline',
-     /** Pass in the scopes array defined above.
-        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-      scope: SCOPES,
-      // Enable incremental authorization. Recommended as a best practice.
-      include_granted_scopes: true
-    });
     googleDebugger(err.message);
-    res.status(401).send({authorizationUrl: authorizationUrl});
+    res.send({error_message: err.message});
   }
 });
 
@@ -167,7 +159,7 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
   }
 }
 
-router.get('/:id/dailydata', async (req, res) => {
+router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
   try {
     // get student with id
     const student = await db.getStudent(req.params.id);
@@ -202,21 +194,11 @@ router.get('/:id/dailydata', async (req, res) => {
     res.send(range.values);
   }
   catch (err) {
-    const authorizationUrl = oauth2Client.generateAuthUrl({
-      // 'online' (default) or 'offline' (gets refresh_token)
-      access_type: 'offline',
-     /** Pass in the scopes array defined above.
-        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-      scope: SCOPES,
-      // Enable incremental authorization. Recommended as a best practice.
-      include_granted_scopes: true
-    });
-    googleDebugger(err.message);
-    res.status(401).send({authorizationUrl: authorizationUrl});
+    res.send({error_message: err.message});
   }
 });
 
-router.patch('/:id/dailydata', async (req, res) => {
+router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
   try {
     // get student with id
     const student = await db.getStudent(req.params.id);
@@ -250,17 +232,7 @@ router.patch('/:id/dailydata', async (req, res) => {
     res.send({dailyData: values});
   }
   catch (err) {
-    const authorizationUrl = oauth2Client.generateAuthUrl({
-      // 'online' (default) or 'offline' (gets refresh_token)
-      access_type: 'offline',
-     /** Pass in the scopes array defined above.
-        * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-      scope: SCOPES,
-      // Enable incremental authorization. Recommended as a best practice.
-      include_granted_scopes: true
-    });
-    googleDebugger(err.message);
-    res.status(401).send({authorizationUrl: authorizationUrl});
+    res.send({error_message: err.message});
   }
 });
 
