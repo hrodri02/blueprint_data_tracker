@@ -8,6 +8,7 @@ const config = require('config');
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const helper = require('../helpers/helper');
+const sheets_auth = require('../middleware/sheets_auth');
 const domain = 'localhost:8000'; // blueprintschoolsnetwork.com
 
 const SCOPES = [
@@ -44,20 +45,27 @@ router.get('/auth', (req, res) => {
     include_granted_scopes: true
   });
 
-  res.redirect(authorizationUrl);
+  res.send({authorizationUrl: authorizationUrl});
 });
 
 router.get('/oauth2callback', async (req, res) => {
   // Handle the OAuth 2.0 server response
   let q = url.parse(req.url, true).query;
-
+  const fellowID = req.session.user.id;
+  const fellow = await (fellowID);
   if (q.error) { // An error response e.g. error=access_denied
+    fellow['sheets_permissions'] = 2;
     googleDebugger('Error:' + q.error);
-  } else { // Get access and refresh tokens (if access_type is offline)
+  } 
+  else { // Get access and refresh tokens (if access_type is offline)
     const { tokens } = await oauth2Client.getToken(q.code);
     oauth2Client.setCredentials(tokens);
+    fellow['sheets_permissions'] = 1;
+     
   }
-
+  await db.updateFellow(fellow);
+  // TODO: Will my app be affected if the session user is not in sync with the db user
+  req.session.user.sheets_permissions = fellow['sheets_permissions'];
   res.redirect('/');
 });
 
@@ -65,7 +73,7 @@ router.get('/oauth2callback', async (req, res) => {
 TODO:
   1. If a student was added to the spreadsheet, add it to the database.
 */
-router.post('/synchronizeDB', async (req, res) => {
+router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   try { 
     const data = await fs.readFile('refreshToken.txt');
     const refreshToken = data.toString();
@@ -159,8 +167,8 @@ router.post('/synchronizeDB', async (req, res) => {
   }
 });
 
-router.get('/columnsForDates', async (req, res) => {
-  try { 
+router.get('/columnsForDates', [sheets_auth], async (req, res) => {
+  try {
     const data = await fs.readFile('refreshToken.txt');
     const refreshToken = data.toString();
 
@@ -226,6 +234,23 @@ router.get('/columnsForDates', async (req, res) => {
   }
 });
 
+router.delete('/auth', async (req, res) => {
+  try {
+    const data = await fs.readFile('refreshToken.txt'); 
+    const refreshToken = data.toString();
+    await oauth2Client.revokeToken(refreshToken);
+    await fs.unlink('refreshToken.txt');
+
+    const user = req.session.user;
+    user['sheets_permissions'] = 2;
+    await db.updateFellow(user);
+    const fellow = await db.getFellow(user.id);
+    res.send({'sheets_permissions': fellow['sheets_permissions']});
+  }
+  catch (err) {
+    res.send({error_message: err.message})
+  }
+});
 
 module.exports.oauth2Client = oauth2Client;
 module.exports.google = router;
