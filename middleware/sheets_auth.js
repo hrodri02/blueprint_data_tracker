@@ -1,6 +1,6 @@
 module.exports = async function (req, res, next) {
-    const user = req.session.user;
-    if (user.sheets_permissions === 1) {
+    const permissions = req.session.user.sheets_permissions;
+    if (permissions) {
         next();
         return;
     }
