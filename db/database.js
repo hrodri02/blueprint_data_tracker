@@ -210,8 +210,9 @@ async function updateFellow(fellow) {
     const name = fellow['name'];
     const email = fellow['email'];
     const sheets_permissions = fellow['sheets_permissions'];
-    db.run(`UPDATE fellows SET name = ?, email = ?, sheets_permissions = ? WHERE id = ?`, 
-          [name, email, sheets_permissions, id], function(err) {
+    const refresh_token = fellow['refresh_token'];
+    db.run(`UPDATE fellows SET name = ?, email = ?, sheets_permissions = ?, refresh_token = ? WHERE id = ?`, 
+          [name, email, sheets_permissions, refresh_token, id], function(err) {
       if (err) {
         reject(err.message);
       }
