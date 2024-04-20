@@ -143,7 +143,6 @@ async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueI
   try {
     const fellow = await db.getFellow(fellowID);
     const refreshToken = fellow['refresh_token'];
-    googleDebugger(refreshToken);
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
