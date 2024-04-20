@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const fs = require('fs').promises;
 const {oauth2Client} = require('./google');
 const express = require('express');
 const router = express.Router();
@@ -113,7 +112,8 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
   }
 
   try {
-    await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
+    await batchUpdateValues(req.session.user.id,
+                    '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
                     ranges,
                     values,
                     'RAW');
@@ -125,7 +125,7 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
   }
 });
 
-async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption) {
+async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueInputOption) {
   const data = [];
 
   for (i in values) {
@@ -141,8 +141,9 @@ async function batchUpdateValues(spreadsheetId, ranges, values, valueInputOption
   };
   const sheets = google.sheets({version: 'v4', auth: oauth2Client});
   try {
-    const data = await fs.readFile('refreshToken.txt'); 
-    const refreshToken = data.toString();
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
+    googleDebugger(refreshToken);
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -172,8 +173,9 @@ router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
     // use google api to read daily data
     const start = req.query.start;
     const end = req.query.end;
-    const data = await fs.readFile('refreshToken.txt');
-    const refreshToken = data.toString();
+    const fellowID = req.session.user.id;
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
