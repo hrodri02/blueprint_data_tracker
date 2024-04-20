@@ -71,8 +71,8 @@ function getColumnNames() {
 
 function setupSheetsPermissionsToggle() {
     const sheets_permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
-    const permissionsToggle = document.getElementById('toggle');
     if (sheets_permissions) {
+        const permissionsToggle = document.getElementById('toggle');
         permissionsToggle.checked = sheets_permissions === 1;
         const label = permissionsToggle.nextElementSibling;
         if (permissionsToggle.checked) {
@@ -611,16 +611,16 @@ async function post(url, body = JSON.stringify({}), callback = () => {}) {
             json = await res.json();
         }
         else {
-            throw new Error(`${res.status} ${res.statusText}`);
+            throw new Error(`${url}: ${res.status} ${res.statusText}`);
         }
     }
     catch (error) {
-        alert(error)
+        alert(`${url}: ${error}`);
     }
     
     if (json) {
         if (json['error_message']) {
-            alert(json['error_message']);
+            alert(url, json['error_message']);
         }
         else {
             callback(json);
@@ -637,16 +637,16 @@ async function get(url, callback = () => {}) {
             json = await res.json();
         }
         else {
-            throw new Error(`${res.status} ${res.statusText}`);
+            throw new Error(`${url}: ${res.status} ${res.statusText}`);
         }
     }
     catch (error) {
-        alert(error);
+        alert(`${url}: ${error}`);
     }
 
     if (json) {
         if (json['error_message']) {
-            alert(json['error_message']);
+            alert(url, json['error_message']);
         }
         // case 1: user tried to access sheets, but has not given the app permission
         else if (json['authorizationUrl']) {
@@ -766,16 +766,16 @@ function onSheetsRowChanged() {
 }
 
 function sheetsToggleClicked() {
-    const permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
-    if (permissions == 2) {
-        get(`${protocol}://${domain}/google/auth`);
-    }
-    else if (permissions == 1) {
+    let permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
+    if (permissions == 1) {
         deleteRequest(`${protocol}://${domain}/google/auth`, (res) => {
-            const permissions = JSON.stringify(res['sheets_permissions']);
+            permissions = JSON.stringify(res['sheets_permissions']);
             localStorage.setItem('sheets_permissions', permissions);
             setupSheetsPermissionsToggle();
         });
+    }
+    else {
+        get(`${protocol}://${domain}/google/auth`);
     }
 }
 
@@ -788,16 +788,16 @@ async function deleteRequest(url, callback = () => {}) {
             json = await res.json();
         }
         else {
-            throw new Error(`${res.status} ${res.statusText}`);
+            throw new Error(`${url} ${res.status} ${res.statusText}`);
         }
     }
     catch (error) {
-        alert(error);
+        alert(`${url}: ${error}`);
     }
 
     if (json) {
         if (json['error_message']) {
-            alert(json['error_message']);
+            alert(url, json['error_message']);
         }
         else {
             callback(json);
