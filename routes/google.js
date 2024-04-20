@@ -41,13 +41,13 @@ router.get('/oauth2callback', async (req, res) => {
   const fellowID = req.session.user.id;
   const fellow = await db.getFellow(fellowID);
   if (q.error) { // An error response e.g. error=access_denied
-    fellow['sheets_permissions'] = 2;
+    fellow['sheets_permissions'] = false;
     googleDebugger('Error:' + q.error);
   } 
   else { // Get access and refresh tokens (if access_type is offline)
     const { tokens } = await oauth2Client.getToken(q.code);
     oauth2Client.setCredentials(tokens);
-    fellow['sheets_permissions'] = 1;
+    fellow['sheets_permissions'] = true;
     fellow['refresh_token'] = tokens.refresh_token;
     googleDebugger("refresh token has been saved.");
   }
@@ -231,12 +231,14 @@ router.delete('/auth', async (req, res) => {
     await oauth2Client.revokeToken(refreshToken);
 
     const user = req.session.user;
-    user['sheets_permissions'] = 2;
-    user['refresh_token'] = null;
+    googleDebugger(`Remove sheets permissions for user: ${user.id}`);
+    user.sheets_permissions = false;
+    user.refresh_token = null;
     await db.updateFellow(user);
-    res.send({'sheets_permissions': user['sheets_permissions']});
+    res.send({'sheets_permissions': user.sheets_permissions});
   }
   catch (err) {
+    googleDebugger(err.message);
     res.send({error_message: err.message})
   }
 });
