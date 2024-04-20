@@ -49,7 +49,7 @@ function setupDate() {
 function getCurrentUser() {
     get(`${protocol}://${domain}/users/me`, (data) => {
         const permissions = JSON.stringify(data['sheets_permissions']);
-        if (permissions == 1) {
+        if (permissions) {
             const permissionsToggle = document.getElementById('toggle');
             permissionsToggle.checked = true;
             getColumnNames();
@@ -71,24 +71,22 @@ function getColumnNames() {
 
 function setupSheetsPermissionsToggle() {
     const sheets_permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
-    if (sheets_permissions) {
-        const permissionsToggle = document.getElementById('toggle');
-        permissionsToggle.checked = sheets_permissions === 1;
-        const label = permissionsToggle.nextElementSibling;
-        if (permissionsToggle.checked) {
-            // change toggle to the right color
-            label.style.backgroundColor = '#2196F3';
-            // move circle within toggle to the right
-            const circle = document.getElementById('circle');
-            circle.style.transform = "translateX(20px)";
-        }
-        else {
-            // change toggle to the right color
-            label.style.backgroundColor = '#ccc';
-            // move circle within toggle to the original position
-            const circle = document.getElementById('circle');
-            circle.style.transform = "translateX(0px)";
-        }
+    const permissionsToggle = document.getElementById('toggle');
+    permissionsToggle.checked = sheets_permissions;
+    const label = permissionsToggle.nextElementSibling;
+    if (permissionsToggle.checked) {
+        // change toggle to the right color
+        label.style.backgroundColor = '#2196F3';
+        // move circle within toggle to the right
+        const circle = document.getElementById('circle');
+        circle.style.transform = "translateX(20px)";
+    }
+    else {
+        // change toggle to the right color
+        label.style.backgroundColor = '#ccc';
+        // move circle within toggle to the original position
+        const circle = document.getElementById('circle');
+        circle.style.transform = "translateX(0px)";
     }
 }
 
@@ -767,7 +765,7 @@ function onSheetsRowChanged() {
 
 function sheetsToggleClicked() {
     let permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
-    if (permissions == 1) {
+    if (permissions) {
         deleteRequest(`${protocol}://${domain}/google/auth`, (res) => {
             permissions = JSON.stringify(res['sheets_permissions']);
             localStorage.setItem('sheets_permissions', permissions);
