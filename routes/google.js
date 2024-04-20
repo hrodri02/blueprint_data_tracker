@@ -20,19 +20,6 @@ const oauth2Client = new google.auth.OAuth2(
   `http://${domain}/google/oauth2callback`
 );
 
-oauth2Client.on('tokens', (tokens) => {
-    if (tokens.refresh_token) {
-        // TODO: - store refresh token in a database
-        try { 
-          fs.writeFile('refreshToken.txt', tokens.refresh_token); 
-          googleDebugger("File has been saved.");
-        } catch (error) { 
-          googleDebugger(`Error: ${error}`); 
-        } 
-    }
-    googleDebugger('access token:', tokens.access_token);
-});
-
 router.get('/auth', (req, res) => {
   // Generate a url that asks permissions for the Sheets activity scope
   const authorizationUrl = oauth2Client.generateAuthUrl({
@@ -61,10 +48,10 @@ router.get('/oauth2callback', async (req, res) => {
     const { tokens } = await oauth2Client.getToken(q.code);
     oauth2Client.setCredentials(tokens);
     fellow['sheets_permissions'] = 1;
-     
+    fellow['refresh_token'] = tokens.refresh_token;
+    googleDebugger("refresh token has been saved.");
   }
   await db.updateFellow(fellow);
-  // TODO: Will my app be affected if the session user is not in sync with the db user
   req.session.user.sheets_permissions = fellow['sheets_permissions'];
   res.redirect('/');
 });
@@ -75,8 +62,9 @@ TODO:
 */
 router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   try { 
-    const data = await fs.readFile('refreshToken.txt');
-    const refreshToken = data.toString();
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -169,8 +157,9 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
 
 router.get('/columnsForDates', [sheets_auth], async (req, res) => {
   try {
-    const data = await fs.readFile('refreshToken.txt');
-    const refreshToken = data.toString();
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -236,16 +225,16 @@ router.get('/columnsForDates', [sheets_auth], async (req, res) => {
 
 router.delete('/auth', async (req, res) => {
   try {
-    const data = await fs.readFile('refreshToken.txt'); 
-    const refreshToken = data.toString();
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
     await oauth2Client.revokeToken(refreshToken);
-    await fs.unlink('refreshToken.txt');
 
     const user = req.session.user;
     user['sheets_permissions'] = 2;
+    user['refresh_token'] = null;
     await db.updateFellow(user);
-    const fellow = await db.getFellow(user.id);
-    res.send({'sheets_permissions': fellow['sheets_permissions']});
+    res.send({'sheets_permissions': user['sheets_permissions']});
   }
   catch (err) {
     res.send({error_message: err.message})
