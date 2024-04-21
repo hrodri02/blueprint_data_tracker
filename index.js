@@ -13,6 +13,7 @@ const studentsContainer = document.getElementsByClassName("students-container")[
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
+let isLoaderRemoved = false;
 /*
     rowToStudentData = {
         0: [
@@ -28,12 +29,10 @@ const newStudent = {};
 const protocol = 'http'; //https
 const domain = 'localhost:8000';//'blueprintschoolsnetwork.com';
 
-getDomain();
 setupDate();
 getCurrentUser();
 getMyStudents();
 getAllStudents()
-getColumnNames();
 
 function setupDate() {
     const today = new Date();
@@ -49,13 +48,50 @@ function setupDate() {
 
 function getCurrentUser() {
     get(`${protocol}://${domain}/users/me`, (data) => {
-        localStorage.setItem('fellow_id', JSON.stringify(data['fellow_id']));
+        const permissions = JSON.stringify(data['sheets_permissions']);
+        if (permissions) {
+            const permissionsToggle = document.getElementById('toggle');
+            permissionsToggle.checked = true;
+            getColumnNames();
+        }
+        localStorage.setItem('fellow_id', JSON.stringify(data['id']));
+        localStorage.setItem('sheets_permissions', permissions);
+        setupSheetsPermissionsToggle();
     });
+}
+
+function getColumnNames() {
+    const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
+    if (dateToColumn === null || Object.keys(dateToColumn).length === 0) {
+        get(`${protocol}://${domain}/google/columnsForDates`, (data) => {
+            localStorage.setItem('dateToColumn', JSON.stringify(data));
+        });
+    }
+}
+
+function setupSheetsPermissionsToggle() {
+    const sheets_permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
+    const permissionsToggle = document.getElementById('toggle');
+    permissionsToggle.checked = sheets_permissions;
+    const label = permissionsToggle.nextElementSibling;
+    if (permissionsToggle.checked) {
+        // change toggle to the right color
+        label.style.backgroundColor = '#2196F3';
+        // move circle within toggle to the right
+        const circle = document.getElementById('circle');
+        circle.style.transform = "translateX(20px)";
+    }
+    else {
+        // change toggle to the right color
+        label.style.backgroundColor = '#ccc';
+        // move circle within toggle to the original position
+        const circle = document.getElementById('circle');
+        circle.style.transform = "translateX(0px)";
+    }
 }
 
 function getMyStudents() {
     get(`${protocol}://${domain}/students/fellow`, (data) => {
-        removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
@@ -67,15 +103,6 @@ function getMyStudents() {
 function getAllStudents() {
     get(`${protocol}://${domain}/students`, (data) => {
         localStorage.setItem('all_students', JSON.stringify(data));
-    });
-}
-
-function getColumnNames() {
-    get(`${protocol}://${domain}/google/columnsForDates`, (data) => {
-        const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
-        if (dateToColumn === null) {
-            localStorage.setItem('dateToColumn', JSON.stringify(data));
-        }
     });
 }
 
@@ -544,7 +571,7 @@ function getColumn() {
         const year = date.getFullYear();
         const dateString = `${month}/${day}/${year}`;
         const dateToColumn = JSON.parse(localStorage.getItem('dateToColumn'));
-        if (dateString in dateToColumn) {
+        if (dateToColumn && dateString in dateToColumn) {
             return dateToColumn[dateString];
         }
         throw new Error(`There is no column for ${dateString}`);
@@ -570,44 +597,63 @@ function getDate() {
     }
 }
 
-function post(url, body = JSON.stringify({}), callback = () => {}) {
-    fetch(url, {method: "POST", body: body, headers: {
-        "Content-Type": "application/json",
-      }}).then(function(response) {
-        return response.json();
-      }).then(function(res) {
-        if (res['authorizationUrl']) {
-            window.location.href = res['authorizationUrl'];
-        }
-        else if (res['error_message']) {
-            alert(res['error_message']);
+async function post(url, body = JSON.stringify({}), callback = () => {}) {
+    let json;
+    try {
+        const res = await fetch(url, {method: "POST", body: body, headers: {
+            "Content-Type": "application/json",
+        }});
+        removeLoader();
+
+        if (res.ok) {
+            json = await res.json();
         }
         else {
-            callback(res);
+            throw new Error(`${url}: ${res.status} ${res.statusText}`);
         }
-      }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
-      });
+    }
+    catch (error) {
+        alert(`${url}: ${error}`);
+    }
+    
+    if (json) {
+        if (json['error_message']) {
+            alert(url, json['error_message']);
+        }
+        else {
+            callback(json);
+        }
+    }       
 }
 
-function get(url, callback = () => {}) {
-    fetch(url).then(function(response) {
-        if (!response.ok) {
-            if (response.status == 401) {
-                window.location.href = `${protocol}://${domain}/signup.html`;
-            }
-            else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
+async function get(url, callback = () => {}) {
+    let json;
+    try {
+        const res = await fetch(url);
+        removeLoader();
+        if (res.ok) {
+            json = await res.json();
         }
         else {
-            return response.json();
+            throw new Error(`${url}: ${res.status} ${res.statusText}`);
         }
-      }).then(function(data) {
-        callback(data);
-      }).catch(function(err) {
-        console.log(err);
-      });
+    }
+    catch (error) {
+        alert(`${url}: ${error}`);
+    }
+
+    if (json) {
+        if (json['error_message']) {
+            alert(url, json['error_message']);
+        }
+        // case 1: user tried to access sheets, but has not given the app permission
+        else if (json['authorizationUrl']) {
+            window.location.href = json['authorizationUrl'];    
+        }
+        else {
+            callback(json);
+        }
+    }
 }
 
 function resetGrades(period) {
@@ -652,9 +698,11 @@ function createLoader() {
     const loader = document.createElement("div");
     loader.classList.add('loader');
     document.body.appendChild(loader);
+    isLoaderRemoved = false;
 }
 
 function removeLoader() {
+    if (isLoaderRemoved) return;
     const loader = document.querySelector('.loader');
     loader.classList.add('loader-hidden');
     loader.addEventListener('transitionend', (event) => {
@@ -662,13 +710,13 @@ function removeLoader() {
             document.body.removeChild(loader);
         }
     });
+    isLoaderRemoved = true;
 }
 
 function synchronizeButtonClicked() {
     const body = JSON.stringify({});
     createLoader();
     post(`${protocol}://${domain}/google/synchronizeDB`, body, (data) => {
-        removeLoader();
         saveUpdatatedStudents(data);
         updateStudentsUI();
     });
@@ -713,4 +761,44 @@ function onNameChanged() {
 function onSheetsRowChanged() {
     const input = event.srcElement;
     newStudent['sheets_row'] = input.value;
+}
+
+function sheetsToggleClicked() {
+    let permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
+    if (permissions) {
+        deleteRequest(`${protocol}://${domain}/google/auth`, (res) => {
+            permissions = JSON.stringify(res['sheets_permissions']);
+            localStorage.setItem('sheets_permissions', permissions);
+            setupSheetsPermissionsToggle();
+        });
+    }
+    else {
+        get(`${protocol}://${domain}/google/auth`);
+    }
+}
+
+async function deleteRequest(url, callback = () => {}) {
+    let json;
+    try {
+        const res = await fetch(url, {method: "DELETE"});
+        removeLoader();
+        if (res.ok) {
+            json = await res.json();
+        }
+        else {
+            throw new Error(`${url} ${res.status} ${res.statusText}`);
+        }
+    }
+    catch (error) {
+        alert(`${url}: ${error}`);
+    }
+
+    if (json) {
+        if (json['error_message']) {
+            alert(url, json['error_message']);
+        }
+        else {
+            callback(json);
+        }
+    }
 }

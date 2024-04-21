@@ -46,8 +46,8 @@ router.get('/signout', (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  const uid = req.session.user.id;
-  res.send({fellow_id: uid});
+  const user = req.session.user;
+  res.send(user);
 });
 
 module.exports = router;

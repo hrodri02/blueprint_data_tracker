@@ -204,6 +204,26 @@ async function insertFellow(id, email, name) {
     });
 }
 
+async function updateFellow(fellow) {
+  return new Promise((resolve, reject) => {
+    const id = fellow['id'];
+    const name = fellow['name'];
+    const email = fellow['email'];
+    const sheets_permissions = fellow['sheets_permissions'];
+    const refresh_token = fellow['refresh_token'];
+    db.run(`UPDATE fellows SET name = ?, email = ?, sheets_permissions = ?, refresh_token = ? WHERE id = ?`, 
+          [name, email, sheets_permissions, refresh_token, id], function(err) {
+      if (err) {
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`fellow ${id} updated`);
+        resolve();
+      }
+    });
+  });
+}
+
 process.on('SIGINT', () => {
     // close the database connection
     db.close((err) => {
@@ -228,3 +248,4 @@ module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
 module.exports.insertFellow = insertFellow;
+module.exports.updateFellow = updateFellow;

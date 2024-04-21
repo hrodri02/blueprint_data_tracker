@@ -8,6 +8,7 @@ const config = require('config');
 const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const helper = require('../helpers/helper');
+const sheets_auth = require('../middleware/sheets_auth');
 const domain = 'localhost:8000'; // blueprintschoolsnetwork.com
 
 const SCOPES = [
@@ -18,19 +19,6 @@ const oauth2Client = new google.auth.OAuth2(
   config.get('google.client_secret'),
   `http://${domain}/google/oauth2callback`
 );
-
-oauth2Client.on('tokens', (tokens) => {
-    if (tokens.refresh_token) {
-        // TODO: - store refresh token in a database
-        try { 
-          fs.writeFile('refreshToken.txt', tokens.refresh_token); 
-          googleDebugger("File has been saved.");
-        } catch (error) { 
-          googleDebugger(`Error: ${error}`); 
-        } 
-    }
-    googleDebugger('access token:', tokens.access_token);
-});
 
 router.get('/auth', (req, res) => {
   // Generate a url that asks permissions for the Sheets activity scope
@@ -44,20 +32,27 @@ router.get('/auth', (req, res) => {
     include_granted_scopes: true
   });
 
-  res.redirect(authorizationUrl);
+  res.send({authorizationUrl: authorizationUrl});
 });
 
 router.get('/oauth2callback', async (req, res) => {
   // Handle the OAuth 2.0 server response
   let q = url.parse(req.url, true).query;
-
+  const fellowID = req.session.user.id;
+  const fellow = await db.getFellow(fellowID);
   if (q.error) { // An error response e.g. error=access_denied
+    fellow['sheets_permissions'] = false;
     googleDebugger('Error:' + q.error);
-  } else { // Get access and refresh tokens (if access_type is offline)
+  } 
+  else { // Get access and refresh tokens (if access_type is offline)
     const { tokens } = await oauth2Client.getToken(q.code);
     oauth2Client.setCredentials(tokens);
+    fellow['sheets_permissions'] = true;
+    fellow['refresh_token'] = tokens.refresh_token;
+    googleDebugger("refresh token has been saved.");
   }
-
+  await db.updateFellow(fellow);
+  req.session.user.sheets_permissions = fellow['sheets_permissions'];
   res.redirect('/');
 });
 
@@ -65,10 +60,11 @@ router.get('/oauth2callback', async (req, res) => {
 TODO:
   1. If a student was added to the spreadsheet, add it to the database.
 */
-router.post('/synchronizeDB', async (req, res) => {
+router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   try { 
-    const data = await fs.readFile('refreshToken.txt');
-    const refreshToken = data.toString();
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -159,10 +155,11 @@ router.post('/synchronizeDB', async (req, res) => {
   }
 });
 
-router.get('/columnsForDates', async (req, res) => {
-  try { 
-    const data = await fs.readFile('refreshToken.txt');
-    const refreshToken = data.toString();
+router.get('/columnsForDates', [sheets_auth], async (req, res) => {
+  try {
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
 
     oauth2Client.setCredentials({
       refresh_token: refreshToken
@@ -226,6 +223,25 @@ router.get('/columnsForDates', async (req, res) => {
   }
 });
 
+router.delete('/auth', async (req, res) => {
+  try {
+    const fellowID = req.session.user.id
+    const fellow = await db.getFellow(fellowID);
+    const refreshToken = fellow['refresh_token'];
+    await oauth2Client.revokeToken(refreshToken);
+
+    const user = req.session.user;
+    googleDebugger(`Remove sheets permissions for user: ${user.id}`);
+    user.sheets_permissions = false;
+    user.refresh_token = null;
+    await db.updateFellow(user);
+    res.send({'sheets_permissions': user.sheets_permissions});
+  }
+  catch (err) {
+    googleDebugger(err.message);
+    res.send({error_message: err.message})
+  }
+});
 
 module.exports.oauth2Client = oauth2Client;
 module.exports.google = router;

@@ -1,7 +1,8 @@
 -- create tables
 CREATE TABLE fellows (id TEXT PRIMARY KEY NOT NULL, 
                       name TEXT NOT NULL,
-					  email TEXT NOT NULL);
+					  email TEXT NOT NULL,
+					  sheets_permissions INTEGER NOT NULL);
 CREATE TABLE students (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
 					    fellow_id TEXT NOT NULL,
 					    name TEXT NOT NULL, 

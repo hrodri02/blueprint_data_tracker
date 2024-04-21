@@ -24,7 +24,7 @@ input[type="date"] {
 
 .top-left-flex-container {
     justify-content: flex-start;
-    width: 20%;
+    width: 30%;
 }
 
 .top-left-flex-container a {
@@ -45,7 +45,7 @@ input[type="date"] {
     justify-content: center;
     margin: 0;
     padding: 0;
-    width: 60%;
+    width: 40%;
 }
 
 .top-center-flex-container li {
@@ -67,7 +67,44 @@ input[type="date"] {
 .top-right-flex-container {
     display: flex;
     justify-content: flex-end;
-    width: 20%;
+    align-items: center;
+    width: 30%;
+}
+
+span {
+    color: #ccc;
+}
+
+#toggle {
+    display: none;
+}
+
+label {
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    margin-left: 20px;
+    margin-right: 10px;
+}
+
+#circle {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+#synchronize {
+    height: 100%;
 }
 
 #signout {
