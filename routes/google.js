@@ -56,10 +56,6 @@ router.get('/oauth2callback', async (req, res) => {
   res.redirect('/');
 });
 
-/*
-TODO:
-  1. If a student was added to the spreadsheet, add it to the database.
-*/
 router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   try { 
     const fellowID = req.session.user.id
@@ -74,7 +70,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     let response;
     response = await sheets.spreadsheets.values.get({
         spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
-        range: 'Daily Data!A3:B300',
+        range: 'Daily Data!A3:C300',
     });
   
     const range = response.data;
@@ -96,11 +92,13 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     for (let i = 0; i < range.values.length; i += 3) {
       const period = range.values[i][0];
       const name = range.values[i][1];
+      const tutor_name = range.values[i][2];
       const sheetRow = i + 3;
       if (!(name in studentToInfo)) {
         studentToInfo[name] = {};
         studentToInfo[name]['sheets_row'] = sheetRow;
         studentToInfo[name]['period'] = Number(period);
+        studentToInfo[name]['tutor_name'] = tutor_name;
       }
     }
 
@@ -108,46 +106,74 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     const numPeriods = await db.getPeriods();
     const periods = await db.getStudentsByPeriod(numPeriods);
 
-    // compare sheet row of students in the db to actual sheet rows
+    const studentsToAdd = [];
     const studentsToUpdate = [];
     const studentsToDelete = [];
-    for (period of periods) {
-      for (student of period) {
-        let name = student['name'];
-        const sheets_row = student['sheets_row'];
-        const period = student['period'];
-        
-        if (!(name in studentToInfo)) {
-          const expected_name = helper.closestMatch(name, Object.keys(studentToInfo));
-          student['name'] = expected_name;
-          name = expected_name;
-          studentsToUpdate.push(student);
-        }
+    for (name in studentToInfo) {
+      const expected_period = studentToInfo[name]['period'];
+      const expected_tutor_name = studentToInfo[name]['tutor_name'];
+      const expected_sheets_row = studentToInfo[name]['sheets_row'];
 
-        const expected_period = studentToInfo[name]['period'];
-        if (isNaN(expected_period)) {
-          studentsToDelete.push(student['id']);
+      if (isNaN(expected_period)) {
+        const student = {
+          'name': name,
+          'period': expected_period,
+        };
+        studentsToDelete.push(student);
+        continue;
+      }
+      const periodIndex = (expected_period < 5)? expected_period - 1 : expected_period - 2;
+      const studentsOfPeriod = periods[periodIndex];
+      let targetStudent = null;
+      for (student of studentsOfPeriod) {
+        if (name === student.name) {
+          targetStudent = student;
+          break;
         }
-        else {
-          const expected_sheets_row = studentToInfo[name]['sheets_row'];
-          if (expected_sheets_row !== sheets_row || expected_period !== period) 
-          {
-              dbDebugger(`${name}: actual row = ${sheets_row}, expected row = ${expected_sheets_row}`);
-              dbDebugger(`${name}: actual period = ${period}, expected period = ${expected_period}`);
-              student['sheets_row'] = expected_sheets_row;
-              student['period'] = expected_period;
-              studentsToUpdate.push(student);
-          }
+      }
+
+      if (!targetStudent) {
+        const new_student = {
+          'name': name,
+          'period': expected_period,
+          'tutor_name': expected_tutor_name,
+          'sheets_row': expected_sheets_row
+        };
+        studentsToAdd.push(new_student);
+      }
+      else {
+        const sheets_row = targetStudent.sheets_row;
+        const period = targetStudent.period;
+        const tutor_name = targetStudent.tutor_name;
+        if (expected_sheets_row !== sheets_row || 
+            expected_period !== period ||
+            (expected_tutor_name !== tutor_name)
+          ) 
+        {
+            dbDebugger(`${name}: actual row = ${sheets_row}, expected row = ${expected_sheets_row}`);
+            dbDebugger(`${name}: actual period = ${period}, expected period = ${expected_period}`);
+            dbDebugger(`${name}: actual tutor = ${tutor_name}, expected tutor = ${expected_tutor_name}`);
+            targetStudent['sheets_row'] = expected_sheets_row;
+            targetStudent['period'] = expected_period;
+            targetStudent['tutor_name'] = expected_tutor_name;
+            studentsToUpdate.push(targetStudent);
         }
       }
     }
 
+    // insert rows
+    const new_students = await db.insertStudents(studentsToAdd);
     // update rows
-    await db.updateStudents(studentsToUpdate);
+    const updated_students = await db.updateStudents(studentsToUpdate);
     // delete rows
     await db.deleteStudents(studentsToDelete);
     const students = await db.getStudentsByPeriod(numPeriods);
-    res.send(students);
+    res.send({
+      all_studets: students,
+      deleted_students: studentsToDelete,
+      updated_students: updated_students,
+      new_students: new_students, 
+    });
   } 
   catch (err) {
     googleDebugger(err.message);
