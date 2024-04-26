@@ -26,8 +26,8 @@ let isLoaderRemoved = false;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const protocol = 'http'; //https
-const domain = 'localhost:8000';//'blueprintschoolsnetwork.com';
+const protocol = 'https';
+const domain = 'blueprintschoolsnetwork.com';
 
 setupDate();
 getCurrentUser();
