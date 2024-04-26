@@ -29,7 +29,7 @@ async function getPeriods() {
 async function getStudentsByPeriod(numPeriods, fellowID = null) {
     return new Promise((resolve, reject) => {
       dbDebugger(fellowID);
-      let getStudents = `SELECT * FROM students`;
+      let getStudents = `SELECT students.*, fellows.tutor_name FROM students INNER JOIN fellows on students.fellow_id = fellows.id`;
       if (fellowID !== null) {
         getStudents += ` WHERE fellow_id = '${fellowID}'`;
       }
@@ -56,25 +56,61 @@ async function getStudentsByPeriod(numPeriods, fellowID = null) {
       });
     });
 }
-  
-async function insertStudent(student) {
-return new Promise((resolve, reject) =>{
-    // insert one row into the students table
-    const name = student['name'];
-    const period = student['period'];
-    const sheets_row = student['sheets_row'];
-    const fellow_id = student['fellow_id'];
-    db.run(`INSERT INTO students(name, period, sheets_row, fellow_id) VALUES(?, ?, ?, ?)`, 
-        [name, period, sheets_row, fellow_id], function(err) {
-    if (err) {
+
+async function insertStudents(students) {
+  const new_students = [];
+  for (student of students) {
+    const new_student = await insertStudent(student);
+    if (new_student) {
+      new_students.push(new_student);
+    }
+  }
+  return new_students;
+}
+
+function insertStudent(student) {
+  // insert one row into the students table
+  const name = student['name'];
+  const period = student['period'];
+  const sheets_row = student['sheets_row'];
+  const tutor_name = student['tutor_name'];
+  const sql = 'SELECT * FROM fellows WHERE tutor_name = ?';
+
+  return new Promise((resolve, reject) => {
+    db.get(sql, [tutor_name], (err, row) => {
+      if (err) {
+        resolve(null);
         dbDebugger(err.message);
-        reject(err.message);
-    }
-    else {
-        resolve(this.lastID);
-    }
+      }
+      else {
+        if (!row) {
+          dbDebugger(`There is no fellow named ${tutor_name}`)
+          resolve(null);
+          return;
+        }
+        const fellow_id = row['id'];
+        db.run(`INSERT INTO students(name, period, sheets_row, fellow_id) VALUES(?, ?, ?, ?)`, 
+            [name, period, sheets_row, fellow_id], function(err) {
+        if (err) {
+          resolve(null);
+          dbDebugger(err.message);
+          return null;
+        }
+        else {
+          const new_student = {
+            'id': this.lastID,
+            'name': name,
+            'period': period,
+            'sheets_row': sheets_row,
+            'fellow_id': fellow_id,
+          };
+          resolve(new_student);
+          dbDebugger(this.lastID);
+        }
+        });
+      }
     });
-});
+  });
 }
 
 async function getStudent(id) {
@@ -92,47 +128,53 @@ return new Promise((resolve, reject) => {
 }
 
 async function updateStudents(students) {
-  db.parallelize(() => {
-    for (student of students) {
-      updateStudentSync(student);
+  const updated_students = [];
+  for (student of students) {
+    const updated_student = await updateStudent(student);
+    if (updated_student) {
+      updated_students.push(updated_student);
     }
-  });
+    else {
+      dbDebugger(`error updating student: ${student['name']}`);
+    }
+  }
+  return updated_students;
 }
 
-function updateStudentSync(student) {
+function updateStudent(student) {
   const id = student['id'];
   const name = student['name'];
   const period = student['period'];
   const sheets_row = student['sheets_row'];
-  const fellow_id = student['fellow_id'];
-  db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ? WHERE id = ?`, 
-      [name, period, sheets_row, fellow_id, id], function(err) 
-  {
-    if (err) {
-      dbDebugger(err.message);
-    }
-    else {
-      dbDebugger(`student ${id} updated`);
-    }
-  });
-}
-
-async function updateStudent(student) {
+  const tutor_name = student['tutor_name'];
+  const sql = 'SELECT * FROM fellows WHERE tutor_name = ?';
   return new Promise((resolve, reject) => {
-    const id = student['id'];
-    const name = student['name'];
-    const period = student['period'];
-    const sheets_row = student['sheets_row'];
-    const goal = student['goal'];
-    const fellow_id = student['fellow_id'];
-    db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ?, goal = ? WHERE id = ?`, 
-          [name, period, sheets_row, fellow_id, goal, id], function(err) {
+    db.get(sql, [tutor_name], (err, row) => {
       if (err) {
-        reject(err.message);
+        dbDebugger(`updateStudentSync: ${err.message}`);
+        resolve(null);
       }
       else {
-        dbDebugger(`student ${id} updated`);
-        resolve();
+        const fellow_id = row['id'];
+        db.run(`UPDATE students SET name = ?, period = ?, sheets_row = ?, fellow_id = ? WHERE id = ?`, 
+            [name, period, sheets_row, fellow_id, id], function(err) 
+        {
+          if (err) {
+            dbDebugger(err.message);
+            resolve(null);
+          }
+          else {
+            const updated_student = {
+              'id': id,
+              'name': name,
+              'period': period,
+              'sheets_row': sheets_row,
+              'fellow_id': fellow_id,
+            };
+            dbDebugger(`${name} updated`);
+            resolve(updated_student);
+          }
+        });
       }
     });
   });
@@ -155,25 +197,23 @@ async function updateStudentGoal(student) {
   });
 }
 
-async function deleteStudents(studentIDs) {
+function deleteStudents(studentNames) {
   db.parallelize(() => {
-    for (id of studentIDs) {
-      deleteStudent(id);
+    for (student of studentNames) {
+      deleteStudent(student);
     }
   });
 }
 
-async function deleteStudent(id) {
-return new Promise((resolve, reject) => {
-    db.run(`DELETE FROM students WHERE id = ?`, [id], function(err) {
+function deleteStudent(student) {
+  db.run(`DELETE FROM students WHERE name = ?`, [student['name']], function(err) {
     if (err) {
-        reject(err.message);
+      dbDebugger(err.message);
     }
     else {
-        resolve();
+      dbDebugger(`deleted ${student['name']} from DB.`)
     }
-    });
-});
+  });
 }
 
 async function getFellow(id) {
@@ -239,9 +279,8 @@ process.on('SIGINT', () => {
 
 module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
-module.exports.insertStudent = insertStudent;
+module.exports.insertStudents = insertStudents;
 module.exports.getStudent = getStudent;
-module.exports.updateStudent = updateStudent;
 module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
 module.exports.deleteStudents = deleteStudents;
