@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
 const url = require('url');
 const {google} = require('googleapis');
 const googleDebugger = require('debug')('app:google');
@@ -113,13 +112,15 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
       const expected_period = studentToInfo[name]['period'];
       const expected_tutor_name = studentToInfo[name]['tutor_name'];
       const expected_sheets_row = studentToInfo[name]['sheets_row'];
-
+      
       if (isNaN(expected_period)) {
-        const student = {
-          'name': name,
-          'period': expected_period,
-        };
-        studentsToDelete.push(student);
+        if (helper.isStudentInDB(name, periods)) {
+          const student = {
+            'name': name,
+            'period': expected_period,
+          };
+          studentsToDelete.push(student);
+        }
         continue;
       }
       const periodIndex = (expected_period < 5)? expected_period - 1 : expected_period - 2;
@@ -166,7 +167,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     // update rows
     const updated_students = await db.updateStudents(studentsToUpdate);
     // delete rows
-    await db.deleteStudents(studentsToDelete);
+    db.deleteStudents(studentsToDelete);
     const students = await db.getStudentsByPeriod(numPeriods);
     res.send({
       all_studets: students,
