@@ -8,7 +8,7 @@ const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const helper = require('../helpers/helper');
 const sheets_auth = require('../middleware/sheets_auth');
-const domain = 'localhost:8000'; // blueprintschoolsnetwork.com
+const domain = 'blueprintschoolsnetwork.com';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
@@ -16,7 +16,7 @@ const SCOPES = [
 const oauth2Client = new google.auth.OAuth2(
   config.get('google.client_id'),
   config.get('google.client_secret'),
-  `http://${domain}/google/oauth2callback`
+  `https://${domain}/google/oauth2callback`
 );
 
 router.get('/auth', (req, res) => {
