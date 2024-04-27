@@ -77,87 +77,65 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
         googleDebugger('No students');
         return;
     }
-  
-    // convert 2D array to dictionary
-    /*
-    {
-      Ignacio Tinajero, Juliana: {
-        sheets_row: 10,
-        period: 4,
-      }
-    }
-    */
-    const studentToInfo = {};
+
+    // read students from db
+    const numPeriods = await db.getPeriods();
+    const periods = await db.getStudentsByPeriod(numPeriods);
+    
+    const seen = new Set();
+    const studentsToAdd = [];
+    const studentsToUpdate = [];
+    const studentsToDelete = [];
     for (let i = 0; i < range.values.length; i += 3) {
       const period = range.values[i][0];
       const name = range.values[i][1];
       const tutor_name = range.values[i][2];
       const sheetRow = i + 3;
-      if (!(name in studentToInfo)) {
-        studentToInfo[name] = {};
-        studentToInfo[name]['sheets_row'] = sheetRow;
-        studentToInfo[name]['period'] = Number(period);
-        studentToInfo[name]['tutor_name'] = tutor_name;
-      }
-    }
+      if (!seen.has(name)) {
+        seen.add(name);
+        const expected_period = Number(period);
+        const expected_tutor_name = tutor_name;
+        const expected_sheets_row = sheetRow;
+        const targetStudent = helper.getStudent(name, periods);
 
-    // read students from db
-    const numPeriods = await db.getPeriods();
-    const periods = await db.getStudentsByPeriod(numPeriods);
-
-    const studentsToAdd = [];
-    const studentsToUpdate = [];
-    const studentsToDelete = [];
-    for (name in studentToInfo) {
-      const expected_period = studentToInfo[name]['period'];
-      const expected_tutor_name = studentToInfo[name]['tutor_name'];
-      const expected_sheets_row = studentToInfo[name]['sheets_row'];
-      
-      if (isNaN(expected_period)) {
-        if (helper.isStudentInDB(name, periods)) {
-          const student = {
+        if (isNaN(expected_period)) {
+          // case 1: student needs to be deleted from db
+          if (targetStudent) {
+            const student = {
+              'name': name,
+              'period': expected_period,
+            };
+            studentsToDelete.push(student);
+          }
+        }
+        else if (targetStudent) {
+          // case 2: student info might need to be updated in db
+          const sheets_row = targetStudent.sheets_row;
+          const period = targetStudent.period;
+          const tutor_name = targetStudent.tutor_name;
+          if (expected_sheets_row !== sheets_row || 
+              expected_period !== period ||
+              (expected_tutor_name !== tutor_name)
+            ) 
+          {
+              dbDebugger(`${name}: actual row = ${sheets_row}, expected row = ${expected_sheets_row}`);
+              dbDebugger(`${name}: actual period = ${period}, expected period = ${expected_period}`);
+              dbDebugger(`${name}: actual tutor = ${tutor_name}, expected tutor = ${expected_tutor_name}`);
+              targetStudent['sheets_row'] = expected_sheets_row;
+              targetStudent['period'] = expected_period;
+              targetStudent['tutor_name'] = expected_tutor_name;
+              studentsToUpdate.push(targetStudent);
+          }
+        }
+        else {
+          // case 3: student needs to be added it to db
+          const new_student = {
             'name': name,
             'period': expected_period,
+            'tutor_name': expected_tutor_name,
+            'sheets_row': expected_sheets_row
           };
-          studentsToDelete.push(student);
-        }
-        continue;
-      }
-      const periodIndex = (expected_period < 5)? expected_period - 1 : expected_period - 2;
-      const studentsOfPeriod = periods[periodIndex];
-      let targetStudent = null;
-      for (student of studentsOfPeriod) {
-        if (name === student.name) {
-          targetStudent = student;
-          break;
-        }
-      }
-
-      if (!targetStudent) {
-        const new_student = {
-          'name': name,
-          'period': expected_period,
-          'tutor_name': expected_tutor_name,
-          'sheets_row': expected_sheets_row
-        };
-        studentsToAdd.push(new_student);
-      }
-      else {
-        const sheets_row = targetStudent.sheets_row;
-        const period = targetStudent.period;
-        const tutor_name = targetStudent.tutor_name;
-        if (expected_sheets_row !== sheets_row || 
-            expected_period !== period ||
-            (expected_tutor_name !== tutor_name)
-          ) 
-        {
-            dbDebugger(`${name}: actual row = ${sheets_row}, expected row = ${expected_sheets_row}`);
-            dbDebugger(`${name}: actual period = ${period}, expected period = ${expected_period}`);
-            dbDebugger(`${name}: actual tutor = ${tutor_name}, expected tutor = ${expected_tutor_name}`);
-            targetStudent['sheets_row'] = expected_sheets_row;
-            targetStudent['period'] = expected_period;
-            targetStudent['tutor_name'] = expected_tutor_name;
-            studentsToUpdate.push(targetStudent);
+          studentsToAdd.push(new_student);
         }
       }
     }
