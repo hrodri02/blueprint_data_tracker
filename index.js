@@ -26,8 +26,8 @@ let isLoaderRemoved = false;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const protocol = 'http'; //https
-const domain = 'localhost:8000';//'blueprintschoolsnetwork.com';
+const protocol = 'https';
+const domain = 'blueprintschoolsnetwork.com';
 
 setupDate();
 getCurrentUser();
@@ -717,25 +717,69 @@ function synchronizeButtonClicked() {
     const body = JSON.stringify({});
     createLoader();
     post(`${protocol}://${domain}/google/synchronizeDB`, body, (data) => {
-        saveUpdatatedStudents(data);
+        saveAllStudents(data['all_students']);
+        updateSelectedStudents(data['updated_students']);
+        deleteSelectedStudents(data['deleted_students']);
+        addNewStudentsToSelectedStudents(data['new_students']);
         updateStudentsUI();
     });
 }
 
-function saveUpdatatedStudents(students) {
+function saveAllStudents(students) {
     localStorage.setItem('all_students', JSON.stringify(students));
+}
+
+function updateSelectedStudents(updated_students) {
     const selectedStudents = JSON.parse(localStorage.getItem('selected_students'));
-    const numPeriods = selectedStudents.length;
-    for (let period = 0; period < numPeriods; period++) {
-        for (i in selectedStudents[period]) {
-            const selectedStudent = selectedStudents[period][i];
-            const studentsOfPeriod = students[period];
-            for (updatedStudent of studentsOfPeriod) {
-                if (updatedStudent['id'] === selectedStudent['id']) {
-                    selectedStudents[period][i] = updatedStudent;
+    console.log(selectedStudents);
+    console.log(updated_students);
+    for (student of updated_students) {
+        const period = student['period'];
+        const index = (period < 5)? period - 1 : period - 2;
+        let i = 0;
+        while (i < selectedStudents[index].length)
+        {
+            if (selectedStudents[index][i]['id'] === student['id']) {
+                if (selectedStudents[index][i]['fellow_id'] !== student['fellow_id']) {
+                    selectedStudents[index].splice(i, 1);
+                }
+                else {
+                    selectedStudents[index][i] = student;
                 }
             }
+            i++;
         }
+    }
+    localStorage.setItem('selected_students', JSON.stringify(selectedStudents));
+}
+
+function deleteSelectedStudents(deleted_students) {
+    const selectedStudents = JSON.parse(localStorage.getItem('selected_students'));
+    for (student of deleted_students) {
+        for (studentsOfPeriod of selectedStudents) {
+            let found = false;
+            let i = 0;
+            while (i < studentsOfPeriod.length) {
+                if (studentsOfPeriod[i]['name'] === student['name']) {
+                    found = true;
+                    break;
+                }
+                i++;
+            }
+            if (found) {
+                studentsOfPeriod.splice(i, 1);
+            }
+        }
+    }
+    localStorage.setItem('selected_students', JSON.stringify(selectedStudents));
+}
+
+function addNewStudentsToSelectedStudents(new_students) {
+    const selectedStudents = JSON.parse(localStorage.getItem('selected_students'));
+    for (student of new_students) {
+        const period = student['period'];
+        const index = (period < 5)? period - 1 : period - 2;
+        selectedStudents[index].push(student);
     }
     localStorage.setItem('selected_students', JSON.stringify(selectedStudents));
 }
