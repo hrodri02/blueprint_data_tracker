@@ -7,7 +7,6 @@ const path = require('path');
 const home = require('./routes/home');
 const students = require('./routes/students');
 const users = require('./routes/users');
-const aws = require('./routes/aws');
 const session = require('express-session');
 const config = require('config');
 
@@ -39,7 +38,6 @@ app.use('/', home);
 app.use('/students', students);
 app.use('/users', users);
 app.use('/google', google);
-app.use('/aws', aws);
 
 /**
  * Server Activation
