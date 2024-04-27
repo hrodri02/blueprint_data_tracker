@@ -56,16 +56,16 @@ function minDistanceHelper(w1, w2, m, n, i, j, memo) {
     return smallest;
 }
 
-function isStudentInDB(name, studentsInDB) {
+function getStudent(name, studentsInDB) {
     for (period of studentsInDB) {
         for (student of period) {
             if (name === student.name) {
-                return true;
+                return student;
             }
         }
     }
-    return false;
+    return null;
 }
 
 module.exports.closestMatch = closestMatch;
-module.exports.isStudentInDB = isStudentInDB;
+module.exports.getStudent = getStudent;
