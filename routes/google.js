@@ -8,7 +8,7 @@ const db = require('../db/database');
 const dbDebugger = require('debug')('app:db');
 const helper = require('../helpers/helper');
 const sheets_auth = require('../middleware/sheets_auth');
-const domain = 'blueprintschoolsnetwork.com';
+const domain = 'localhost:8000';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
@@ -16,7 +16,7 @@ const SCOPES = [
 const oauth2Client = new google.auth.OAuth2(
   config.get('google.client_id'),
   config.get('google.client_secret'),
-  `https://${domain}/google/oauth2callback`
+  `http://${domain}/google/oauth2callback`
 );
 
 router.get('/auth', (req, res) => {
@@ -74,8 +74,8 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   
     const range = response.data;
     if (!range || !range.values || range.values.length == 0) {
-        googleDebugger('No students');
-        return;
+      googleDebugger('No students');
+      res.send({error_message: 'Spreadsheet has not data.'});
     }
 
     // read students from db
@@ -156,7 +156,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
   } 
   catch (err) {
     googleDebugger(err.message);
-    res.send({error: err.message});
+    res.send({error_message: err.message});
   }
 });
 
