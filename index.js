@@ -26,8 +26,8 @@ let isLoaderRemoved = false;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const protocol = 'https';
-const domain = 'blueprintschoolsnetwork.com';
+const protocol = 'http';
+const domain = 'localhost:8000';
 
 setupDate();
 getCurrentUser();
@@ -597,65 +597,6 @@ function getDate() {
     }
 }
 
-async function post(url, body = JSON.stringify({}), callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url, {method: "POST", body: body, headers: {
-            "Content-Type": "application/json",
-        }});
-        removeLoader();
-
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url}: ${res.status} ${res.statusText}`);
-        }
-    }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-    
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        else {
-            callback(json);
-        }
-    }       
-}
-
-async function get(url, callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url);
-        removeLoader();
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url}: ${res.status} ${res.statusText}`);
-        }
-    }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        // case 1: user tried to access sheets, but has not given the app permission
-        else if (json['authorizationUrl']) {
-            window.location.href = json['authorizationUrl'];    
-        }
-        else {
-            callback(json);
-        }
-    }
-}
-
 function resetGrades(period) {
     const periodHeader = document.getElementById(period);
     const periodDiv = periodHeader.nextElementSibling;
@@ -818,31 +759,5 @@ function sheetsToggleClicked() {
     }
     else {
         get(`${protocol}://${domain}/google/auth`);
-    }
-}
-
-async function deleteRequest(url, callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url, {method: "DELETE"});
-        removeLoader();
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url} ${res.status} ${res.statusText}`);
-        }
-    }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        else {
-            callback(json);
-        }
     }
 }
