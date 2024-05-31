@@ -92,6 +92,7 @@ function setupSheetsPermissionsToggle() {
 
 function getMyStudents() {
     get(`${protocol}://${domain}/students/fellow`, (data) => {
+        removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
