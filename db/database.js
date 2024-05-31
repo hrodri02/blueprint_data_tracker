@@ -26,35 +26,52 @@ async function getPeriods() {
     });
   }
 
-async function getStudentsByPeriod(numPeriods, fellowID = null) {
-    return new Promise((resolve, reject) => {
-      dbDebugger(fellowID);
-      let getStudents = `SELECT students.*, fellows.tutor_name FROM students INNER JOIN fellows on students.fellow_id = fellows.id`;
-      if (fellowID !== null) {
-        getStudents += ` WHERE fellow_id = '${fellowID}'`;
-      }
-      db.all(getStudents, (err, rows) => {
-        if (err) {
-          reject(err.message);
-        }
-        else {
-          const students = [];
-          for (let i = 0; i < numPeriods; i++) {
-            students.push([]);
+async function getStudentsByPeriod(fellowID = null) {
+  return new Promise((resolve, reject) => {
+      db.serialize(() => {
+        // get the number of periods
+        const getPeriodsSql = 'SELECT COUNT(DISTINCT period) as periods FROM students';
+        let numPeriods = null;
+        db.get(getPeriodsSql, [], (err, row) => {
+          if (err) {
+            reject(err.message);
           }
+          else {
+            numPeriods = row.periods;
+          }
+        });
+        
+        // get the students by period
+        let getStudents = `SELECT students.*, fellows.tutor_name FROM students INNER JOIN fellows on students.fellow_id = fellows.id`;
+        if (fellowID !== null) {
+          getStudents += ` WHERE fellow_id = '${fellowID}'`;
+        }
+        db.all(getStudents, (err, rows) => {
+          if (err) {
+            reject(err.message);
+          }
+          else {
+            dbDebugger('periods=', numPeriods);
+            dbDebugger('rows');
+            dbDebugger(rows);
+            const students = [];
+            for (let i = 0; i < numPeriods; i++) {
+              students.push([]);
+            }
 
-          for (row of rows) {
-            if (row.period < 5) {
-              students[row.period - 1].push(row);
+            for (row of rows) {
+              if (row.period < 5) {
+                students[row.period - 1].push(row);
+              }
+              else {
+                students[row.period - 2].push(row);
+              }
             }
-            else {
-              students[row.period - 2].push(row);
-            }
+            resolve(students);
           }
-          resolve(students);
-        }
+        });
       });
-    });
+  });
 }
 
 async function insertStudents(students) {
@@ -110,6 +127,47 @@ function insertStudent(student) {
         });
       }
     });
+  });
+}
+
+async function insertStudentsForFellow(students) {
+  const new_students = [];
+  for (student of students) {
+    const new_student = await insertStudentForFellow(student);
+    if (new_student) {
+      new_students.push(new_student);
+    }
+  }
+  return new_students;
+}
+
+function insertStudentForFellow(student) {
+  // insert one row into the students table
+  const name = student['name'];
+  const period = student['period'];
+  const sheets_row = student['sheets_row'];
+  const fellow_id = student['fellow_id'];
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO students(name, period, sheets_row, fellow_id) VALUES(?, ?, ?, ?)`, 
+        [name, period, sheets_row, fellow_id], function(err) {
+    if (err) {
+      resolve(null);
+      dbDebugger(err.message);
+      return null;
+    }
+    else {
+      const new_student = {
+        'id': this.lastID,
+        'name': name,
+        'period': period,
+        'sheets_row': sheets_row,
+        'fellow_id': fellow_id,
+      };
+      resolve(new_student);
+      dbDebugger(this.lastID);
+    }
+    });
+    
   });
 }
 
@@ -231,17 +289,29 @@ async function getFellow(id) {
 }
 
 async function insertFellow(id, email, name) {
-    return new Promise((resolve, reject) => {
-      const sql = 'INSERT INTO fellows(id, email, name) VALUES(?, ?, ?)';
-      db.run(sql, [id, email, name], (err, row) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'INSERT INTO fellows(id, email, name) VALUES(?, ?, ?)';
+    const selectNewFellow = 'SELECT * FROM fellows WHERE id = ?';
+    db.serialize(function() {
+      db.run(sql, [id, email, name], (err) => {
         if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+      });
+  
+      db.get(selectNewFellow, [id], (err, row) => {
+        if (err) {
+          dbDebugger(err.message);
           reject(err.message);
         }
         else {
-          resolve(this.lastID);
+          dbDebugger(row);
+          resolve(row);
         }
       });
     });
+  });
 }
 
 async function updateFellow(fellow) {
@@ -251,8 +321,10 @@ async function updateFellow(fellow) {
     const email = fellow['email'];
     const sheets_permissions = fellow['sheets_permissions'];
     const refresh_token = fellow['refresh_token'];
-    db.run(`UPDATE fellows SET name = ?, email = ?, sheets_permissions = ?, refresh_token = ? WHERE id = ?`, 
-          [name, email, sheets_permissions, refresh_token, id], function(err) {
+    const sheet_id = fellow['sheet_id'];
+    const tutor_name = fellow['tutor_name'];
+    db.run(`UPDATE fellows SET name = ?, email = ?, sheets_permissions = ?, refresh_token = ?, sheet_id = ?, tutor_name = ? WHERE id = ?`, 
+          [name, email, sheets_permissions, refresh_token, sheet_id, tutor_name, id], function(err) {
       if (err) {
         reject(err.message);
       }
@@ -280,6 +352,7 @@ process.on('SIGINT', () => {
 module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
+module.exports.insertStudentsForFellow = insertStudentsForFellow;
 module.exports.getStudent = getStudent;
 module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
