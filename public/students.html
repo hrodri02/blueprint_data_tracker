@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en-us"></html>
-  <head>
-    <link href='./public/styles.css' rel='stylesheet'></link>
+<html lang="en-us">
+<head>
+    <link href='./public/styles.css' rel='stylesheet'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <script src="https://kit.fontawesome.com/769642dbf3.js" crossorigin="anonymous"></script>
 </head>
@@ -18,7 +18,7 @@
         <div class='top-right-flex-container'>
             <span>Sheets Permissions </span>
             <input type="checkbox" id="toggle" onclick='sheetsToggleClicked()'/>
-            <label for="toggle"><div id="circle"></div></label>
+            <label for="toggle" id="toggle-label"><div id="circle"></div></label>
             <button id='synchronize' onclick='synchronizeButtonClicked()'>Synchronize</button>
             <a href='signup.html'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
         </div>
@@ -38,5 +38,7 @@
         <div class='students-container'></div>
         <textarea class='notes-container' name='notes'></textarea>
     </div>
-    <script type='text/javascript', src='../index.js'></script>
+    <script type='text/javascript' src='http_methods.js'></script>
+    <script type='text/javascript' src='index.js'></script>
 </body>
+</html>
