@@ -404,7 +404,7 @@ h3 {
     padding: 14px 16px;
 }
 
-#sheets-permissions {
+.account-setup {
     display: flex;
     width: 100%;
     height: 100vh;
@@ -417,11 +417,11 @@ h3 {
     width: 80%;
 }
 
-#sheets-permissions h2 {
+.account-setup h2 {
     color: #ccc;
 }
 
-#sheets-permissions p {
+.account-setup p {
     color: #ccc;
 }
 
@@ -431,7 +431,7 @@ h3 {
     column-gap: 10px;
 }
 
-#sheets-permissions button {
+.account-setup button {
     background-color: cornflowerblue;
     border: none;
     color: #ccc;
@@ -439,15 +439,6 @@ h3 {
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-}
-
-#account-setup {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    background-color: black;
-    justify-content: center;
-    align-items: center;
 }
 
 #sheet-url-label {
