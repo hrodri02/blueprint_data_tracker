@@ -29,6 +29,8 @@ router.post('/signup', async (req, res) => {
       // store new users in DB
       if (user == null) {
         user = await db.insertFellow(googleUserID, email, name);
+        req.session.user = user;
+        return res.redirect('/users/sheets_permissions');
       }
       
       req.session.user = user;
@@ -47,6 +49,14 @@ router.get('/signout', (req, res) => {
     }
     res.end();
   });
+});
+
+router.get('/sheets_permissions', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/sheets_permissions.html'));
+});
+
+router.get('/account_setup', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/account_setup.html'));
 });
 
 router.get('/me', (req, res) => {
