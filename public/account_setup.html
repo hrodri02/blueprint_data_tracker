@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en-us"></html>
+  <head>
+    <link href='/public/styles.css' rel='stylesheet'></link>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body>
+    <div class="account-setup">
+        <div class="account-setup-flex-item">
+            <h2>Account Setup</h2>
+            <div class="form-group">
+                <label id="tutor-name-label"><strong>Tutor Name</strong></label>
+                <input name= "tutor_name" id="tutor-name" type="text" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label for="sheet-url" id="sheet-url-label"><strong>Sheet URL</strong></label>
+                <input name= "sheet_id" id="input-url" type="text" maxlength="300">
+            </div>
+            <div class="form-group">
+                <button onclick="submitButtonClicked()">Submit</button>
+                <button onclick="finishLaterButtonClicked()">Finish Later</button>
+            </div>
+        </div>
+    </div>
+    <script type='text/javascript' src='../loader.js'></script>
+    <script type='text/javascript' src='../http_methods.js'></script>
+    <script type='text/javascript' src='../account_setup.js'></script>
+</body>
