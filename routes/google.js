@@ -52,7 +52,7 @@ router.get('/oauth2callback', async (req, res) => {
   }
   await db.updateFellow(fellow);
   req.session.user.sheets_permissions = fellow['sheets_permissions'];
-  res.redirect('/');
+  res.redirect('/users/account_setup');
 });
 
 router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
@@ -68,7 +68,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     const sheets = google.sheets({version: 'v4', auth: oauth2Client});
     let response;
     response = await sheets.spreadsheets.values.get({
-        spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+        spreadsheetId: fellow.sheet_id,
         range: 'Daily Data!A3:C300',
     });
   
@@ -79,8 +79,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     }
 
     // read students from db
-    const numPeriods = await db.getPeriods();
-    const periods = await db.getStudentsByPeriod(numPeriods);
+    const periods = await db.getStudentsByPeriod();
     
     const seen = new Set();
     const studentsToAdd = [];
@@ -146,7 +145,7 @@ router.post('/synchronizeDB', [sheets_auth], async (req, res) => {
     const updated_students = await db.updateStudents(studentsToUpdate);
     // delete rows
     db.deleteStudents(studentsToDelete);
-    const students = await db.getStudentsByPeriod(numPeriods);
+    const students = await db.getStudentsByPeriod();
     res.send({
       all_studets: students,
       deleted_students: studentsToDelete,
