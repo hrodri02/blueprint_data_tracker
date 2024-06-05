@@ -61,8 +61,8 @@ function setDates() {
 
     let date = monday;
     while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
-        date = new Date(date);
-        dates.push(date);
+        const new_date = new Date(date);
+        dates.push(new_date);
         date.setDate(date.getDate() + 1);
     }
 }
