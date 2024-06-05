@@ -27,8 +27,6 @@ let hallpassTimerId = null;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const protocol = 'http';
-const domain = 'localhost:8000';
 
 setupDate();
 getCurrentUser();

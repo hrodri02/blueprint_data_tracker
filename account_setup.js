@@ -1,5 +1,3 @@
-const domain = 'localhost:8000';
-const protocol = 'http';
 const sheetUrlInput = document.getElementById('input-url');
 const tutorNameInput = document.getElementById('tutor-name');
 
