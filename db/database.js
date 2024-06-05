@@ -171,6 +171,30 @@ function insertStudentForFellow(student) {
   });
 }
 
+async function insertStudentNote(student_note, student_id) {
+  const note = student_note['note'];
+  const date = student_note['date'];
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO student_notes(note, date, student_id) VALUES(?, ?, ?)`, 
+        [note, date, student_id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        const new_note = {
+          'id': this.lastID,
+          'note': note,
+          'date': date,
+          'student_id': student_id,
+        };
+        dbDebugger(this.lastID);
+        resolve(new_note);
+      }
+    });
+  });
+}
+
 async function getStudent(id) {
 return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM students WHERE id = ?';
@@ -353,6 +377,7 @@ module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
+module.exports.insertStudentNote = insertStudentNote;
 module.exports.getStudent = getStudent;
 module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
