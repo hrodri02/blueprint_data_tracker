@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en-us"></html>
+  <head>
+    <link href='/public/styles.css' rel='stylesheet'></link>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body>
+    <div class="account-setup">
+        <div class="sheet-permissions-flex-item">
+            <h2>
+                Do you want to give this app permissions to access and modify
+                your google spreadsheets?
+            </h2>
+            <p>
+                Giving this app permissions will allow it to download your students to the app,
+                so that you can track student data and upload it to your spreadsheet through TutorNotes.
+            </p>
+            <div class="buttons-group">
+                <button onclick="yesButtonClicked()">Yes</button>
+                <button onclick="noButtonClicked()">No</button>
+            </div>
+        </div>
+    </div>
+    <script type='text/javascript', src='website_metadata.js'></script>
+    <script type='text/javascript', src='../http_methods.js'></script>
+    <script type='text/javascript', src='../sheets_permissions.js'></script>
+</body>

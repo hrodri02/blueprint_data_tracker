@@ -8,12 +8,13 @@ const numLessonParts = 6;
 
 const lessonTimerLabel = document.getElementById("timerLabel");
 const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
+const settingsContent = document.getElementById("settings-content");
 const container = document.getElementsByClassName("container")[0];
 const studentsContainer = document.getElementsByClassName("students-container")[0];
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
 let hallpassTimerId = null;
-let isLoaderRemoved = false;
+
 /*
     rowToStudentData = {
         0: [
@@ -26,8 +27,6 @@ let isLoaderRemoved = false;
 const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
-const protocol = 'https';
-const domain = 'blueprintschoolsnetwork.com';
 
 setupDate();
 getCurrentUser();
@@ -48,15 +47,14 @@ function setupDate() {
 
 function getCurrentUser() {
     get(`${protocol}://${domain}/users/me`, (data) => {
-        const permissions = JSON.stringify(data['sheets_permissions']);
+        const permissions = data['sheets_permissions'];
         if (permissions) {
-            const permissionsToggle = document.getElementById('toggle');
-            permissionsToggle.checked = true;
             getColumnNames();
         }
         localStorage.setItem('fellow_id', JSON.stringify(data['id']));
-        localStorage.setItem('sheets_permissions', permissions);
-        setupSheetsPermissionsToggle();
+        localStorage.setItem('tutor_name', JSON.stringify(data['tutor_name']));
+        localStorage.setItem('sheet_id', JSON.stringify(data['sheet_id']));
+        localStorage.setItem('sheets_permissions', JSON.stringify(permissions));
     });
 }
 
@@ -69,29 +67,26 @@ function getColumnNames() {
     }
 }
 
-function setupSheetsPermissionsToggle() {
-    const sheets_permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
-    const permissionsToggle = document.getElementById('toggle');
-    permissionsToggle.checked = sheets_permissions;
-    const label = permissionsToggle.nextElementSibling;
-    if (permissionsToggle.checked) {
-        // change toggle to the right color
-        label.style.backgroundColor = '#2196F3';
-        // move circle within toggle to the right
-        const circle = document.getElementById('circle');
-        circle.style.transform = "translateX(20px)";
-    }
-    else {
-        // change toggle to the right color
-        label.style.backgroundColor = '#ccc';
-        // move circle within toggle to the original position
-        const circle = document.getElementById('circle');
-        circle.style.transform = "translateX(0px)";
+function finishAccountSetupButtonClicked() {
+    // hide settings content drop down
+    settingsContent.style.display = "none";
+
+    const permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
+    if (permissions) {
+        const tutor_name = JSON.parse(localStorage.getItem('tutor_name'));
+        const sheet_id = JSON.parse(localStorage.getItem('sheet_id'));
+        if (!tutor_name && !sheet_id) {
+            window.location.href = `${protocol}://${domain}/users/account_setup`;
+        }
+        else {
+            alert('You finished setting up your account!');
+        }
     }
 }
 
 function getMyStudents() {
     get(`${protocol}://${domain}/students/fellow`, (data) => {
+        removeLoader();
         localStorage.setItem('selected_students', JSON.stringify(data));
         for (period in data) {
             createPeriodHeader(period);
@@ -597,65 +592,6 @@ function getDate() {
     }
 }
 
-async function post(url, body = JSON.stringify({}), callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url, {method: "POST", body: body, headers: {
-            "Content-Type": "application/json",
-        }});
-        removeLoader();
-
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url}: ${res.status} ${res.statusText}`);
-        }
-    }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-    
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        else {
-            callback(json);
-        }
-    }       
-}
-
-async function get(url, callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url);
-        removeLoader();
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url}: ${res.status} ${res.statusText}`);
-        }
-    }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        // case 1: user tried to access sheets, but has not given the app permission
-        else if (json['authorizationUrl']) {
-            window.location.href = json['authorizationUrl'];    
-        }
-        else {
-            callback(json);
-        }
-    }
-}
-
 function resetGrades(period) {
     const periodHeader = document.getElementById(period);
     const periodDiv = periodHeader.nextElementSibling;
@@ -691,32 +627,20 @@ function resetButtonClicked() {
 }
 
 function signoutButtonClicked() {
+    // hide settings content drop down
+    settingsContent.style.display = "none";
+
     fetch(`${protocol}://${domain}/users/signout`)
 }
 
-function createLoader() {
-    const loader = document.createElement("div");
-    loader.classList.add('loader');
-    document.body.appendChild(loader);
-    isLoaderRemoved = false;
-}
-
-function removeLoader() {
-    if (isLoaderRemoved) return;
-    const loader = document.querySelector('.loader');
-    loader.classList.add('loader-hidden');
-    loader.addEventListener('transitionend', (event) => {
-        if (event.propertyName === 'visibility') {
-            document.body.removeChild(loader);
-        }
-    });
-    isLoaderRemoved = true;
-}
-
 function synchronizeButtonClicked() {
+    // hide settings content drop down
+    settingsContent.style.display = "none";
+
     const body = JSON.stringify({});
     createLoader();
     post(`${protocol}://${domain}/google/synchronizeDB`, body, (data) => {
+        removeLoader();
         saveAllStudents(data['all_students']);
         updateSelectedStudents(data['updated_students']);
         deleteSelectedStudents(data['deleted_students']);
@@ -807,42 +731,25 @@ function onSheetsRowChanged() {
     newStudent['sheets_row'] = input.value;
 }
 
-function sheetsToggleClicked() {
+function sheetsPermissionsButtonClicked() {
+    // hide settings content drop down
+    settingsContent.style.display = "none";
+
     let permissions = JSON.parse(localStorage.getItem('sheets_permissions'));
     if (permissions) {
-        deleteRequest(`${protocol}://${domain}/google/auth`, (res) => {
-            permissions = JSON.stringify(res['sheets_permissions']);
-            localStorage.setItem('sheets_permissions', permissions);
-            setupSheetsPermissionsToggle();
-        });
+        alert('This app already has access to your spreadsheets. If you want to remove permissions visit Third-Party apps & services for your account.');
     }
     else {
         get(`${protocol}://${domain}/google/auth`);
     }
 }
 
-async function deleteRequest(url, callback = () => {}) {
-    let json;
-    try {
-        const res = await fetch(url, {method: "DELETE"});
-        removeLoader();
-        if (res.ok) {
-            json = await res.json();
-        }
-        else {
-            throw new Error(`${url} ${res.status} ${res.statusText}`);
-        }
+function settingsButtonClicked() {
+    const style = window.getComputedStyle(settingsContent);
+    if (style.display === "none") {
+        settingsContent.style.display = "block";
     }
-    catch (error) {
-        alert(`${url}: ${error}`);
-    }
-
-    if (json) {
-        if (json['error_message']) {
-            alert(url, json['error_message']);
-        }
-        else {
-            callback(json);
-        }
+    else {
+        settingsContent.style.display = "none";
     }
 }

@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const googleDebugger = require('debug')('app:google');
+const sessionDebugger = require('debug')('app:session');
 const {google} = require('googleapis');
 const auth = require('../middleware/auth');
 const sheets_auth = require('../middleware/sheets_auth');
@@ -30,9 +31,9 @@ router.get('/', [auth], async (req, res) => {
 });
 
 router.get('/fellow', [auth], async (req, res) => {
-  const numPeriods = await db.getPeriods();
   const fellowID = req.session.user.id;
-  const students = await db.getStudentsByPeriod(numPeriods, fellowID);
+  const students = await db.getStudentsByPeriod(fellowID);
+  sessionDebugger(students);
   res.send(students);
 });
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en-us"></html>
-  <head>
-    <link href='./public/styles.css' rel='stylesheet'></link>
+<html lang="en-us">
+<head>
+    <link href='./public/styles.css' rel='stylesheet'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <script src="https://kit.fontawesome.com/769642dbf3.js" crossorigin="anonymous"></script>
 </head>
@@ -16,11 +16,13 @@
             <li><input type='date' id='date'/></li>
         </ul>
         <div class='top-right-flex-container'>
-            <span>Sheets Permissions </span>
-            <input type="checkbox" id="toggle" onclick='sheetsToggleClicked()'/>
-            <label for="toggle"><div id="circle"></div></label>
-            <button id='synchronize' onclick='synchronizeButtonClicked()'>Synchronize</button>
-            <a href='signup.html'><button id='signout' onclick='signoutButtonClicked()'>Sign out</button></a>
+            <button class="settings-button" onclick="settingsButtonClicked()"><i class="fa-solid fa-gear"></i></button>
+            <div id="settings-content">
+                <a id="sheets-permissions-button" href="#" onclick="sheetsPermissionsButtonClicked()">Sheets Permissions</a>
+                <a href="#" onclick="finishAccountSetupButtonClicked()">Account Setup</a>
+                <a id='synchronize' href="#" onclick="synchronizeButtonClicked()">Synchronize</a>
+                <a id='signout' href="signup.html" onclick="signoutButtonClicked()">Signout</a>
+            </div>
         </div>
     </nav>
     <nav class='left-navigation-bar'>
@@ -38,5 +40,9 @@
         <div class='students-container'></div>
         <textarea class='notes-container' name='notes'></textarea>
     </div>
-    <script type='text/javascript', src='../index.js'></script>
+    <script type='text/javascript' src='website_metadata.js'></script>
+    <script type='text/javascript' src='loader.js'></script>
+    <script type='text/javascript' src='http_methods.js'></script>
+    <script type='text/javascript' src='index.js'></script>
 </body>
+</html>

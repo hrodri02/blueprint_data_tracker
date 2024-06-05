@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="en-us"></html>
-  <head>
-    <link href='./public/styles.css' rel='stylesheet'></link>
+<html lang="en-us">
+<head>
+    <link href='./public/styles.css' rel='stylesheet'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
 </head>
 <body>
@@ -19,14 +19,19 @@
     </nav>
     <div class="loader"></div>
     <div id="edit-user">
-        <div class="form-group">
-            <label for="goal"><strong>Math Goal</strong></label>
-            <input type="text" id="goal" maxlength="100">
-        </div>
-        <div class="form-group">
-            <label for="studentData"><strong>Student Data</strong></label>
-            <div class="days-flex-container"></div>
+        <div>
+            <div class="form-group">
+                <label for="goal"><strong>Math Goal</strong></label>
+                <input type="text" id="goal" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label for="studentData"><strong>Student Data</strong></label>
+                <div class="days-flex-container"></div>
+            </div>
         </div>
     </div>
+    <script type='text/javascript', src='./website_metadata.js'></script>
+    <script type='text/javascript', src='../http_methods.js'></script>
     <script type='text/javascript', src='../student.js'></script>
 </body>
+</html>
