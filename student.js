@@ -29,7 +29,7 @@ setDatesForDays();
 getDataForCurrentWeek();
 
 function setStudent() {
-    const students = JSON.parse(localStorage.getItem('students'));
+    const students = JSON.parse(localStorage.getItem('selected_students'));
     const index = (period < 5)? period - 1 : period - 2;
     for (s of students[index]) {
         if (s['id'] === studentID) {
@@ -38,8 +38,9 @@ function setStudent() {
         }
     }
     h1.innerText = student['name'];
-    textInput.value = student['goal'];
-    hashData('goal', student['goal']);
+    const goal = (student['goal'])? student['goal'] : '';
+    textInput.value = goal;
+    hashData('goal', goal);
 }
 
 function setWeek() {
@@ -114,9 +115,15 @@ function getDataForCurrentWeek() {
     monday.setDate(monday.getDate() + daysBeforeWeek);
     friday.setDate(friday.getDate() + daysBeforeWeek + 4);
     // get spreadsheet columns for monday and friday
-    const firstColumn = getColumn(monday);
-    const lastColumn = getColumn(friday);
-    getStudentData(firstColumn, lastColumn);
+    try {
+        const firstColumn = getColumn(monday);
+        const lastColumn = getColumn(friday);
+        getStudentData(firstColumn, lastColumn);
+    }
+    catch (err) {
+        removeLoader();
+        alert(err.message);
+    }
 }
 
 function getColumn(date) {
@@ -143,7 +150,7 @@ function getColumn(date) {
  ["GRADE","GRADES","GRADES","GRADES","GRADES"]]
 */
 function getStudentData(start, end) {
-    fetch(`https://${domain}/students/${studentID}/dailydata?start=${start}&end=${end}`)
+    fetch(`${protocol}://${domain}/students/${studentID}/dailydata?start=${start}&end=${end}`)
     .then(function(response) {
         removeLoader();
         if (!response.ok) {
@@ -248,12 +255,12 @@ function uploadButtonClicked() {
             const goal = textInput.value;
             hashData('goal', goal);
             const studentGoalBody = JSON.stringify({goal: goal});
-            patch(`https://${domain}/students/${studentID}`, studentGoalBody);
+            patch(`${protocol}://${domain}/students/${studentID}`, studentGoalBody);
         }
 
         if (daysModified.length > 0) {
             const dailyDataBody = JSON.stringify({columns: columns, values: daysModified});
-            patch(`https://${domain}/students/${studentID}/dailydata`, dailyDataBody);
+            patch(`${protocol}://${domain}/students/${studentID}/dailydata`, dailyDataBody);
         }
     }
     catch (err) {
@@ -406,14 +413,4 @@ function resetDays() {
             button.style.backgroundColor = "";
         }
     }
-}
-
-function removeLoader() {
-    const loader = document.querySelector('.loader');
-    loader.classList.add('loader-hidden');
-    loader.addEventListener('transitionend', (event) => {
-        if (event.propertyName === 'visibility') {
-            document.body.removeChild(loader);
-        }
-    });
 }
