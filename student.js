@@ -6,6 +6,7 @@ const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
+const studentNoteTextArea = document.getElementById('student-note');
 
 const WEEKDAYS = 5;
 
@@ -413,4 +414,16 @@ function resetDays() {
             button.style.backgroundColor = "";
         }
     }
+}
+
+function uploadNoteButtonClicked() {
+    const note = studentNoteTextArea.value;
+    const date = new Date();
+    const body = JSON.stringify({
+        'note': note,
+        'date': date.toISOString()
+    });
+    post(`${protocol}://${domain}/students/${studentID}/notes`, body, (new_note) => {
+        console.log(new_note);
+    });
 }
