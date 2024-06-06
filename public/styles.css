@@ -444,3 +444,8 @@ h3 {
 #tutor-name-label {
     color: #ccc;
 }
+
+#student-note {
+    width: 100%;
+    height: 20vh;
+}
