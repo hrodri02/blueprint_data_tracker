@@ -239,7 +239,7 @@ router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
 
 router.post('/:id/notes', [auth], async (req, res) => {
   const student_id = req.params.id;
-  const result = await db.getStudent(id);
+  const result = await db.getStudent(student_id);
   if (!result) {
     return res.status(404).send('Student with given ID not found.');
   }
