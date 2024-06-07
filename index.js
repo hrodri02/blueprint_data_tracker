@@ -319,7 +319,7 @@ function createAddNewStudentUI() {
     div.innerHTML = `
         <div class="add-new-student-top-nav">
             <h3>Add New Student</h3>
-            <button class="cancel-button" onclick="cancelAddNewStudent()"><i class="fa-solid fa-x"></i></button>        
+            <button class="cancel-button" onclick="cancelAddNewStudent()"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="add-new-student-form-container">
             <form>
