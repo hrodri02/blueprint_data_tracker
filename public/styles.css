@@ -344,16 +344,16 @@ h3 {
     opacity: 0.5;
 }
 
-.add-new-student-top-nav {
+.popup-top-nav {
     display: flex;
 }
 
-.add-new-student-top-nav h3 {
+.popup-top-nav h3 {
     flex-grow: 1;
     text-align: center;
 }
 
-.addNewStudent {
+.popup-container {
     display: flex;
     flex-direction: column;
     position: fixed;
@@ -370,27 +370,6 @@ h3 {
     flex-grow: 1;
     justify-content: center;
     align-items: center;
-}
-
-.add-existing-student-top-nav {
-    display: flex;
-}
-
-.add-existing-student-top-nav h3 {
-    flex-grow: 1;
-    text-align: center;
-}
-
-.add-existing-student {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 37.5%;
-    left: 37.5%;
-    width: 25%;
-    height: 25%;
-    background-color: #f9f9f9;
-    border-radius: 10px;
 }
 
 .cancel-button {
@@ -445,9 +424,37 @@ h3 {
     color: #ccc;
 }
 
+.add-new-note-container {
+    width: 100%;
+    height: 100%;
+}
+
 #student-note {
     width: 100%;
-    height: 20vh;
+    height: 80%;
+}
+
+.upload-note-button-container {
+    display: flex;
+    justify-content: center;
+}
+
+#student-notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+    margin: 0 10%;
+    padding: 10px 0;
+}
+
+#student-notes-header button {
+    background-color: cornflowerblue;
+    border: none;
+    color: #ccc;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
 }
 
 #student-notes-container {
