@@ -317,7 +317,7 @@ function createAddNewStudentUI() {
     document.body.appendChild(blackContainer);
     const div = document.createElement('div');
     div.innerHTML = `
-        <div class="add-new-student-top-nav">
+        <div class="popup-top-nav">
             <h3>Add New Student</h3>
             <button class="cancel-button" onclick="cancelAddNewStudent()"><i class="fa-solid fa-x"></i></button>
         </div>
@@ -331,7 +331,7 @@ function createAddNewStudentUI() {
             </form>
         </div>
     `;
-    div.classList.add("addNewStudent");
+    div.classList.add("popup-container");
     document.body.appendChild(div);
 }
 
@@ -360,7 +360,7 @@ function uploadNewStudent() {
 function cancelAddNewStudent() {
     const blackContainer = document.querySelector('.black-container');
     document.body.removeChild(blackContainer);
-    const div = document.querySelector('.addNewStudent');
+    const div = document.querySelector('.popup-container');
     document.body.removeChild(div);
 }
 
@@ -405,7 +405,7 @@ function createAddExistingStudentsUI(students) {
     addBlackContainer();
 
     const div = document.createElement('div');
-    div.classList.add("add-existing-student");
+    div.classList.add("popup-container");
     addHeaderToPopUp(div);
 
     const studentsDiv = document.createElement('div');
@@ -425,7 +425,7 @@ function addBlackContainer() {
 
 function addHeaderToPopUp(div) {
     div.innerHTML = `
-        <div class="add-existing-student-top-nav">
+        <div class="popup-top-nav">
             <h3>Add Existing Student</h3>
             <button class="cancel-button" onclick="cancelAddExistingStudent()"><i class="fa-solid fa-x"></i></button>        
         </div>
@@ -495,7 +495,7 @@ function getStudentsContainerForPeriod(periodIndex) {
 function cancelAddExistingStudent() {
     const blackContainer = document.querySelector('.black-container');
     document.body.removeChild(blackContainer);
-    const div = document.querySelector('.add-existing-student');
+    const div = document.querySelector('.popup-container');
     document.body.removeChild(div);
 }
 
