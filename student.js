@@ -6,7 +6,6 @@ const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
-const studentNoteTextArea = document.getElementById('student-note');
 const studentNotesContainer = document.getElementById('student-notes-container');
 
 const WEEKDAYS = 5;
@@ -446,14 +445,49 @@ function resetDays() {
     }
 }
 
+function addNoteButtonClicked() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>Add New Note</h3>
+            <button class="cancel-button" onclick="cancelAddNewNote()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="add-new-note-container">
+            <textarea id='student-note' name='note'></textarea>
+            <div class="upload-note-button-container">
+                <button onclick="uploadNote()">Upload Note</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function cancelAddNewNote() {
+    const blackContainer = document.querySelector('.black-container');
+    document.body.removeChild(blackContainer);
+    const div = document.querySelector('.popup-container');
+    document.body.removeChild(div);
+}
+
+function uploadNote() {
+    uploadNoteButtonClicked();
+    cancelAddNewNote();
+}
+
 function uploadNoteButtonClicked() {
+    const studentNoteTextArea = document.getElementById('student-note');
     const note = studentNoteTextArea.value;
     const date = new Date();
     const body = JSON.stringify({
         'note': note,
         'date': date.toISOString()
     });
-    post(`${protocol}://${domain}/students/${studentID}/notes`, body, (new_note) => {
-        console.log(new_note);
+    post(`${protocol}://${domain}/students/${studentID}/notes`, body, (notes) => {
+        studentNotesContainer.innerHTML = '';
+        addNotesToContainer(notes);
     });
 }
