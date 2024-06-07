@@ -195,6 +195,22 @@ async function insertStudentNote(student_note, student_id) {
   });
 }
 
+async function getStudentNotes(id) {
+  const sql = 'SELECT * FROM student_notes WHERE student_id = ? ORDER BY date DESC';
+  return new Promise((resolve, reject) => {
+    db.all(sql, [id], function(err, rows) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        dbDebugger(rows);
+        resolve(rows);
+      }
+    });
+  });
+}
+
 async function getStudent(id) {
 return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM students WHERE id = ?';
@@ -378,6 +394,7 @@ module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
 module.exports.insertStudentNote = insertStudentNote;
+module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudent = getStudent;
 module.exports.updateStudentGoal = updateStudentGoal;
 module.exports.updateStudents = updateStudents;
