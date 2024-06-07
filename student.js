@@ -7,6 +7,7 @@ const weekInput = document.getElementById('week');
 const textInput = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
 const studentNoteTextArea = document.getElementById('student-note');
+const studentNotesContainer = document.getElementById('student-notes-container');
 
 const WEEKDAYS = 5;
 
@@ -28,6 +29,7 @@ setDates();
 createDays();
 setDatesForDays();
 getDataForCurrentWeek();
+getStudentNotes();
 
 function setStudent() {
     const students = JSON.parse(localStorage.getItem('selected_students'));
@@ -230,6 +232,34 @@ function rawToHex(raw) {
         hexChars.charAt(c & 0x0f));
     }
     return hex;
+}
+
+function getStudentNotes() {
+    get(`${protocol}://${domain}/students/${studentID}/notes`, (notes) => {
+        addNotesToContainer(notes);
+    });
+}
+
+function addNotesToContainer(notes) {
+    for (note of notes) {
+        addNoteToContainer(note);
+    }
+}
+
+function addNoteToContainer(student_note) {
+    const date = parseISOString(student_note['date']);
+    console.log(date);
+    studentNotesContainer.innerHTML += `
+        <div class="notes-flex-item">
+            <p>${student_note['note']}</p>
+            <label>${date.toLocaleString()}</label>
+        </div>
+    `;
+}
+
+function parseISOString(s) {
+    var b = s.split(/\D+/);
+    return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
 }
 
 function uploadButtonClicked() {
