@@ -250,8 +250,9 @@ router.post('/:id/notes', [auth], async (req, res) => {
   }
 
   const student_note = req.body;
-  const new_note = await db.insertStudentNote(student_note, student_id);
-  res.send(new_note);
+  await db.insertStudentNote(student_note, student_id);
+  const notes = await db.getStudentNotes(student_id);
+  res.send(notes);
 });
 
 router.get('/:id/notes', [auth], async (req, res) => {
