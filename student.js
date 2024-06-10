@@ -247,11 +247,11 @@ function addNotesToContainer(notes) {
 
 function addNoteToContainer(student_note) {
     const date = parseISOString(student_note['date']);
-    console.log(date);
+    const formattedDate = formatDate(date);
     studentNotesContainer.innerHTML += `
         <div class="notes-flex-item">
             <p>${student_note['note']}</p>
-            <label>${date.toLocaleString()}</label>
+            <label>${formattedDate}</label>
         </div>
     `;
 }
@@ -259,6 +259,18 @@ function addNoteToContainer(student_note) {
 function parseISOString(s) {
     var b = s.split(/\D+/);
     return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+}
+
+function formatDate(date) {
+    const options = {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric"
+    };
+    const formattedDate = date.toLocaleString("default", options);
+    return formattedDate;
 }
 
 function uploadButtonClicked() {
