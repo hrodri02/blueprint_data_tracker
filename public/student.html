@@ -18,26 +18,26 @@
         </div>
     </nav>
     <div class="loader"></div>
-    <div id="edit-user">
-        <div>
-            <div class="form-group">
-                <label for="goal"><strong>Math Goal</strong></label>
-                <input type="text" id="goal" maxlength="100">
-            </div>
-            <div class="form-group">
-                <label for="studentData"><strong>Student Data</strong></label>
-                <div class="days-flex-container"></div>
-            </div>
-            <div class="form-group">
-                <button id="upload" onclick="uploadButtonClicked()">Upload Daily Data</button>
-            </div>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="goal"><strong>Math Goal</strong></label>
         </div>
+        <input type="text" id="goal" maxlength="100">
     </div>
-    <div id="student-notes-header">
-        <h2>Student Notes</h2>
-        <button onclick="addNoteButtonClicked()">Add Note</button>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="studentData"><strong>Student Data</strong></label>
+            <button id="upload" onclick="uploadButtonClicked()">Upload Daily Data</button>
+        </div>
+        <div class="days-flex-container"></div>
     </div>
-    <div id="student-notes-container"></div>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="studentData"><strong>Student Notes</strong></label>
+            <button onclick="addNoteButtonClicked()">Add Note</button>
+        </div>
+        <div id="student-notes-container"></div>
+    </div>
     <script type='text/javascript', src='./website_metadata.js'></script>
     <script type='text/javascript', src='../loader.js'></script>
     <script type='text/javascript', src='../http_methods.js'></script>

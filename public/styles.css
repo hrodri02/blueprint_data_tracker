@@ -269,9 +269,9 @@ h3 {
     grid-row-end: 13;
 }
 
-#edit-user {
+/* #edit-user {
     padding: 0 10%;
-}
+} */
 
 .form-group {
     background-color: black;
@@ -288,6 +288,29 @@ h3 {
     display: block;
     margin: 0 0 6px;
     width: 75%;
+}
+
+.student-page-group {
+    margin: 20px 10%;
+}
+
+.student-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    color: #ccc;
+    border-bottom: 0.5px solid;
+}
+
+.student-page-header button {
+    background-color: cornflowerblue;
+    border: none;
+    color: #ccc;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
 }
 
 .days-flex-container {
@@ -439,32 +462,11 @@ h3 {
     justify-content: center;
 }
 
-#student-notes-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #ccc;
-    margin: 0 10%;
-    padding: 0 10px;
-    border: 0.5px solid;
-}
-
-#student-notes-header button {
-    background-color: cornflowerblue;
-    border: none;
-    color: #ccc;
-    padding: 8px 16px;
-    text-align: center;
-    text-decoration: none;
-}
-
 #student-notes-container {
     display: flex;
     flex-direction: column;
     row-gap: 10px;
-    margin: 0 10%;
     color: #ccc;
-    border: 0.5px solid;
 }
 
 .notes-flex-item {
