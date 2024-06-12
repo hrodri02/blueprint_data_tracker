@@ -441,19 +441,33 @@ h3 {
     color: #ccc;
 }
 
-.add-new-note-container {
+.popup-body {
     width: 100%;
     height: 100%;
 }
 
-#student-note {
-    width: 100%;
-    height: 80%;
-}
-
-.upload-note-button-container {
+.popup-input-container {
     display: flex;
     justify-content: center;
+    align-items: center;
+    height: 75%;
+}
+
+.popup-input-container input {
+    width: 90%;
+}
+
+.popup-body-bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 25%;
+    background-color: red;
+}
+
+#student-note {
+    width: 100%;
+    height: 75%;
 }
 
 #student-notes-container {
