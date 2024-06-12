@@ -3,6 +3,7 @@
 <head>
     <link href='./public/styles.css' rel='stylesheet'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <script src="https://kit.fontawesome.com/769642dbf3.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <nav class='top-navigation-bar'>
@@ -14,21 +15,29 @@
         </ul>
         <div class='top-right-flex-container'>
             <input type="week" id="week" name="week" onchange="onWeekChanged()">    
-            <button id="upload" onclick="uploadButtonClicked()">Upload</button>
         </div>
     </nav>
     <div class="loader"></div>
-    <div id="edit-user">
-        <div>
-            <div class="form-group">
-                <label for="goal"><strong>Math Goal</strong></label>
-                <input type="text" id="goal" maxlength="100">
-            </div>
-            <div class="form-group">
-                <label for="studentData"><strong>Student Data</strong></label>
-                <div class="days-flex-container"></div>
-            </div>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="goal"><strong>Math Goal</strong></label>
+            <button onclick="editMathGoalButtonClicked()">Edit</button>
         </div>
+        <label id="goal"></label>
+    </div>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="studentData"><strong>Student Data</strong></label>
+            <button id="upload" onclick="uploadButtonClicked()">Upload Daily Data</button>
+        </div>
+        <div class="days-flex-container"></div>
+    </div>
+    <div class="student-page-group">
+        <div class="student-page-header">
+            <label for="studentData"><strong>Student Notes</strong></label>
+            <button onclick="addNoteButtonClicked()">Add Note</button>
+        </div>
+        <div id="student-notes-container"></div>
     </div>
     <script type='text/javascript', src='./website_metadata.js'></script>
     <script type='text/javascript', src='../loader.js'></script>

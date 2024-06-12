@@ -25,8 +25,7 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/', [auth], async (req, res) => {
-  const numPeriods = await db.getPeriods();
-  const students = await db.getStudentsByPeriod(numPeriods);
+  const students = await db.getStudentsByPeriod();
   res.send(students);
 });
 
@@ -62,16 +61,21 @@ router.patch('/:id', async (req, res) => {
   if (!student) {
     return res.status(404).send('Student with given ID not found.');
   }
-  // validate student goal
-  const body = req.body;
-  const { error } = validateStudentGoal(body);
+
+  // Update the student's information with the data from the request body
+  Object.keys(req.body).forEach(key => {
+    if (student.hasOwnProperty(key)) {
+      student[key] = req.body[key];
+    }
+  });
+
+  // validate student
+  const { error } = validateStudent(student);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
   // update student goal
-  body['id'] = id;
-  await db.updateStudentGoal(body);
-  const studentInDB = await db.getStudent(id);
+  const studentInDB = await db.patchStudent(student);
   res.send(studentInDB);
 });
 
@@ -92,7 +96,8 @@ function validateStudent(student) {
     name: Joi.string().min(3).required(),
     period: Joi.number().min(0).max(7).required(),
     sheets_row: Joi.number().min(1).max(300).required(),
-    fellow_id: Joi.string().min(1).required()
+    fellow_id: Joi.string().min(1).required(),
+    goal: Joi.string().min(5).max(100).required()
   });
 
   const result = schema.validate(student);
@@ -238,13 +243,34 @@ router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
   }
 });
 
-function validateStudentGoal(goal) {
-  const schema = Joi.object({
-    goal: Joi.string().max(100),
-  });
-  const result = schema.validate(goal);
-  return result;
-}
+router.post('/:id/notes', [auth], async (req, res) => {
+  const student_id = req.params.id;
+  const result = await db.getStudent(student_id);
+  if (!result) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+
+  const { error } = validateNote(req.body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const student_note = req.body;
+  await db.insertStudentNote(student_note, student_id);
+  const notes = await db.getStudentNotes(student_id);
+  res.send(notes);
+});
+
+router.get('/:id/notes', [auth], async (req, res) => {
+  const student_id = req.params.id;
+  const result = await db.getStudent(student_id);
+  if (!result) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+
+  const notes = await db.getStudentNotes(student_id);
+  res.send(notes);
+});
 
 function validateDailyData(dailyData) {
   const attendance = Joi.array().items(Joi.string().valid('Present', 'Absent', 'Tardy', 'Left Early', 'No Session', 'No School'));
@@ -276,6 +302,15 @@ function validateDailyData(dailyData) {
       result['error']['Letter Grades'] = letterGradesResult.error.details[0].message;
   }
 
+  return result;
+}
+
+function validateNote(student_note) {
+  const schema = Joi.object({
+    note: Joi.string().min(5).max(1000),
+    date: Joi.string().isoDate()
+  });
+  const result = schema.validate(student_note);
   return result;
 }
 

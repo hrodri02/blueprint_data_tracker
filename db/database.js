@@ -171,6 +171,46 @@ function insertStudentForFellow(student) {
   });
 }
 
+async function insertStudentNote(student_note, student_id) {
+  const note = student_note['note'];
+  const date = student_note['date'];
+  return new Promise((resolve, reject) => {
+    db.run(`INSERT INTO student_notes(note, date, student_id) VALUES(?, ?, ?)`, 
+        [note, date, student_id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        const new_note = {
+          'id': this.lastID,
+          'note': note,
+          'date': date,
+          'student_id': student_id,
+        };
+        dbDebugger(this.lastID);
+        resolve(new_note);
+      }
+    });
+  });
+}
+
+async function getStudentNotes(id) {
+  const sql = 'SELECT * FROM student_notes WHERE student_id = ? ORDER BY date DESC';
+  return new Promise((resolve, reject) => {
+    db.all(sql, [id], function(err, rows) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        dbDebugger(rows);
+        resolve(rows);
+      }
+    });
+  });
+}
+
 async function getStudent(id) {
 return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM students WHERE id = ?';
@@ -238,18 +278,30 @@ function updateStudent(student) {
   });
 }
 
-async function updateStudentGoal(student) {
+async function patchStudent(student) {
   return new Promise((resolve, reject) => {
     const id = student['id'];
+    const fellow_id = student['fellow_id'];
+    const name = student['name'];
+    const period = student['period'];
+    const sheets_row = student['sheets_row'];
     const goal = student['goal'];
-    db.run(`UPDATE students SET goal = ? WHERE id = ?`, 
-          [goal, id], function(err) {
+    db.run(`UPDATE students SET fellow_id = ?, name = ?, period = ?, sheets_row = ?, goal = ? WHERE id = ?`, 
+          [fellow_id, name, period, sheets_row, goal, id], function(err) {
       if (err) {
         reject(err.message);
       }
       else {
         dbDebugger(`student ${id} updated`);
-        resolve();
+        const updated_student = {
+          'id': id,
+          'name': name,
+          'period': period,
+          'sheets_row': sheets_row,
+          'fellow_id': fellow_id,
+          'goal': goal
+        };
+        resolve(updated_student);
       }
     });
   });
@@ -353,8 +405,10 @@ module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
+module.exports.insertStudentNote = insertStudentNote;
+module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudent = getStudent;
-module.exports.updateStudentGoal = updateStudentGoal;
+module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;
 module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;

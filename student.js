@@ -4,8 +4,9 @@ const period = url.searchParams.get("period");
 
 const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
-const textInput = document.getElementById('goal');
+const goalLabel = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
+const studentNotesContainer = document.getElementById('student-notes-container');
 
 const WEEKDAYS = 5;
 
@@ -27,6 +28,7 @@ setDates();
 createDays();
 setDatesForDays();
 getDataForCurrentWeek();
+getStudentNotes();
 
 function setStudent() {
     const students = JSON.parse(localStorage.getItem('selected_students'));
@@ -38,8 +40,8 @@ function setStudent() {
         }
     }
     h1.innerText = student['name'];
-    const goal = (student['goal'])? student['goal'] : '';
-    textInput.value = goal;
+    const goal = student['goal'];
+    goalLabel.innerText = goal;
     hashData('goal', goal);
 }
 
@@ -61,8 +63,8 @@ function setDates() {
 
     let date = monday;
     while (date.getMonth() < friday.getMonth() || (date.getMonth() === friday.getMonth() && date.getDate() <= friday.getDate())) {
-        date = new Date(date);
-        dates.push(date);
+        const new_date = new Date(date);
+        dates.push(new_date);
         date.setDate(date.getDate() + 1);
     }
 }
@@ -231,6 +233,46 @@ function rawToHex(raw) {
     return hex;
 }
 
+function getStudentNotes() {
+    get(`${protocol}://${domain}/students/${studentID}/notes`, (notes) => {
+        addNotesToContainer(notes);
+    });
+}
+
+function addNotesToContainer(notes) {
+    for (note of notes) {
+        addNoteToContainer(note);
+    }
+}
+
+function addNoteToContainer(student_note) {
+    const date = parseISOString(student_note['date']);
+    const formattedDate = formatDate(date);
+    studentNotesContainer.innerHTML += `
+        <div class="notes-flex-item">
+            <p>${student_note['note']}</p>
+            <label>${formattedDate}</label>
+        </div>
+    `;
+}
+
+function parseISOString(s) {
+    var b = s.split(/\D+/);
+    return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
+}
+
+function formatDate(date) {
+    const options = {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric"
+    };
+    const formattedDate = date.toLocaleString("default", options);
+    return formattedDate;
+}
+
 function uploadButtonClicked() {
     try {
         const columns = [];
@@ -251,16 +293,12 @@ function uploadButtonClicked() {
             }
         }
         
-        if (isStudentGoalUpdated()) {
-            const goal = textInput.value;
-            hashData('goal', goal);
-            const studentGoalBody = JSON.stringify({goal: goal});
-            patch(`${protocol}://${domain}/students/${studentID}`, studentGoalBody);
-        }
-
         if (daysModified.length > 0) {
             const dailyDataBody = JSON.stringify({columns: columns, values: daysModified});
-            patch(`${protocol}://${domain}/students/${studentID}/dailydata`, dailyDataBody);
+            const headers = {
+                "Content-Type": "application/json",
+            };
+            patch(`${protocol}://${domain}/students/${studentID}/dailydata`, dailyDataBody, headers);
         }
     }
     catch (err) {
@@ -314,20 +352,6 @@ function isStudentDataUpdated(date, data) {
     return original[monthDay] !== hash;
 }
 
-function isStudentGoalUpdated() {
-    const data = textInput.value;
-    const json = JSON.stringify(data);
-    const hash = rawToHex(json);
-    // console.log(`json: ${json}\nhash: ${hash}`);
-    if (original['goal'] === hash) {
-        console.log(`goal is the same.`);
-    }
-    else {
-        console.log(`goal changed.`);
-    }
-    return original['goal'] !== hash;
-}
-
 function onAttendanceValueChanged() {
     const select = event.srcElement;
     const id = select.parentElement.id;
@@ -373,23 +397,6 @@ function gradeButtonClick() {
     console.log(studentData);
 }
 
-function patch(url, body) {
-    fetch(url, {method: "PATCH", body: body, headers: {
-        "Content-Type": "application/json",
-      }}).then(function(response) {
-        return response.json();
-      }).then(function(data) {
-        if (data['authorizationUrl']) {
-            window.location.href = data['authorizationUrl'];
-        }
-        else {
-            console.log(data);
-        }
-      }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
-      });
-}
-
 function onWeekChanged() {
     const parts = weekInput.value.split('-');
     year = parts[0];
@@ -413,4 +420,104 @@ function resetDays() {
             button.style.backgroundColor = "";
         }
     }
+}
+
+function editMathGoalButtonClicked() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>Edit Math Goal</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <div class="popup-input-container">
+                <input type="text" id="new-goal" maxlength="100" value="${student['goal']}">
+            </div>
+            <div class="popup-body-bottom">
+                <button onclick="uploadGoal()">Confirm</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function uploadGoal() {
+    const newGoalInput = document.getElementById('new-goal');
+    const goal = newGoalInput.value;
+    if (isStudentGoalUpdated(goal)) {
+        hashData('goal', goal);
+
+        const body = JSON.stringify({goal: goal});
+        const headers = {
+            "Content-Type": "application/json",
+        };
+        patch(`${protocol}://${domain}/students/${studentID}`, body, headers, (updated_student) => {
+            goalLabel.innerText = updated_student['goal'];
+            closePopup();
+        });
+    }
+}
+
+function isStudentGoalUpdated(goal) {
+    const json = JSON.stringify(goal);
+    const hash = rawToHex(json);
+    // console.log(`json: ${json}\nhash: ${hash}`);
+    if (original['goal'] === hash) {
+        console.log(`goal is the same.`);
+    }
+    else {
+        console.log(`goal changed.`);
+    }
+    return original['goal'] !== hash;
+}
+
+function addNoteButtonClicked() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>Add New Note</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <textarea id='student-note' name='note'></textarea>
+            <div class="popup-body-bottom">
+                <button onclick="uploadNote()">Upload Note</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function closePopup() {
+    const blackContainer = document.querySelector('.black-container');
+    document.body.removeChild(blackContainer);
+    const div = document.querySelector('.popup-container');
+    document.body.removeChild(div);
+}
+
+function uploadNote() {
+    uploadNoteButtonClicked();
+    closePopup();
+}
+
+function uploadNoteButtonClicked() {
+    const studentNoteTextArea = document.getElementById('student-note');
+    const note = studentNoteTextArea.value;
+    const date = new Date();
+    const body = JSON.stringify({
+        'note': note,
+        'date': date.toISOString()
+    });
+    post(`${protocol}://${domain}/students/${studentID}/notes`, body, (notes) => {
+        studentNotesContainer.innerHTML = '';
+        addNotesToContainer(notes);
+    });
 }
