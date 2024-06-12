@@ -10,10 +10,22 @@ CREATE TABLE students (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 					    fellow_id TEXT NOT NULL,
 					    name TEXT NOT NULL, 
 					    period INTEGER NOT NULL, 
-					   sheets_row INTEGER NOT NULL,
+					   	sheets_row INTEGER NOT NULL,
+						goal TEXT NOT NULL DEFAULT('No Math goal.'),
 					   FOREIGN KEY (fellow_id) REFERENCES fellows(id));
 CREATE TABLE student_notes (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							student_id INTEGER NOT NULL,
 							note TEXT NOT NULL, 
 							date TEXT NOT NULL,
 							FOREIGN KEY (student_id) REFERENCES students(id));
+CREATE TABLE timers (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+					timers_collections_id INTEGER NOT NULL,
+					name TEXT NOT NULL DEFAULT(''),
+					minutes INTEGER NOT NULL,
+					color INTEGER NOT NULL DEFAULT(0),
+					order_id INTEGER NOT NULL,
+					FOREIGN KEY (timers_collections_id) REFERENCES timers_collections(id));
+CREATE TABLE timers_collections (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+								 fellow_id INTEGER NOT NULL,
+								 name TEXT NOT NULL,
+								 FOREIGN KEY (fellow_id) REFERENCES fellows(id));
