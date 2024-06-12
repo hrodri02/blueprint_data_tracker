@@ -293,16 +293,12 @@ function uploadButtonClicked() {
             }
         }
         
-        if (isStudentGoalUpdated()) {
-            const goal = goalLabel.value;
-            hashData('goal', goal);
-            const studentGoalBody = JSON.stringify({goal: goal});
-            patch(`${protocol}://${domain}/students/${studentID}`, studentGoalBody);
-        }
-
         if (daysModified.length > 0) {
             const dailyDataBody = JSON.stringify({columns: columns, values: daysModified});
-            patch(`${protocol}://${domain}/students/${studentID}/dailydata`, dailyDataBody);
+            const headers = {
+                "Content-Type": "application/json",
+            };
+            patch(`${protocol}://${domain}/students/${studentID}/dailydata`, dailyDataBody, headers);
         }
     }
     catch (err) {
@@ -356,20 +352,6 @@ function isStudentDataUpdated(date, data) {
     return original[monthDay] !== hash;
 }
 
-function isStudentGoalUpdated() {
-    const data = goalLabel.value;
-    const json = JSON.stringify(data);
-    const hash = rawToHex(json);
-    // console.log(`json: ${json}\nhash: ${hash}`);
-    if (original['goal'] === hash) {
-        console.log(`goal is the same.`);
-    }
-    else {
-        console.log(`goal changed.`);
-    }
-    return original['goal'] !== hash;
-}
-
 function onAttendanceValueChanged() {
     const select = event.srcElement;
     const id = select.parentElement.id;
@@ -415,23 +397,6 @@ function gradeButtonClick() {
     console.log(studentData);
 }
 
-function patch(url, body) {
-    fetch(url, {method: "PATCH", body: body, headers: {
-        "Content-Type": "application/json",
-      }}).then(function(response) {
-        return response.json();
-      }).then(function(data) {
-        if (data['authorizationUrl']) {
-            window.location.href = data['authorizationUrl'];
-        }
-        else {
-            console.log(data);
-        }
-      }).catch(function(err) {
-        console.log('Fetch Error :-S', err);
-      });
-}
-
 function onWeekChanged() {
     const parts = weekInput.value.split('-');
     year = parts[0];
@@ -457,6 +422,59 @@ function resetDays() {
     }
 }
 
+function editMathGoalButtonClicked() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>Edit Math Goal</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <div class="popup-input-container">
+                <input type="text" id="new-goal" maxlength="100" value="${student['goal']}">
+            </div>
+            <div class="popup-body-bottom">
+                <button onclick="uploadGoal()">Confirm</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function uploadGoal() {
+    const newGoalInput = document.getElementById('new-goal');
+    const goal = newGoalInput.value;
+    if (isStudentGoalUpdated(goal)) {
+        hashData('goal', goal);
+
+        const body = JSON.stringify({goal: goal});
+        const headers = {
+            "Content-Type": "application/json",
+        };
+        patch(`${protocol}://${domain}/students/${studentID}`, body, headers, (updated_student) => {
+            goalLabel.innerText = updated_student['goal'];
+            closePopup();
+        });
+    }
+}
+
+function isStudentGoalUpdated(goal) {
+    const json = JSON.stringify(goal);
+    const hash = rawToHex(json);
+    // console.log(`json: ${json}\nhash: ${hash}`);
+    if (original['goal'] === hash) {
+        console.log(`goal is the same.`);
+    }
+    else {
+        console.log(`goal changed.`);
+    }
+    return original['goal'] !== hash;
+}
+
 function addNoteButtonClicked() {
     const blackContainer = document.createElement('div');
     blackContainer.classList.add('black-container');
@@ -465,7 +483,7 @@ function addNoteButtonClicked() {
     div.innerHTML = `
         <div class="popup-top-nav">
             <h3>Add New Note</h3>
-            <button class="cancel-button" onclick="cancelAddNewNote()"><i class="fa-solid fa-x"></i></button>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="add-new-note-container">
             <textarea id='student-note' name='note'></textarea>
@@ -478,7 +496,7 @@ function addNoteButtonClicked() {
     document.body.appendChild(div);
 }
 
-function cancelAddNewNote() {
+function closePopup() {
     const blackContainer = document.querySelector('.black-container');
     document.body.removeChild(blackContainer);
     const div = document.querySelector('.popup-container');
@@ -487,7 +505,7 @@ function cancelAddNewNote() {
 
 function uploadNote() {
     uploadNoteButtonClicked();
-    cancelAddNewNote();
+    closePopup();
 }
 
 function uploadNoteButtonClicked() {
