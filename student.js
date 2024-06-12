@@ -4,7 +4,7 @@ const period = url.searchParams.get("period");
 
 const h1 = document.querySelector('h1');
 const weekInput = document.getElementById('week');
-const textInput = document.getElementById('goal');
+const goalLabel = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
 const studentNotesContainer = document.getElementById('student-notes-container');
 
@@ -40,8 +40,8 @@ function setStudent() {
         }
     }
     h1.innerText = student['name'];
-    const goal = (student['goal'])? student['goal'] : '';
-    textInput.value = goal;
+    const goal = student['goal'];
+    goalLabel.innerText = goal;
     hashData('goal', goal);
 }
 
@@ -294,7 +294,7 @@ function uploadButtonClicked() {
         }
         
         if (isStudentGoalUpdated()) {
-            const goal = textInput.value;
+            const goal = goalLabel.value;
             hashData('goal', goal);
             const studentGoalBody = JSON.stringify({goal: goal});
             patch(`${protocol}://${domain}/students/${studentID}`, studentGoalBody);
@@ -357,7 +357,7 @@ function isStudentDataUpdated(date, data) {
 }
 
 function isStudentGoalUpdated() {
-    const data = textInput.value;
+    const data = goalLabel.value;
     const json = JSON.stringify(data);
     const hash = rawToHex(json);
     // console.log(`json: ${json}\nhash: ${hash}`);
