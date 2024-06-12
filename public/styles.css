@@ -269,10 +269,6 @@ h3 {
     grid-row-end: 13;
 }
 
-/* #edit-user {
-    padding: 0 10%;
-} */
-
 .form-group {
     background-color: black;
     margin: 15px 0;
@@ -282,12 +278,6 @@ h3 {
     color: #ccc;
     display: block;
     margin: 0 0 6px;
-}
-
-.form-group #goal {
-    display: block;
-    margin: 0 0 6px;
-    width: 75%;
 }
 
 .student-page-group {
@@ -311,6 +301,10 @@ h3 {
     padding: 8px 16px;
     text-align: center;
     text-decoration: none;
+}
+
+.student-page-group label {
+    color: #ccc;
 }
 
 .days-flex-container {
