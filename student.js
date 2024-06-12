@@ -485,9 +485,9 @@ function addNoteButtonClicked() {
             <h3>Add New Note</h3>
             <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
         </div>
-        <div class="add-new-note-container">
+        <div class="popup-body">
             <textarea id='student-note' name='note'></textarea>
-            <div class="upload-note-button-container">
+            <div class="popup-body-bottom">
                 <button onclick="uploadNote()">Upload Note</button>
             </div>
         </div>
