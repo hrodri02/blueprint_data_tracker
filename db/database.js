@@ -278,18 +278,30 @@ function updateStudent(student) {
   });
 }
 
-async function updateStudentGoal(student) {
+async function patchStudent(student) {
   return new Promise((resolve, reject) => {
     const id = student['id'];
+    const fellow_id = student['fellow_id'];
+    const name = student['name'];
+    const period = student['period'];
+    const sheets_row = student['sheets_row'];
     const goal = student['goal'];
-    db.run(`UPDATE students SET goal = ? WHERE id = ?`, 
-          [goal, id], function(err) {
+    db.run(`UPDATE students SET fellow_id = ?, name = ?, period = ?, sheets_row = ?, goal = ? WHERE id = ?`, 
+          [fellow_id, name, period, sheets_row, goal, id], function(err) {
       if (err) {
         reject(err.message);
       }
       else {
         dbDebugger(`student ${id} updated`);
-        resolve();
+        const updated_student = {
+          'id': id,
+          'name': name,
+          'period': period,
+          'sheets_row': sheets_row,
+          'fellow_id': fellow_id,
+          'goal': goal
+        };
+        resolve(updated_student);
       }
     });
   });
@@ -396,7 +408,7 @@ module.exports.insertStudentsForFellow = insertStudentsForFellow;
 module.exports.insertStudentNote = insertStudentNote;
 module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudent = getStudent;
-module.exports.updateStudentGoal = updateStudentGoal;
+module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;
 module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
