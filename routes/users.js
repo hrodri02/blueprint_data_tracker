@@ -184,6 +184,30 @@ function isValidURL(url) {
   }
 }
 
+router.post('/me/timers_collections', async (req, res) => {
+  const user_id = req.session.user.id;
+  const timers_collection = req.body;
+  const { collection_error } = validateTimersCollection(timers_collection);
+  if (collection_error) {
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  const { timers_error } = validateTimers(timers_collection.timers);
+  if (timers_error) {
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  await db.insertTimersCollection(timers_collection);
+  const timers_collections = await db.getTimersCollectionsForFellow(user_id);
+  res.send(timers_collections);
+});
+
+router.get('/me/timers_collections', async (req, res) => {
+  const user_id = req.session.user.id;
+  const timers_collections = await db.getTimersCollectionsForFellow(user_id);
+  return res.send(timers_collections);
+});
+
 function getSheetIDFromURL(url) {
   return url.split('/')[5];
 }
@@ -200,6 +224,32 @@ function validateFellow(fellow) {
   });
 
   const result = schema.validate(fellow);
+  return result;
+}
+
+function validateTimersCollection(collection) {
+  const schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(3).required(),
+    fellow_id: Joi.string()
+  });
+  
+  const result = schema.validate(schema);
+  return result;
+}
+
+function validateTimers(timers) {
+  const schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(3).required(),
+    minutes: Joi.number().min(1).required(),
+    color: Joi.number().min(0).max(16777215).required(),
+    order_id: Joi.number().min(0).max(9).required(),
+    timers_collection_id: Joi.number().required()
+  });
+
+  const timers_schema = Joi.array().items(schema);
+  const result = Joi.validate(timers, timers_schema);
   return result;
 }
 
