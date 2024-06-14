@@ -169,7 +169,7 @@ function startLessonTimer() {
                 // update the lesson part
                 i++;
                 // update background color
-                lessonTimerLabel.style.background = timers[0].background_color;
+                lessonTimerLabel.style.background = timers[i].background_color;
                 lessonTimerLabel.style.color = timers[i].text_color;
                 // update the time in the new part
                 timeInMS = timers[i].minutes * 60000;
