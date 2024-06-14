@@ -407,9 +407,9 @@ async function insertTimersCollection(fellow_id, name_of_collection, timers) {
 }
 
 function insertTimers(timers_collections_id, timers) {
-  const sql = 'INSERT INTO timers(name, minutes, color, order_id, timers_collections_id) VALUES(?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collections_id) VALUES(?, ?, ?, ?, ?, ?)';
   for (let i = 0; i < timers.length; i++) {
-    db.run(sql, [timers[i].name, timers[i].minutes, timers[i].color, i, timers_collections_id], (err) => {
+    db.run(sql, [timers[i].name, timers[i].minutes, timers[i].text_color, timers[i].background_color, i, timers_collections_id], (err) => {
       if (err) {
         dbDebugger(err.message);
         reject(err.message);
@@ -443,7 +443,8 @@ function getTimersCollectionsForFellow(fellow_id) {
           const timer = {
             name: row.name,
             minutes: row.minutes,
-            color: row.color,
+            text_color: row.text_color,
+            background_color: row.background_color,
             order_id: row.order_id
           };
           if (!(collection_name in name_to_timers)) {
