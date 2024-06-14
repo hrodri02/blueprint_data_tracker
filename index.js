@@ -1,19 +1,13 @@
 const periodStrings = ["First", "Second", "Third", "Fourth", "Sixth", "Seventh"];
-const classNames = ["doNow", "numberTalk", "launch", "engage", "summary", "exitTicket"];
-const backgroundColors = ["blue", "orange", "yellow", "green", "lightblue", "red"];
-const textColors = ["", "black", "black", "", "black", ""];
-const timesInMS = [5*60000, 8*60000, 5*60000, 15*60000, 5*60000, 5*60000];
-// const timesInMS = [5*1000, 8*1000, 5*1000, 15*1000, 5*1000, 5*1000];
-const numLessonParts = 6;
 
+const timers_collection = JSON.parse(localStorage.getItem('selected_timers_collection'));
+const timersCollectionNameLabel = document.getElementById("timers-collection-name");
 const lessonTimerLabel = document.getElementById("timerLabel");
-const hallpassTimerLabel = document.getElementById("hallpassTimerLabel");
 const settingsContent = document.getElementById("settings-content");
 const container = document.getElementsByClassName("container")[0];
 const studentsContainer = document.getElementsByClassName("students-container")[0];
 const dateControl = document.querySelector('input[type="date"]');
 let lessonTimerId = null;
-let hallpassTimerId = null;
 
 /*
     rowToStudentData = {
@@ -28,10 +22,21 @@ const rowToStudentData = {};
 const idToRow = {};
 const newStudent = {};
 
+setupTimersCollection();
 setupDate();
 getCurrentUser();
 getMyStudents();
-getAllStudents()
+getAllStudents();
+
+function setupTimersCollection() {
+    timersCollectionNameLabel.innerText = timers_collection.name;
+    const timers = timers_collection.timers;
+
+    const initial_minutes = timers[0].minutes;
+    lessonTimerLabel.innerText = `${initial_minutes}:00`;
+    lessonTimerLabel.style.background = timers[0].background_color;
+    lessonTimerLabel.style.color = timers[0].color;
+}
 
 function setupDate() {
     const today = new Date();
@@ -127,33 +132,26 @@ function createPeriod(students) {
 }
 
 function setupLessonTimer() {
-    lessonTimerLabel.style.background = backgroundColors[0];
-    lessonTimerLabel.style.color = textColors[0];
-    const timeInMS = timesInMS[0];
+    lessonTimerLabel.style.background = timers[0].background_color;
+    lessonTimerLabel.style.color = timers[0].text_color;
+    const timers = timers_collection.timers;
+    const timeInMS = timers[0].minutes * 60000;
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
     lessonTimerLabel.innerText = `${mins}:${secsString}`;
 }
 
-function setupHallpassTimer() {
-    const timeInMS = 15*60000;
-    const mins = parseInt(timeInMS / 60000);
-    const secs = (timeInMS - mins * 60000) / 1000;
-    const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-    hallpassTimerLabel.innerText = `${mins}:${secsString}`;
-}
-
 function startButtonClicked() {
     startLessonTimer();
-    startHallpassTimer();
     lessonTimerLabel.style.pointerEvents = "none";
 }
 
 function startLessonTimer() {
-    // document.getElementsByClassName(classNames[0])[0].scrollIntoView();
+    const timers = timers_collection.timers;
+    const numLessonParts = timers.length;
     let i = 0;
-    let timeInMS = timesInMS[0];
+    let timeInMS = timers[0].minutes * 60000;
 
     lessonTimerId = window.setInterval(() => {
         timeInMS -= 1000;
@@ -171,10 +169,10 @@ function startLessonTimer() {
                 // update the lesson part
                 i++;
                 // update background color
-                lessonTimerLabel.style.background = backgroundColors[i];
-                lessonTimerLabel.style.color = textColors[i];
+                lessonTimerLabel.style.background = timers[0].background_color;
+                lessonTimerLabel.style.color = timers[i].text_color;
                 // update the time in the new part
-                timeInMS = timesInMS[i];
+                timeInMS = timers[i].minutes * 60000;
                 mins = parseInt(timeInMS / 60000);
                 secs = (timeInMS - mins * 60000) / 1000;
                 lessonTimerLabel.innerText = `${mins}:0${secs}`;
@@ -188,35 +186,6 @@ function startLessonTimer() {
         else {
             const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
             lessonTimerLabel.innerText = `${mins}:${secsString}`;
-        }
-    }, 1000);
-}
-
-function startHallpassTimer() {
-    let timeInMS = 15*60000;
-    let mins = parseInt(timeInMS / 60000);
-    let secs = (timeInMS - mins * 60000) / 1000;
-
-    hallpassTimerId = window.setInterval(() => {
-        timeInMS -= 1000;
-        mins = parseInt(timeInMS / 60000);
-        secs = (timeInMS - mins * 60000) / 1000;
-
-        if (mins == 0 && secs == 0) {
-            // play alarm sound
-            const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
-            alarmSound.play();
-            hallpassTimerLabel.innerText = `${mins}:${secs}`;
-            clearInterval(hallpassTimerId);
-        }
-        else if (mins > 0 && secs == 0) {
-            mins -= 1;
-            secs = 59;
-            hallpassTimerLabel.innerText = `${mins}:${secs}`;
-        }
-        else {
-            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            hallpassTimerLabel.innerText = `${mins}:${secsString}`;
         }
     }, 1000);
 }
@@ -620,9 +589,7 @@ function resetGrades(period) {
 
 function resetButtonClicked() {
     clearInterval(lessonTimerId);
-    clearInterval(hallpassTimerId);
-    setupLessonTimer()
-    setupHallpassTimer()
+    setupLessonTimer();
     lessonTimerLabel.style.pointerEvents = "auto";
 }
 
