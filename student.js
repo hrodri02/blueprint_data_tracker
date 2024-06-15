@@ -434,7 +434,7 @@ function editMathGoalButtonClicked() {
         </div>
         <div class="popup-body">
             <div class="popup-input-container">
-                <input type="text" id="new-goal" maxlength="100" value="${student['goal']}">
+                <input type="text" id="new-goal" maxlength="100" value="${student['goal']}" style="width:90%;">
             </div>
             <div class="popup-body-bottom">
                 <button onclick="uploadGoal()">Confirm</button>
