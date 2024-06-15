@@ -29,13 +29,16 @@ getMyStudents();
 getAllStudents();
 
 function setupTimersCollection() {
-    timersCollectionNameLabel.innerText = timers_collection.name;
-    const timers = timers_collection.timers;
-
-    const initial_minutes = timers[0].minutes;
-    lessonTimerLabel.innerText = `${initial_minutes}:00`;
-    lessonTimerLabel.style.background = timers[0].background_color;
-    lessonTimerLabel.style.color = timers[0].color;
+    if (timers_collection) {
+        timersCollectionNameLabel.innerText = timers_collection.name;
+        const timers = timers_collection.timers;
+        if (timers.length > 0) {
+            const initial_minutes = timers[0].minutes;
+            lessonTimerLabel.innerText = `${initial_minutes}:00`;
+            lessonTimerLabel.style.background = timers[0].background_color;
+            lessonTimerLabel.style.color = timers[0].color;
+        }
+    }
 }
 
 function setupDate() {
