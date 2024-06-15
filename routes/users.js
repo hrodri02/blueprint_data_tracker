@@ -187,19 +187,31 @@ function isValidURL(url) {
 router.post('/me/timers_collections', async (req, res) => {
   const user_id = req.session.user.id;
   const timers_collection = req.body;
-  const { collection_error } = validateTimersCollection(timers_collection);
-  if (collection_error) {
+  const { error } = validateTimersCollection(timers_collection);
+  if (error) {
     return res.status(400).send({error_message: error.details[0].message});
   }
 
-  const { timers_error } = validateTimers(timers_collection.timers);
-  if (timers_error) {
+  const timers_collection_in_db = await db.insertTimersCollectionForUser(user_id, timers_collection.name);
+  res.send(timers_collection_in_db);
+});
+
+router.post('/me/timers_collections/:id/timers', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer = req.body;
+  const { error } = validateTimer(timer);
+  if (error) {
+    console.log(error.details[0].message);
     return res.status(400).send({error_message: error.details[0].message});
   }
 
-  await db.insertTimersCollection(timers_collection);
-  const timers_collections = await db.getTimersCollectionsForFellow(user_id);
-  res.send(timers_collections);
+  const timers = await db.insertTimer(id, timer);
+  res.send(timers);
 });
 
 router.get('/me/timers_collections', async (req, res) => {
@@ -230,26 +242,26 @@ function validateFellow(fellow) {
 function validateTimersCollection(collection) {
   const schema = Joi.object({
     id: Joi.number(),
-    name: Joi.string().min(3).required(),
+    name: Joi.string().min(1).max(30).required(),
     fellow_id: Joi.string()
   });
   
-  const result = schema.validate(schema);
+  const result = schema.validate(collection);
   return result;
 }
 
-function validateTimers(timers) {
+function validateTimer(timer) {
   const schema = Joi.object({
     id: Joi.number(),
     name: Joi.string().min(3).required(),
     minutes: Joi.number().min(1).required(),
-    color: Joi.number().min(0).max(16777215).required(),
+    text_color: Joi.string().required(),
+    background_color: Joi.string().required(),
     order_id: Joi.number().min(0).max(9).required(),
     timers_collection_id: Joi.number().required()
   });
 
-  const timers_schema = Joi.array().items(schema);
-  const result = Joi.validate(timers, timers_schema);
+  const result = schema.validate(timer);
   return result;
 }
 
