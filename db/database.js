@@ -388,38 +388,75 @@ async function updateFellow(fellow) {
   });
 }
 
-async function insertTimersCollection(fellow_id, name_of_collection, timers) {
+async function insertTimersCollectionForUser(fellow_id, name) {
   return new Promise((resolve, reject) => {
-    const sql = 'INSERT INTO timers_collections(name, fellow_id) VALUES(?, ?)';
-    const selectNewFellow = 'SELECT * FROM fellows WHERE id = ?';
     db.serialize(function() {
-      db.run(sql, [name_of_collection, fellow_id], (err) => {
+      const sql = 'INSERT INTO timers_collections(name, fellow_id) VALUES(?, ?)';
+      const select_new_timers_collection = 'SELECT * FROM timers_collections ORDER BY id DESC LIMIT 1';
+      db.run(sql, [name, fellow_id], function (err) {
+        if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+      });
+
+      db.get(select_new_timers_collection, [], (err, row) => {
+        if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+        else {
+          dbDebugger(row);
+          resolve(row);
+        }
+      });
+    });
+  });
+}
+
+function insertTimer(timers_collections_id, timer) {
+  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collections_id) VALUES(?, ?, ?, ?, ?, ?)';
+  const select_new_timer = 'SELECT * FROM timers ORDER BY id DESC LIMIT 1';
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(sql, [timer.name, timer.minutes, timer.text_color, timer.background_color, timer.order_id, timers_collections_id], (err) => {
         if (err) {
           dbDebugger(err.message);
           reject(err.message);
         }
       });
   
-      insertTimers(this.lastID, timers);
-      resolve(this.lastID);
+      db.get(select_new_timer, [], (error, row) => {
+        if (error) {
+          dbDebugger(error.message);
+          reject(error.message);
+        }
+        else {
+          resolve(row);
+        }
+      });
     });
   });
 }
 
-function insertTimers(timers_collections_id, timers) {
-  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collections_id) VALUES(?, ?, ?, ?, ?, ?)';
-  for (let i = 0; i < timers.length; i++) {
-    db.run(sql, [timers[i].name, timers[i].minutes, timers[i].text_color, timers[i].background_color, i, timers_collections_id], (err) => {
+function getTimersCollection(id) {
+  const select_new_timers_collection = 'SELECT * FROM timers_collections WHERE id = ?';
+  return new Promise((resolve, reject) => {
+    db.get(select_new_timers_collection, [id], (err, row) => {
       if (err) {
         dbDebugger(err.message);
         reject(err.message);
       }
+      else {
+        dbDebugger(row);
+        resolve(row);
+      }
     });
-  }
+  });
 }
 
 function getTimersCollectionsForFellow(fellow_id) {
-  const sql = `SELECT *, timers_collections.name AS timers_collection_name FROM timers_collections INNER JOIN timers on timers_collections.id = timers.timers_collections_id WHERE fellow_id = '${fellow_id}'`;
+  const sql = `SELECT timers.id, timers.name, timers.minutes, timers.order_id, timers.text_color, timers.background_color, timers_collections.id AS timers_collection_id, timers_collections.name AS timers_collection_name FROM timers_collections LEFT JOIN timers on timers_collections.id = timers.timers_collections_id WHERE fellow_id = '${fellow_id}'`;
   return new Promise((resolve, reject) => {
     db.all(sql, function(err, rows) {
       if (err) {
@@ -429,30 +466,32 @@ function getTimersCollectionsForFellow(fellow_id) {
       else {
         dbDebugger(rows);
         /*
-          Q1: Does a query always return the data in the same order?
-          Q2: Should I enforce unique collection names?
-
-          timers_collections_id: [timer0, timer1, ...]
-          timers_collection_id: timers_collections_name
-          
-          timers_collections_name: [timer0, timer 1, ...]
-        */
-        const name_to_timers = {};
-        for (row of rows) {
-          const collection_name = row['timers_collection_name'];
-          const timer = {
-            name: row.name,
-            minutes: row.minutes,
-            text_color: row.text_color,
-            background_color: row.background_color,
-            order_id: row.order_id
-          };
-          if (!(collection_name in name_to_timers)) {
-            name_to_timers[collection_name] = [];
-          }
-          name_to_timers[collection_name].push(timer);
+        id_to_collection
+        {
+          id: {name: "", timers: []}
         }
-        resolve(name_to_timers);
+        */
+        const id_to_collection = {};
+        for (row of rows) {
+          const collection_id = row['timers_collection_id'];
+          if (!(collection_id in id_to_collection)) {
+            id_to_collection[collection_id] = {};
+            id_to_collection[collection_id]['name'] = row['timers_collection_name'];
+            id_to_collection[collection_id]['timers'] = [];
+          }
+          if (row.id) {
+            const timer = {
+              name: row.name,
+              minutes: row.minutes,
+              text_color: row.text_color,
+              background_color: row.background_color,
+              order_id: row.order_id
+            };
+            
+            id_to_collection[collection_id]['timers'].push(timer);
+          }
+        }
+        resolve(id_to_collection);
       }
     });
   });
@@ -485,5 +524,7 @@ module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
 module.exports.insertFellow = insertFellow;
 module.exports.updateFellow = updateFellow;
-module.exports.insertTimersCollection = insertTimersCollection;
+module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
+module.exports.insertTimer = insertTimer;
+module.exports.getTimersCollection = getTimersCollection;
 module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
