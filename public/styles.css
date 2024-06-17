@@ -33,6 +33,7 @@ input[type="date"] {
 
 .top-navigation-bar {
     display: flex;
+    border-bottom: solid 0.1px #444;
 }
 
 .top-left-flex-container {
@@ -85,7 +86,7 @@ input[type="date"] {
 }
 
 #timerLabel {
-    background-color: blue;
+    background-color: black;
 }
 
 .lesson-part {
@@ -448,13 +449,18 @@ h3 {
 
 .popup-input-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 75%;
 }
 
-.popup-input-container input {
-    width: 90%;
+.popup-input-flex-item {
+
+}
+
+.popup-input-container label {
+    margin-right: 5px;
 }
 
 .popup-body-bottom {
@@ -486,4 +492,60 @@ h3 {
 
 .notes-flex-item label {
     font-size: 12px;
+}
+
+.timers-collections-container {
+    float: left;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    color: #ccc;
+    width: 30%;
+    min-height: 100vh;
+    padding: 10px;
+    background-color: #222;
+    border-right: solid 0.1px #444;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timers-collections-flex-item {
+    display: flex;
+    color: #ccc;
+    background-color: black;
+    width: 100%;
+    padding: 10px;
+}
+
+.timers-collections-flex-item:hover {
+    background-color: #444!important;
+}
+
+.timers-collections-flex-item label {
+    pointer-events: none;
+}
+
+.timers-collection-container {
+    float: left;
+    width: 70%;
+    padding: 0 5%;
+    background-color: black;
+}
+
+.timers-collection-header {
+    color: #ccc;
+    float: right;
+    padding-bottom: 5px;
+}
+
+.timers-collection-flex-item {
+    display: flex;
+    color: #ccc;
+    background-color: black;
+    width: 100%;
+    padding: 10px;
 }
