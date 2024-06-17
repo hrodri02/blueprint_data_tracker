@@ -53,8 +53,15 @@ function addTimersToContainer(timers) {
 
 function addTimerToContainer(timer) {
     timers_collection_container.innerHTML += `
-        <div class="timers-collection-flex-item" id="${timer.id}" style="background-color:${timer.background_color};color:${timer.text_color}">
+        <div class="timers-collection-flex-item" id="timer-${timer.id}" style="background-color:${timer.background_color};color:${timer.text_color}">
             <label>${timer.name} (${timer.minutes} minutes)</label>
+            <div class="timer-dropdown">
+                <i class="fa-solid fa-ellipsis" onclick="ellipsisTimerButtonClicked()"></i>
+                <div class="timer-dropdown-content">
+                    <a id="delete-timer-button" href="#" onclick="deleteTimerButtonClicked()">Delete from list</a>
+                    <a id="edit-timer-button" href="#" onclick="editTimerButtonClicked()">Edit</a>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -202,4 +209,45 @@ function createTimer() {
         addTimerToContainer(timer);
         closePopup(); 
     });
+}
+
+function ellipsisTimerButtonClicked() {
+    const div = event.srcElement.parentElement;
+    const dropdown = div.getElementsByClassName('timer-dropdown-content')[0];
+    const style = window.getComputedStyle(dropdown);
+    if (style.display === "none") {
+        dropdown.style.display = "block";
+    }
+    else {
+        dropdown.style.display = "none";
+    }
+}
+
+function deleteTimerButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
+
+    const collection_id = selected_timers_collection.id;
+    const flex_item = dropdown.parentElement.parentElement;
+    const timer_id = Number(flex_item.id.split('-')[1]);
+    deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, () => {
+        // remove timer from dictionary
+        const timers = id_to_collection[collection_id].timers;
+        const new_timers = timers.filter(function(timer) {
+            return timer.id !== timer_id;
+        });
+        id_to_collection[collection_id].timers = new_timers;
+        console.log(id_to_collection[collection_id].timers);
+        // remove timer from selected_timers_collection
+        selected_timers_collection.timers = new_timers;
+        // save updated collection in storage
+        localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
+        // remove timer from UI
+        timers_collection_container.removeChild(flex_item);
+    });
+}
+
+function editTimerButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
 }
