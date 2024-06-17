@@ -220,6 +220,23 @@ router.get('/me/timers_collections', async (req, res) => {
   return res.send(timers_collections);
 });
 
+router.delete('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
+  const collection_id = req.params.collection_id;
+  const timers_collection = await db.getTimersCollection(collection_id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer_id = req.params.timer_id;
+  const timer = await db.getTimer(timer_id);
+  if (!timer) {
+    return res.status(404).send({error_message: 'Timer with the given id is not found.'});
+  }
+
+  await db.deleteTimer(timer_id);
+  res.send(timer);
+});
+
 function getSheetIDFromURL(url) {
   return url.split('/')[5];
 }
