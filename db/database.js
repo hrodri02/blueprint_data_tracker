@@ -501,6 +501,37 @@ function getTimersCollectionsForFellow(fellow_id) {
   });
 }
 
+function getTimer(id) {
+  const select_timer = 'SELECT * FROM timers WHERE id = ?';
+  return new Promise((resolve, reject) => {
+    db.get(select_timer, [id], (err, row) => {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(row);
+        resolve(row);
+      }
+    });
+  });
+}
+
+function deleteTimer(id) {
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM timers WHERE id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted timer ${id} from DB.`);
+        resolve();
+      }
+    });
+  });
+}
+
 process.on('SIGINT', () => {
     // close the database connection
     db.close((err) => {
@@ -532,3 +563,5 @@ module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
 module.exports.insertTimer = insertTimer;
 module.exports.getTimersCollection = getTimersCollection;
 module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
+module.exports.getTimer = getTimer;
+module.exports.deleteTimer = deleteTimer;
