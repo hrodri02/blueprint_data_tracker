@@ -481,6 +481,7 @@ function getTimersCollectionsForFellow(fellow_id) {
           }
           if (row.id) {
             const timer = {
+              id: row.id,
               name: row.name,
               minutes: row.minutes,
               text_color: row.text_color,
@@ -489,6 +490,7 @@ function getTimersCollectionsForFellow(fellow_id) {
             };
             
             id_to_collection[collection_id]['timers'].push(timer);
+            id_to_collection[collection_id]['timers'].sort((a, b) => a.order_id - b.order_id);
           }
         }
         resolve(id_to_collection);
