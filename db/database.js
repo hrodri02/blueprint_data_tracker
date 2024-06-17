@@ -490,8 +490,10 @@ function getTimersCollectionsForFellow(fellow_id) {
             };
             
             id_to_collection[collection_id]['timers'].push(timer);
-            id_to_collection[collection_id]['timers'].sort((a, b) => a.order_id - b.order_id);
           }
+        }
+        for (id of Object.keys(id_to_collection)) {
+          id_to_collection[id]['timers'].sort((a, b) => a.order_id - b.order_id);
         }
         resolve(id_to_collection);
       }
