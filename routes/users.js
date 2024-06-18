@@ -220,6 +220,22 @@ router.get('/me/timers_collections', async (req, res) => {
   return res.send(timers_collections);
 });
 
+router.put('/me/timers_collections/:id', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const { error } = validateTimersCollection(req.body);
+  if (error) {
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+  
+  const updated_collection = await db.updateTimersCollection(req.body);
+  res.send(updated_collection);
+});
+
 router.delete('/me/timers_collections/:id', async (req, res) => {
   const id = req.params.id;
   const timers_collection = await db.getTimersCollection(id);
@@ -229,6 +245,30 @@ router.delete('/me/timers_collections/:id', async (req, res) => {
 
   await db.deleteTimersCollection(id);
   res.send(timers_collection);
+});
+
+router.put('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
+  const collection_id = req.params.collection_id;
+  const timers_collection = await db.getTimersCollection(collection_id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer_id = req.params.timer_id;
+  const timer = await db.getTimer(timer_id);
+  if (!timer) {
+    return res.status(404).send({error_message: 'Timer with the given id is not found.'});
+  }
+
+
+  const { error } = validateTimer(req.body);
+  if (error) {
+    console.log(error.details[0].message);
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  const timer_in_db = await db.updateTimer(req.body);
+  res.send(timer_in_db);
 });
 
 router.delete('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
