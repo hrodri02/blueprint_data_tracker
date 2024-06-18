@@ -220,6 +220,17 @@ router.get('/me/timers_collections', async (req, res) => {
   return res.send(timers_collections);
 });
 
+router.delete('/me/timers_collections/:id', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  await db.deleteTimersCollection(id);
+  res.send(timers_collection);
+});
+
 router.delete('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
   const collection_id = req.params.collection_id;
   const timers_collection = await db.getTimersCollection(collection_id);
