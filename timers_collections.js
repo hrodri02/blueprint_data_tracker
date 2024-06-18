@@ -20,7 +20,6 @@ getTimersCollections();
 function getTimersCollections() {
     get(`${protocol}://${domain}/users/me/timers_collections`, (collections) => {
         id_to_collection = collections;
-        console.log(id_to_collection);
         addTimerCollectionsToContainer(collections);
     });
 }
@@ -111,27 +110,7 @@ function removeTimersFromContainer() {
 }
 
 function addTimersCollectionButtonClicked() {
-    const blackContainer = document.createElement('div');
-    blackContainer.classList.add('black-container');
-    document.body.appendChild(blackContainer);
-    const div = document.createElement('div');
-    div.innerHTML = `
-        <div class="popup-top-nav">
-            <h3>Add New Timers Collection</h3>
-            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
-        </div>
-        <div class="popup-body">
-            <div class="popup-input-container">
-                <label for='timers-collection-name'>Name:</label>
-                <input id='timers-collection-name' name='timers-collection-name' type="text" minlength="1">
-            </div>
-            <div class="popup-body-bottom">
-                <button onclick="createTimersCollection()">Create</button>
-            </div>
-        </div>
-    `;
-    div.classList.add("popup-container");
-    document.body.appendChild(div);
+    createTimersCollectionPopup('Add New Timers Collection', 'Create', 'createTimersCollection()');
 }
 
 function closePopup() {
@@ -156,13 +135,17 @@ function createTimersCollection() {
 }
 
 function addTimerButtonClicked() {
+    createTimerPopup('Add New Timer', 'Create', 'createTimer()');    
+}
+
+function createTimerPopup(header_name, button_name, button_function) {
     const blackContainer = document.createElement('div');
     blackContainer.classList.add('black-container');
     document.body.appendChild(blackContainer);
     const div = document.createElement('div');
     div.innerHTML = `
         <div class="popup-top-nav">
-            <h3>Add New Timer</h3>
+            <h3>${header_name}</h3>
             <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="popup-body">
@@ -185,7 +168,7 @@ function addTimerButtonClicked() {
                 </div>
             </div>
             <div class="popup-body-bottom">
-                <button onclick="createTimer()">Create</button>
+                <button onclick="${button_function}">${button_name}</button>
             </div>
         </div>
     `;
@@ -256,6 +239,66 @@ function deleteTimersCollectionButtonClicked() {
     });
 }
 
+function editTimersCollectionButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
+    const collection_id = dropdown.parentElement.parentElement.id;
+    createTimersCollectionPopup('Edit Timers Collection', 'Update', `updateTimersCollection(${collection_id})`);
+}
+
+function createTimersCollectionPopup(header_name, button_name, button_function) {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>${header_name}</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <div class="popup-input-container">
+                <label for='timers-collection-name'>Name:</label>
+                <input id='timers-collection-name' name='timers-collection-name' type="text" minlength="1">
+            </div>
+            <div class="popup-body-bottom">
+                <button onclick="${button_function}">${button_name}</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function updateTimersCollection(collection_id) {
+    const input = document.getElementById('timers-collection-name');
+    const name = input.value;
+    const fellow_id = JSON.parse(localStorage.getItem('fellow_id'));
+    const body = JSON.stringify({
+        id: collection_id,
+        name: name,
+        fellow_id: fellow_id
+    });
+    
+    const headers = {
+        "Content-Type": "application/json",
+    };
+    put(`${protocol}://${domain}/users/me/timers_collections/${collection_id}`, body, headers, (updated_collection) => {
+        // update dictionary
+        id_to_collection[updated_collection.id].name = updated_collection.name;
+        if (updated_collection.id === Number(selected_timers_collection.id)) {
+            selected_timers_collection.name = updated_collection.name;
+            localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
+        }
+        // update UI
+        const div = document.getElementById(updated_collection.id);
+        const label = div.getElementsByTagName('label')[0];
+        label.innerText = updated_collection.name;
+        // hide popup
+        closePopup();
+    });
+}
+
 function deleteTimerButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
@@ -275,7 +318,6 @@ function removeTimerFromCollection(collection_id, timer_id) {
         return timer.id !== timer_id;
     });
     id_to_collection[collection_id].timers = new_timers;
-    console.log(id_to_collection[collection_id].timers);
     // remove timer from selected_timers_collection
     selected_timers_collection.timers = new_timers;
     // save updated collection in storage
@@ -287,4 +329,65 @@ function removeTimerFromCollection(collection_id, timer_id) {
 function editTimerButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
+
+    const div = dropdown.parentElement.parentElement;
+    const timer_id = Number(div.id.split('-')[1]);
+    createTimerPopup('Edit Timer', 'Update', `updateTimer(${timer_id})`);
+}
+
+function updateTimer(timer_id) {
+    const name_input = document.getElementById('timer-name');
+    const name = name_input.value;
+    const mins_input = document.getElementById('timer-mins');
+    const mins = Number(mins_input.value);
+    const text_color_input = document.getElementById('timer-text-color');
+    const text_color = text_color_input.value;
+    const background_color_input = document.getElementById('timer-background-color');
+    const background_color = background_color_input.value;
+
+    const collection_id = selected_timers_collection.id;
+    let order_id;
+    for (timer of selected_timers_collection.timers) {
+        if (timer.id === timer_id) {
+            order_id = timer.order_id;
+        }
+    }
+
+    const body = JSON.stringify({
+        id: timer_id,
+        name: name,
+        minutes: mins,
+        text_color: text_color,
+        background_color: background_color,
+        timers_collection_id: collection_id,
+        order_id: order_id
+    });
+    
+    const headers = {
+        "Content-Type": "application/json",
+    };
+    put(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, body, headers, (timer) => {
+        // update data structures
+        const timers = selected_timers_collection.timers;
+        for (i in timers) {
+            if (timers[i].id === timer_id) {
+                timers[i] = timer;
+            }
+        }
+        localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
+
+        const timers_in_dict = id_to_collection[collection_id].timers;
+        for (i in timers_in_dict) {
+            if (timers_in_dict[i].id === timer_id) {
+                timers_in_dict[i] = timer;
+            }
+        }
+        // update UI
+        const div = document.getElementById(`timer-${timer_id}`);
+        div.style.color = timer.text_color;
+        div.style.backgroundColor = timer.background_color;
+        const label = div.getElementsByTagName('label')[0];
+        label.innerText = `${timer.name} (${timer.minutes} minutes)`;
+        closePopup(); 
+    });
 }
