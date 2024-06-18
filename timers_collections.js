@@ -41,6 +41,13 @@ function addCollectionToContainer(id, collection) {
     timers_collections_container.innerHTML += `
         <div class="timers-collections-flex-item" id="${id}" onclick="collectionSelected()" style="background-color:${background_color};">
             <label>${name}</label>
+            <div class="timer-dropdown">
+                <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
+                <div class="timer-dropdown-content">
+                    <a id="delete-collection-button" href="#" onclick="deleteTimersCollectionButtonClicked()">Delete from list</a>
+                    <a id="edit-collection-button" href="#" onclick="editTimersCollectionButtonClicked()">Edit</a>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -56,7 +63,7 @@ function addTimerToContainer(timer) {
         <div class="timers-collection-flex-item" id="timer-${timer.id}" style="background-color:${timer.background_color};color:${timer.text_color}">
             <label>${timer.name} (${timer.minutes} minutes)</label>
             <div class="timer-dropdown">
-                <i class="fa-solid fa-ellipsis" onclick="ellipsisTimerButtonClicked()"></i>
+                <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
                 <div class="timer-dropdown-content">
                     <a id="delete-timer-button" href="#" onclick="deleteTimerButtonClicked()">Delete from list</a>
                     <a id="edit-timer-button" href="#" onclick="editTimerButtonClicked()">Edit</a>
@@ -67,6 +74,11 @@ function addTimerToContainer(timer) {
 }
 
 function collectionSelected() {
+    const div = event.srcElement;
+    if (div.tagName !== "DIV") {
+        return;
+    }
+
     // unselect current collection 
     if (selected_timers_collection) {
         const selected_div = document.getElementById(selected_timers_collection.id);
@@ -74,7 +86,6 @@ function collectionSelected() {
         removeTimersFromContainer();
     }
     // change the background color of div
-    const div = event.srcElement;
     const collection_id = div.id;
     const collection_name = id_to_collection[collection_id].name;
     const collection_timers = id_to_collection[collection_id].timers;
@@ -211,7 +222,7 @@ function createTimer() {
     });
 }
 
-function ellipsisTimerButtonClicked() {
+function ellipsisButtonClicked() {
     const div = event.srcElement.parentElement;
     const dropdown = div.getElementsByClassName('timer-dropdown-content')[0];
     const style = window.getComputedStyle(dropdown);
@@ -223,6 +234,28 @@ function ellipsisTimerButtonClicked() {
     }
 }
 
+function deleteTimersCollectionButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
+
+    const collection_id = dropdown.parentElement.parentElement.id;
+    deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}`, () => {
+        // remove collection from dictionary
+        id_to_collection[collection_id] = null;
+        // remove collection from UI
+        const div = document.getElementById(collection_id);
+        timers_collections_container.removeChild(div);
+        // if it is the selected collection
+        if (selected_timers_collection.id === collection_id) {
+            // remove timers of collection from UI
+            removeTimersFromContainer();
+            // update selected collection 
+            selected_timers_collection = null;
+            localStorage.removeItem('selected_timers_collection');
+        }
+    });
+}
+
 function deleteTimerButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
@@ -231,20 +264,24 @@ function deleteTimerButtonClicked() {
     const flex_item = dropdown.parentElement.parentElement;
     const timer_id = Number(flex_item.id.split('-')[1]);
     deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, () => {
-        // remove timer from dictionary
-        const timers = id_to_collection[collection_id].timers;
-        const new_timers = timers.filter(function(timer) {
-            return timer.id !== timer_id;
-        });
-        id_to_collection[collection_id].timers = new_timers;
-        console.log(id_to_collection[collection_id].timers);
-        // remove timer from selected_timers_collection
-        selected_timers_collection.timers = new_timers;
-        // save updated collection in storage
-        localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
-        // remove timer from UI
-        timers_collection_container.removeChild(flex_item);
+        removeTimerFromCollection(collection_id, timer_id);
     });
+}
+
+function removeTimerFromCollection(collection_id, timer_id) {
+    // remove timer from dictionary
+    const timers = id_to_collection[collection_id].timers;
+    const new_timers = timers.filter(function(timer) {
+        return timer.id !== timer_id;
+    });
+    id_to_collection[collection_id].timers = new_timers;
+    console.log(id_to_collection[collection_id].timers);
+    // remove timer from selected_timers_collection
+    selected_timers_collection.timers = new_timers;
+    // save updated collection in storage
+    localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
+    // remove timer from UI
+    timers_collection_container.removeChild(flex_item);
 }
 
 function editTimerButtonClicked() {
