@@ -455,6 +455,32 @@ function getTimersCollection(id) {
   });
 }
 
+function deleteTimersCollection(id) {
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM timers_collections WHERE id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted timers collection ${id} from DB.`);
+        resolve();
+      }
+    });
+
+    db.run(`DELETE FROM timers WHERE timers_collections_id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted a timer from DB.`);
+        resolve();
+      }
+    });
+  });
+}
+
 function getTimersCollectionsForFellow(fellow_id) {
   const sql = `SELECT timers.id, timers.name, timers.minutes, timers.order_id, timers.text_color, timers.background_color, timers_collections.id AS timers_collection_id, timers_collections.name AS timers_collection_name FROM timers_collections LEFT JOIN timers on timers_collections.id = timers.timers_collections_id WHERE fellow_id = '${fellow_id}'`;
   return new Promise((resolve, reject) => {
@@ -562,6 +588,7 @@ module.exports.updateFellow = updateFellow;
 module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
 module.exports.insertTimer = insertTimer;
 module.exports.getTimersCollection = getTimersCollection;
+module.exports.deleteTimersCollection = deleteTimersCollection;
 module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
 module.exports.getTimer = getTimer;
 module.exports.deleteTimer = deleteTimer;
