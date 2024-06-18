@@ -515,6 +515,7 @@ h3 {
 
 .timers-collections-flex-item {
     display: flex;
+    justify-content: space-between;
     color: #ccc;
     background-color: black;
     width: 100%;
