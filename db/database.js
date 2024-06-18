@@ -455,6 +455,29 @@ function getTimersCollection(id) {
   });
 }
 
+function updateTimersCollection(collection) {
+  return new Promise((resolve, reject) => {
+    const id = collection['id'];
+    const name = collection['name'];
+    const fellow_id = collection['id'];
+    db.run(`UPDATE timers_collections SET name = ? WHERE id = ?`, [name, id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`Timers collection ${id} updated`);
+        const updated_collection = {
+          id: id,
+          name: name,
+          fellow_id, fellow_id,
+        };
+        resolve(updated_collection);
+      }
+    });
+  });
+}
+
 function deleteTimersCollection(id) {
   return new Promise((resolve, reject) => {
     db.run(`DELETE FROM timers_collections WHERE id = ?`, [id], function(err) {
@@ -543,6 +566,38 @@ function getTimer(id) {
   });
 }
 
+function updateTimer(timer) {
+  return new Promise((resolve, reject) => {
+    const id = timer['id'];
+    const name = timer['name'];
+    const minutes = timer['minutes'];
+    const text_color = timer['text_color'];
+    const background_color = timer['background_color'];
+    const order_id = timer['order_id'];
+    const timers_collection_id = timer['timers_collection_id'];
+    db.run(`UPDATE timers SET name = ?, minutes = ?, text_color = ?, background_color = ?, order_id = ?, timers_collections_id = ? WHERE id = ?`,
+      [name, minutes, text_color, background_color, order_id, timers_collection_id, id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`Timer ${id} updated`);
+        const updated_timer = {
+          id: id,
+          name: name,
+          minutes: minutes,
+          text_color: text_color,
+          background_color: background_color,
+          order_id: order_id,
+          timers_collection_id: timers_collection_id
+        };
+        resolve(updated_timer);
+      }
+    });
+  });
+}
+
 function deleteTimer(id) {
   return new Promise((resolve, reject) => {
     db.run(`DELETE FROM timers WHERE id = ?`, [id], function(err) {
@@ -588,7 +643,9 @@ module.exports.updateFellow = updateFellow;
 module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
 module.exports.insertTimer = insertTimer;
 module.exports.getTimersCollection = getTimersCollection;
+module.exports.updateTimersCollection = updateTimersCollection;
 module.exports.deleteTimersCollection = deleteTimersCollection;
 module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
 module.exports.getTimer = getTimer;
+module.exports.updateTimer = updateTimer;
 module.exports.deleteTimer = deleteTimer;
