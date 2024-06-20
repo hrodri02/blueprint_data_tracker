@@ -247,7 +247,7 @@ router.delete('/me/timers_collections/:id', async (req, res) => {
   res.send(timers_collection);
 });
 
-router.put('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
+router.patch('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
   const collection_id = req.params.collection_id;
   const timers_collection = await db.getTimersCollection(collection_id);
   if (!timers_collection) {
@@ -259,15 +259,21 @@ router.put('/me/timers_collections/:collection_id/timers/:timer_id', async (req,
   if (!timer) {
     return res.status(404).send({error_message: 'Timer with the given id is not found.'});
   }
+  
+  // Update the timer's information with the data from the request body
+  Object.keys(req.body).forEach(key => {
+    if (timer.hasOwnProperty(key)) {
+      timer[key] = req.body[key];
+    }
+  });
 
-
-  const { error } = validateTimer(req.body);
+  const { error } = validateTimer(timer);
   if (error) {
     console.log(error.details[0].message);
     return res.status(400).send({error_message: error.details[0].message});
   }
 
-  const timer_in_db = await db.updateTimer(req.body);
+  const timer_in_db = await db.updateTimer(timer);
   res.send(timer_in_db);
 });
 
