@@ -345,28 +345,17 @@ function updateTimer(timer_id) {
     const background_color_input = document.getElementById('timer-background-color');
     const background_color = background_color_input.value;
 
-    const collection_id = selected_timers_collection.id;
-    let order_id;
-    for (timer of selected_timers_collection.timers) {
-        if (timer.id === timer_id) {
-            order_id = timer.order_id;
-        }
-    }
-
     const body = JSON.stringify({
-        id: timer_id,
         name: name,
         minutes: mins,
         text_color: text_color,
-        background_color: background_color,
-        timers_collection_id: collection_id,
-        order_id: order_id
+        background_color: background_color
     });
     
     const headers = {
         "Content-Type": "application/json",
     };
-    put(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, body, headers, (timer) => {
+    patch(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, body, headers, (timer) => {
         // update data structures
         const timers = selected_timers_collection.timers;
         for (i in timers) {
