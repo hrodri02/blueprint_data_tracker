@@ -16,6 +16,7 @@ let id_to_collection;
 }
 */
 let selected_timers_collection = JSON.parse(localStorage.getItem('selected_timers_collection'));
+const TIMERS_COLLECTIONS_LIMIT = 10;
 const TIMERS_LIMIT = 10;
 
 getTimersCollections();
@@ -120,7 +121,13 @@ function removeTimersFromContainer() {
 }
 
 function addTimersCollectionButtonClicked() {
-    createTimersCollectionPopup('Add New Timers Collection', 'Create', 'createTimersCollection()');
+    const num_collections = Object.keys(id_to_collection).length;
+    if (num_collections < TIMERS_COLLECTIONS_LIMIT) {
+        createTimersCollectionPopup('Add New Timers Collection', 'Create', 'createTimersCollection()');
+    }
+    else {
+        alert(`You cannot have more than ${TIMERS_COLLECTIONS_LIMIT} collections.`);
+    }
 }
 
 function closePopup() {
@@ -215,6 +222,7 @@ function createTimer() {
     });
     
     post(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers`, body, (timer) => {
+        id_to_collection[collection_id].timers.push(timer);
         selected_timers_collection.timers.push(timer);
         localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
         addTimerToContainer(timer);
@@ -241,12 +249,12 @@ function deleteTimersCollectionButtonClicked() {
     const collection_id = dropdown.parentElement.parentElement.id;
     deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}`, () => {
         // remove collection from dictionary
-        id_to_collection[collection_id] = null;
+        delete id_to_collection[collection_id];
         // remove collection from UI
         const div = document.getElementById(collection_id);
         timers_collections_container.removeChild(div);
         // if it is the selected collection
-        if (selected_timers_collection.id === collection_id) {
+        if (selected_timers_collection && selected_timers_collection.id === collection_id) {
             // disable add timer button
             add_timer_button.style.pointerEvents = "none";
             // remove timers of collection from UI
