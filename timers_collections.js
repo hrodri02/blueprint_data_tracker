@@ -1,5 +1,7 @@
 const timers_collections_container = document.querySelector('.timers-collections-container');
 const timers_collection_container = document.querySelector('.timers-collection-container');
+const add_timer_button = document.getElementById('add-timer-button');
+
 /*
 {
     id: {name: "", timers: []}
@@ -14,14 +16,20 @@ let id_to_collection;
 }
 */
 let selected_timers_collection = JSON.parse(localStorage.getItem('selected_timers_collection'));
+const TIMERS_LIMIT = 10;
 
 getTimersCollections();
+setupAddTimerButton();
 
 function getTimersCollections() {
     get(`${protocol}://${domain}/users/me/timers_collections`, (collections) => {
         id_to_collection = collections;
         addTimerCollectionsToContainer(collections);
     });
+}
+
+function setupAddTimerButton() {
+    add_timer_button.style.pointerEvents = (selected_timers_collection)? "auto" : "none";
 }
 
 function addTimerCollectionsToContainer(collections) {
@@ -77,6 +85,8 @@ function collectionSelected() {
     if (div.tagName !== "DIV") {
         return;
     }
+    // enable add timer button
+    add_timer_button.style.pointerEvents = "auto";
 
     // unselect current collection 
     if (selected_timers_collection) {
@@ -129,13 +139,20 @@ function createTimersCollection() {
 
     post(`${protocol}://${domain}/users/me/timers_collections`, body, (timers_collection) => {
         addCollectionToContainer(timers_collection.id, timers_collection);
-        id_to_collection[timers_collection.id].timers = [];
+        id_to_collection[timers_collection.id] = {"name": timers_collection.name, "timers": []};
         closePopup(); 
     });
 }
 
 function addTimerButtonClicked() {
-    createTimerPopup('Add New Timer', 'Create', 'createTimer()');    
+    const collection_id = selected_timers_collection.id;
+    const num_timers = id_to_collection[collection_id].timers.length;
+    if (num_timers < TIMERS_LIMIT) {
+        createTimerPopup('Add New Timer', 'Create', 'createTimer()');
+    }
+    else {
+        alert(`You cannot create more than ${TIMERS_LIMIT} timers per collection.`);
+    }
 }
 
 function createTimerPopup(header_name, button_name, button_function) {
@@ -230,6 +247,8 @@ function deleteTimersCollectionButtonClicked() {
         timers_collections_container.removeChild(div);
         // if it is the selected collection
         if (selected_timers_collection.id === collection_id) {
+            // disable add timer button
+            add_timer_button.style.pointerEvents = "none";
             // remove timers of collection from UI
             removeTimersFromContainer();
             // update selected collection 
