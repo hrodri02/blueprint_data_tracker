@@ -414,12 +414,12 @@ async function insertTimersCollectionForUser(fellow_id, name) {
   });
 }
 
-function insertTimer(timers_collections_id, timer) {
-  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collections_id) VALUES(?, ?, ?, ?, ?, ?)';
+function insertTimer(timers_collection_id, timer) {
+  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collection_id) VALUES(?, ?, ?, ?, ?, ?)';
   const select_new_timer = 'SELECT * FROM timers ORDER BY id DESC LIMIT 1';
   return new Promise((resolve, reject) => {
     db.serialize(() => {
-      db.run(sql, [timer.name, timer.minutes, timer.text_color, timer.background_color, timer.order_id, timers_collections_id], (err) => {
+      db.run(sql, [timer.name, timer.minutes, timer.text_color, timer.background_color, timer.order_id, timers_collection_id], (err) => {
         if (err) {
           dbDebugger(err.message);
           reject(err.message);
@@ -491,7 +491,7 @@ function deleteTimersCollection(id) {
       }
     });
 
-    db.run(`DELETE FROM timers WHERE timers_collections_id = ?`, [id], function(err) {
+    db.run(`DELETE FROM timers WHERE timers_collection_id = ?`, [id], function(err) {
       if (err) {
         dbDebugger(err.message);
         reject(err.message);
@@ -505,7 +505,7 @@ function deleteTimersCollection(id) {
 }
 
 function getTimersCollectionsForFellow(fellow_id) {
-  const sql = `SELECT timers.id, timers.name, timers.minutes, timers.order_id, timers.text_color, timers.background_color, timers_collections.id AS timers_collection_id, timers_collections.name AS timers_collection_name FROM timers_collections LEFT JOIN timers on timers_collections.id = timers.timers_collections_id WHERE fellow_id = '${fellow_id}'`;
+  const sql = `SELECT timers.id, timers.name, timers.minutes, timers.order_id, timers.text_color, timers.background_color, timers_collections.id AS timers_collection_id, timers_collections.name AS timers_collection_name FROM timers_collections LEFT JOIN timers on timers_collections.id = timers.timers_collection_id WHERE fellow_id = '${fellow_id}'`;
   return new Promise((resolve, reject) => {
     db.all(sql, function(err, rows) {
       if (err) {
@@ -575,7 +575,7 @@ function updateTimer(timer) {
     const background_color = timer['background_color'];
     const order_id = timer['order_id'];
     const timers_collection_id = timer['timers_collection_id'];
-    db.run(`UPDATE timers SET name = ?, minutes = ?, text_color = ?, background_color = ?, order_id = ?, timers_collections_id = ? WHERE id = ?`,
+    db.run(`UPDATE timers SET name = ?, minutes = ?, text_color = ?, background_color = ?, order_id = ?, timers_collection_id = ? WHERE id = ?`,
       [name, minutes, text_color, background_color, order_id, timers_collection_id, id], function(err) {
       if (err) {
         dbDebugger(err.message);
