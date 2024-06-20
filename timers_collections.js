@@ -323,6 +323,7 @@ function removeTimerFromCollection(collection_id, timer_id) {
     // save updated collection in storage
     localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
     // remove timer from UI
+    const flex_item = document.getElementById(`timer-${timer_id}`);
     timers_collection_container.removeChild(flex_item);
 }
 
