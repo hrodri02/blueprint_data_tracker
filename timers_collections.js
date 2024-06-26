@@ -239,7 +239,6 @@ function onMouseUp(event) {
         const y_translation = emptyRect.top - originalRect.top;
 
         flex_item.style.top = `${y_translation + flex_item_top_original}px`;
-        // flex_item.style.transform = `translate(${x_translation}px, ${y_translation}px)`;
         isDragging = false;
         currentElement.style.zIndex = 1;
         currentElement = null;
