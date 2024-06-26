@@ -499,10 +499,14 @@ function editTimersCollectionButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
     const collection_id = dropdown.parentElement.parentElement.id;
-    createTimersCollectionPopup('Edit Timers Collection', 'Update', `updateTimersCollection(${collection_id})`);
+    const collection_name = id_to_collection[collection_id].name;
+    createTimersCollectionPopup('Edit Timers Collection',
+                                'Update',
+                                `updateTimersCollection(${collection_id})`,
+                                collection_name);
 }
 
-function createTimersCollectionPopup(header_name, button_name, button_function) {
+function createTimersCollectionPopup(header_name, button_name, button_function, collection_name = '') {
     const blackContainer = document.createElement('div');
     blackContainer.classList.add('black-container');
     document.body.appendChild(blackContainer);
@@ -515,7 +519,7 @@ function createTimersCollectionPopup(header_name, button_name, button_function) 
         <div class="popup-body">
             <div class="popup-input-container">
                 <label for='timers-collection-name'>Name:</label>
-                <input id='timers-collection-name' name='timers-collection-name' type="text" minlength="1">
+                <input id='timers-collection-name' name='timers-collection-name' type="text" minlength="1" value='${collection_name}'>
             </div>
             <div class="popup-body-bottom">
                 <button onclick="${button_function}">${button_name}</button>
