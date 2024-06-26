@@ -44,9 +44,11 @@ getTimersCollections();
 setupAddTimerButton();
 
 function getTimersCollections() {
+    createLoader();
     get(`${protocol}://${domain}/users/me/timers_collections`, (collections) => {
         id_to_collection = collections;
         addTimerCollectionsToContainer(collections);
+        removeLoader();
     });
 }
 
@@ -370,10 +372,11 @@ function createTimersCollection() {
     const body = JSON.stringify({
         name: name
     });
-
+    createLoader();
     post(`${protocol}://${domain}/users/me/timers_collections`, body, (timers_collection) => {
         addCollectionToContainer(timers_collection.id, timers_collection);
         id_to_collection[timers_collection.id] = {"name": timers_collection.name, "timers": []};
+        removeLoader();
         closePopup(); 
     });
 }
@@ -449,6 +452,7 @@ function createTimer() {
         order_id: order_id
     });
     
+    createLoader();
     post(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers`, body, (timer) => {
         id_to_collection[collection_id].timers.push(timer);
         selected_timers_collection.timers.push(timer);
@@ -456,7 +460,8 @@ function createTimer() {
         addTimerToContainer(timer);
         setTimerFlexItems();
         addMouseDownListener(timer.id);
-        closePopup(); 
+        removeLoader();
+        closePopup();
     });
 }
 
@@ -544,6 +549,7 @@ function updateTimersCollection(collection_id) {
     const headers = {
         "Content-Type": "application/json",
     };
+    createLoader();
     put(`${protocol}://${domain}/users/me/timers_collections/${collection_id}`, body, headers, (updated_collection) => {
         // update dictionary
         id_to_collection[updated_collection.id].name = updated_collection.name;
@@ -555,6 +561,7 @@ function updateTimersCollection(collection_id) {
         const div = document.getElementById(updated_collection.id);
         const label = div.getElementsByTagName('label')[0];
         label.innerText = updated_collection.name;
+        removeLoader();
         // hide popup
         closePopup();
     });
@@ -629,6 +636,7 @@ function updateTimer(timer_id) {
     const headers = {
         "Content-Type": "application/json",
     };
+    createLoader();
     patch(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, body, headers, (timer) => {
         // update data structures
         const timers = selected_timers_collection.timers;
@@ -651,6 +659,7 @@ function updateTimer(timer_id) {
         div.style.backgroundColor = timer.background_color;
         const label = div.getElementsByTagName('label')[0];
         label.innerText = `${timer.name} (${timer.minutes} minutes)`;
+        removeLoader();
         closePopup(); 
     });
 }
