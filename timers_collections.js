@@ -15,9 +15,30 @@ let id_to_collection;
     timers: []
 }
 */
+
 let selected_timers_collection = JSON.parse(localStorage.getItem('selected_timers_collection'));
+let isDragging = false;
+let currentElement = null;
+let emptyRect = null;
+let originalRect = null;
+let flex_item_top_original = null;
+let startX, startY, offsetX, offsetY;
+let timer_flex_items = null;
+/*
+    {
+    collection_id: {
+      timer_id: {
+        ...
+      },
+      ...
+    },
+    ...
+  }
+*/
+const request_updates_for_timers = {};
 const TIMERS_COLLECTIONS_LIMIT = 10;
 const TIMERS_LIMIT = 10;
+const MAX_DST_TO_RIGHT_SIDE_OF_SCREEN_IN_PX = 50;
 
 getTimersCollections();
 setupAddTimerButton();
@@ -39,6 +60,8 @@ function addTimerCollectionsToContainer(collections) {
         if (selected_timers_collection && selected_timers_collection.id === collection_id) {
             // add the timers of the current collection to the timers collection container
             addTimersToContainer(id_to_collection[collection_id].timers);
+            setTimerFlexItems();
+            addMouseDownListersToTimers(id_to_collection[collection_id].timers);
         }
     }
 }
@@ -66,9 +89,20 @@ function addTimersToContainer(timers) {
     }
 }
 
+function setTimerFlexItems() {
+    timer_flex_items = document.getElementsByClassName('timers-collection-flex-item');
+}
+
+function addMouseDownListersToTimers(timers) {
+    for (timer of timers) {
+        addMouseDownListener(timer.id);
+    }
+}
+
 function addTimerToContainer(timer) {
     timers_collection_container.innerHTML += `
-        <div class="timers-collection-flex-item" id="timer-${timer.id}" style="background-color:${timer.background_color};color:${timer.text_color}">
+        <div class="timers-collection-flex-item" id="timer-${timer.id}" style="background-color:${timer.background_color};color:${timer.text_color};left:0px;top:0px;">
+            <i class="fa-solid fa-bars" style="cursor: grab;"></i>
             <label>${timer.name} (${timer.minutes} minutes)</label>
             <div class="timer-dropdown">
                 <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
@@ -79,6 +113,198 @@ function addTimerToContainer(timer) {
             </div>
         </div>
     `;
+}
+
+function addMouseDownListener(timer_id) {
+    const flex_item = document.getElementById(`timer-${timer_id}`);
+    const menu_icon = flex_item.querySelector('.fa-bars');
+    menu_icon.addEventListener('mousedown', onMouseDown);
+}
+
+function onMouseDown(event) {
+    isDragging = true;
+    event.preventDefault();
+
+    const menu_icon = event.target;
+    currentElement = menu_icon.parentElement;
+    currentElement.style.zIndex = 2;
+    flex_item_top_original = parseFloat(currentElement.style.top);
+    emptyRect = currentElement.getBoundingClientRect();
+    originalRect = emptyRect;
+    
+    startX = event.clientX;
+    startY = event.clientY;
+
+    offsetX = startX - parseFloat(currentElement.style.left);
+    offsetY = startY - parseFloat(currentElement.style.top);
+    menu_icon.style.cursor = 'grabbing';
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+}
+
+function onMouseMove(event) {
+    if (isDragging && currentElement) {
+        const timer_flex_item = getIntersectingFlexItem();
+        if (timer_flex_item) {
+            moveTimerFlexItemToEmptyRect(timer_flex_item);
+        }
+
+        const moveX = event.clientX - offsetX;
+        const moveY = event.clientY - offsetY;
+        const original_x = originalRect.left;
+        const new_x = original_x + moveX;
+        if (new_x > window.innerWidth - MAX_DST_TO_RIGHT_SIDE_OF_SCREEN_IN_PX) {
+            currentElement.style.left = `${window.innerWidth - MAX_DST_TO_RIGHT_SIDE_OF_SCREEN_IN_PX - original_x}px`;
+        }
+        else {
+            currentElement.style.left = `${moveX}px`;
+        }
+        currentElement.style.top = `${moveY}px`;
+    }
+}
+
+function getIntersectingFlexItem() {
+    const flex_item_rect = currentElement.getBoundingClientRect();
+    let timer_flex_item = null, max_area_percent = 0;
+    for (item of timer_flex_items) {
+        if (item === currentElement)
+            continue;
+        const b = item.getBoundingClientRect();
+        if (isIntersecting(flex_item_rect, b)) {
+            const intersection_area_percent = getIntersectionAreaPercentange(flex_item_rect, b);
+            if (intersection_area_percent > 0.5 && intersection_area_percent > max_area_percent) {
+                max_area_percent = intersection_area_percent;
+                timer_flex_item = item;
+            }
+        }
+    }
+    return timer_flex_item;
+}
+
+function isIntersecting(a, b) {
+    // b is to the right of a
+    if (b.left > a.left + a.width)
+        return false;
+
+    // b is to the left of a
+    if (a.left > b.left + b.width)
+        return false;
+    
+    // b is above a
+    if (a.top > b.top + b.height)
+        return false;
+
+    // b is below a
+    if (b.top > a.top + a.height)
+        return false;
+
+    return true;
+}
+
+function getIntersectionAreaPercentange(a, b) {
+    let width = 0, height = 0;
+    // b is more to the right than a
+    if (a.right <= b.right) {
+        width = a.right - b.left;
+    }
+    else {
+        width = b.right - a.left;
+    }
+
+    // b is lower than a
+    if (b.bottom >= a.bottom) {
+        height = a.bottom - b.top;
+    }
+    else {
+        height = b.bottom - a.top;
+    }
+
+    return (width * height) / (a.width * a.height);
+}
+
+function moveTimerFlexItemToEmptyRect(flex_item) {
+    const b_rect = flex_item.getBoundingClientRect();
+    const item_top = parseFloat(flex_item.style.top);
+    flex_item.style.top = `${emptyRect.top - b_rect.top + item_top}px`;
+    emptyRect = b_rect;
+}
+
+function onMouseUp(event) {
+    if (isDragging) {
+        const menu_icon = event.target;
+        const flex_item = currentElement;
+        
+        flex_item.style.left = '0px';
+        const y_translation = emptyRect.top - originalRect.top;
+
+        flex_item.style.top = `${y_translation + flex_item_top_original}px`;
+        // flex_item.style.transform = `translate(${x_translation}px, ${y_translation}px)`;
+        isDragging = false;
+        currentElement.style.zIndex = 1;
+        currentElement = null;
+        menu_icon.style.cursor = 'grab';
+
+        const sorted_flex_items = sortTimerFlexItemsByTop();
+        updateOrderIdsOfSelectedTimers(sorted_flex_items);
+        updateTimersOfIdToCollection();
+        saveSelectedTimersCollectionInLocalStorage();
+        saveUpdatedTimersToUpload();
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mousemup', onMouseUp);
+    }
+}
+
+function sortTimerFlexItemsByTop() {
+    const arr = [];
+    for (item of timer_flex_items) {
+        const item_id = Number(item.id.split('-')[1]);
+        arr.push({
+            top: item.getBoundingClientRect().top,
+            item_id: item_id
+        });
+    }
+    arr.sort((a, b) => a.top - b.top);
+    return arr;
+}
+
+function updateOrderIdsOfSelectedTimers(sorted_flex_items) {
+    const timers = selected_timers_collection.timers;
+    for (timer of timers) {
+        for (i in sorted_flex_items) {
+            if (sorted_flex_items[i].item_id === timer.id) {
+                timer.order_id = parseInt(i);
+            }
+        }
+    }
+    timers.sort((a, b) => a.order_id - b.order_id);
+}
+
+function updateTimersOfIdToCollection() {
+    const timers = selected_timers_collection.timers;
+    id_to_collection[selected_timers_collection.id].timers = timers;
+}
+
+function saveSelectedTimersCollectionInLocalStorage() {
+    localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
+}
+
+function saveUpdatedTimersToUpload() {
+    const collection_id = selected_timers_collection.id;
+    if (!(collection_id in request_updates_for_timers))
+        request_updates_for_timers[collection_id] = {};
+
+    const timers = selected_timers_collection.timers;
+    for (timer of timers) {
+        request_updates_for_timers[collection_id][timer.id] = timer;
+    }
+}
+
+function uploadUpdatedTimers() {
+    const body = JSON.stringify(request_updates_for_timers);
+    const headers = { "Content-Type": "application/json" };
+    patch(`${protocol}://${domain}/users/me/timers_collections/timers`, body, headers);
 }
 
 function collectionSelected() {
@@ -109,6 +335,8 @@ function collectionSelected() {
     localStorage.setItem('selected_timers_collection', JSON.stringify(timers_collection));
     selected_timers_collection = timers_collection;
     addTimersToContainer(timers_collection.timers);
+    setTimerFlexItems();
+    addMouseDownListersToTimers(timers_collection.timers);
 }
 
 function removeTimersFromContainer() {
@@ -226,6 +454,8 @@ function createTimer() {
         selected_timers_collection.timers.push(timer);
         localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
         addTimerToContainer(timer);
+        setTimerFlexItems();
+        addMouseDownListener(timer.id);
         closePopup(); 
     });
 }
@@ -408,3 +638,5 @@ function updateTimer(timer_id) {
         closePopup(); 
     });
 }
+
+window.addEventListener('beforeunload', uploadUpdatedTimers);
