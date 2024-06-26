@@ -249,9 +249,16 @@ function addNoteToContainer(student_note) {
     const date = parseISOString(student_note['date']);
     const formattedDate = formatDate(date);
     studentNotesContainer.innerHTML += `
-        <div class="notes-flex-item">
+        <div class="notes-flex-item" id="note-${student_note.id}">
             <p>${student_note['note']}</p>
             <label>${formattedDate}</label>
+            <div class="note-dropdown">
+                <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
+                <div class="note-dropdown-content">
+                    <a id="delete-note-button" href="#" onclick="deleteNoteButtonClicked()">Delete from list</a>
+                    <a id="edit-note-button" href="#" onclick="editNoterButtonClicked()">Edit</a>
+                </div>
+            </div>
         </div>
     `;
 }
@@ -520,4 +527,37 @@ function uploadNoteButtonClicked() {
         studentNotesContainer.innerHTML = '';
         addNotesToContainer(notes);
     });
+}
+
+function ellipsisButtonClicked() {
+    const div = event.srcElement.parentElement;
+    const dropdown = div.getElementsByClassName('note-dropdown-content')[0];
+    const style = window.getComputedStyle(dropdown);
+    if (style.display === "none") {
+        dropdown.style.display = "block";
+    }
+    else {
+        dropdown.style.display = "none";
+    }
+}
+
+function deleteNoteButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
+    
+    const note_id_str = dropdown.parentElement.parentElement.id;
+    const note_id = Number(note_id_str.split('-')[1]);
+    createLoader();
+    deleteRequest(`${protocol}://${domain}/students/${studentID}/notes/${note_id}`, () => {
+        // remove note from UI
+        const div = document.getElementById(note_id_str);
+        studentNotesContainer.removeChild(div);
+        removeLoader();
+    });
+}
+
+function editNoterButtonClicked() {
+    const dropdown = event.srcElement.parentElement;
+    dropdown.style.display = "none";
+    
 }
