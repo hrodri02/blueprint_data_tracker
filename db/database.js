@@ -455,6 +455,22 @@ function getTimersCollection(id) {
   });
 }
 
+function getTimersOfTimersCollection(id) {
+  const select_new_timers = 'SELECT * FROM timers WHERE timers_collection_id = ?';
+  return new Promise((resolve, reject) => {
+    db.all(select_new_timers, [id], function(err, rows) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(rows);
+        resolve(rows);
+      }
+    });
+  });
+}
+
 function updateTimersCollection(collection) {
   return new Promise((resolve, reject) => {
     const id = collection['id'];
@@ -566,6 +582,20 @@ function getTimer(id) {
   });
 }
 
+async function updateTimers(timers) {
+  const updated_timers = [];
+  for (timer of timers) {
+    const updated_timer = await updateTimer(timer);
+    if (updated_timer) {
+      updated_timers.push(updated_timer);
+    }
+    else {
+      dbDebugger(`error updating student: ${student['name']}`);
+    }
+  }
+  return updated_timers;
+}
+
 function updateTimer(timer) {
   return new Promise((resolve, reject) => {
     const id = timer['id'];
@@ -643,9 +673,11 @@ module.exports.updateFellow = updateFellow;
 module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
 module.exports.insertTimer = insertTimer;
 module.exports.getTimersCollection = getTimersCollection;
+module.exports.getTimersOfTimersCollection = getTimersOfTimersCollection;
 module.exports.updateTimersCollection = updateTimersCollection;
 module.exports.deleteTimersCollection = deleteTimersCollection;
 module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
 module.exports.getTimer = getTimer;
+module.exports.updateTimers = updateTimers;
 module.exports.updateTimer = updateTimer;
 module.exports.deleteTimer = deleteTimer;
