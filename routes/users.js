@@ -247,6 +247,47 @@ router.delete('/me/timers_collections/:id', async (req, res) => {
   res.send(timers_collection);
 });
 
+/*
+  req.body
+  {
+    collection_id: {
+      timer_id: {
+        ...
+      },
+      ...
+    },
+    ...
+  }
+*/
+router.patch('/me/timers_collections/timers', async (req, res) => {
+  const result = {};
+  for (collection_id of Object.keys(req.body)) {
+    const timers = await db.getTimersOfTimersCollection(collection_id);
+    for (timer of timers) {
+      const updated_timer = req.body[collection_id][timer.id];
+      dbDebugger(updated_timer);
+      // Update the timer's information with the data from the request body
+      Object.keys(updated_timer).forEach(key => {
+        if (timer.hasOwnProperty(key)) {
+          timer[key] = updated_timer[key];
+        }
+      });
+    }
+
+    const { error } = validateTimers(timers);
+    if (error) {
+      console.log(error.details[0].message);
+      return res.status(400).send({error_message: error.details[0].message});
+    }
+
+    const timers_in_db = await db.updateTimers(timers);
+    result[collection_id] = timers_in_db;
+  }
+
+  dbDebugger(result);
+  res.send(result);
+});
+
 router.patch('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
   const collection_id = req.params.collection_id;
   const timers_collection = await db.getTimersCollection(collection_id);
@@ -321,6 +362,22 @@ function validateTimersCollection(collection) {
   });
   
   const result = schema.validate(collection);
+  return result;
+}
+
+function validateTimers(timers) {
+  const timer_schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(3).required(),
+    minutes: Joi.number().min(1).required(),
+    text_color: Joi.string().required(),
+    background_color: Joi.string().required(),
+    order_id: Joi.number().min(0).max(9).required(),
+    timers_collection_id: Joi.number().required()
+  });
+
+  const schema = Joi.array().items(timer_schema);
+  const result = schema.validate(timers);
   return result;
 }
 
