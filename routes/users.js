@@ -259,7 +259,7 @@ router.delete('/me/timers_collections/:id', async (req, res) => {
     ...
   }
 */
-router.patch('/me/timers_collections/timers', async (req, res) => {
+router.patch('/me/timers_collections', async (req, res) => {
   const result = {};
   for (collection_id of Object.keys(req.body)) {
     const timers = await db.getTimersOfTimersCollection(collection_id);

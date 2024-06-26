@@ -305,7 +305,7 @@ function saveUpdatedTimersToUpload() {
 function uploadUpdatedTimers() {
     const body = JSON.stringify(request_updates_for_timers);
     const headers = { "Content-Type": "application/json" };
-    patch(`${protocol}://${domain}/users/me/timers_collections/timers`, body, headers);
+    patch(`${protocol}://${domain}/users/me/timers_collections`, body, headers);
 }
 
 function collectionSelected() {
