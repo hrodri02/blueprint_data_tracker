@@ -389,7 +389,8 @@ function addTimerButtonClicked() {
     }
 }
 
-function createTimerPopup(header_name, button_name, button_function) {
+function createTimerPopup(header_name, button_name, button_function, 
+                          name = '', mins = '', text_color = '#000', background_color = '#000') {
     const blackContainer = document.createElement('div');
     blackContainer.classList.add('black-container');
     document.body.appendChild(blackContainer);
@@ -403,19 +404,19 @@ function createTimerPopup(header_name, button_name, button_function) {
             <div class="popup-input-container">
                 <div class"popup-input-flex-item>
                     <label for='timer-name'>Name:</label>
-                    <input id='timer-name' name='timer-name' type="text" minlength="1">
+                    <input id='timer-name' name='timer-name' type="text" minlength="1" value="${name}">
                 </div>
                 <div class"popup-input-flex-item>
                     <label for='timer-mins'>Minutes:</label>
-                    <input id='timer-mins' name='timer-mins' type="number" min="1">
+                    <input id='timer-mins' name='timer-mins' type="number" min="1" value="${mins}">
                 </div>
                 <div class"popup-input-flex-item>
                     <label for='timer-text-color'>Text color:</label>
-                    <input id='timer-text-color' name='timer-text-color' type="color">
+                    <input id='timer-text-color' name='timer-text-color' type="color" value="${text_color}">
                 </div>
                 <div class"popup-input-flex-item>
                     <label for='timer-background-color'>Background color:</label>
-                    <input id='timer-background-color' name='timer-background-color' type="color">
+                    <input id='timer-background-color' name='timer-background-color' type="color" value="${background_color}">
                 </div>
             </div>
             <div class="popup-body-bottom">
@@ -593,7 +594,19 @@ function editTimerButtonClicked() {
 
     const div = dropdown.parentElement.parentElement;
     const timer_id = Number(div.id.split('-')[1]);
-    createTimerPopup('Edit Timer', 'Update', `updateTimer(${timer_id})`);
+    const target_timer = getSelectedTimer(timer_id);
+    createTimerPopup('Edit Timer', 'Update', `updateTimer(${timer_id})`,
+                     target_timer.name, target_timer.minutes, target_timer.text_color, target_timer.background_color);
+}
+
+function getSelectedTimer(timer_id) {
+    let target_timer = null;
+    for (timer of selected_timers_collection.timers) {
+        if (timer.id === timer_id) {
+            target_timer = timer;
+        }
+    }
+    return target_timer;
 }
 
 function updateTimer(timer_id) {
