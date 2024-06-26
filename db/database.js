@@ -211,6 +211,38 @@ async function getStudentNotes(id) {
   });
 }
 
+function getStudentNote(note_id) {
+  const sql = 'SELECT * FROM student_notes WHERE id = ?';
+  return new Promise((resolve, reject) => {
+    db.get(sql, [note_id], function(err, row) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        dbDebugger(row);
+        resolve(row);
+      }
+    });
+  });
+}
+
+function deleteStudentNote(note_id) {
+  const sql = `DELETE FROM student_notes WHERE id = ${note_id}`;
+  return new Promise((resolve, reject) => {
+    db.run(sql, (err) => {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`Deleted note ${note_id} from db.`);
+        resolve();
+      }
+    });
+  });
+}
+
 async function getStudent(id) {
 return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM students WHERE id = ?';
@@ -407,6 +439,8 @@ module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
 module.exports.insertStudentNote = insertStudentNote;
 module.exports.getStudentNotes = getStudentNotes;
+module.exports.getStudentNote = getStudentNote;
+module.exports.deleteStudentNote = deleteStudentNote;
 module.exports.getStudent = getStudent;
 module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;
