@@ -272,6 +272,23 @@ router.get('/:id/notes', [auth], async (req, res) => {
   res.send(notes);
 });
 
+router.delete('/:id/notes/:note_id', [auth], async (req, res) => {
+  const student_id = req.params.id;
+  const result = await db.getStudent(student_id);
+  if (!result) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+
+  const note_id = req.params.note_id;
+  const note = await db.getStudentNote(note_id);
+  if (!note_id) {
+    return res.status(404).send('Student note with given ID not found.');
+  }
+
+  await db.deleteStudentNote(note_id);
+  res.send(note);
+});
+
 function validateDailyData(dailyData) {
   const attendance = Joi.array().items(Joi.string().valid('Present', 'Absent', 'Tardy', 'Left Early', 'No Session', 'No School'));
   const etGrade = Joi.array().items(Joi.number().min(0).max(4));
