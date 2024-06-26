@@ -482,12 +482,14 @@ function deleteTimersCollectionButtonClicked() {
     dropdown.style.display = "none";
 
     const collection_id = dropdown.parentElement.parentElement.id;
+    createLoader();
     deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}`, () => {
         // remove collection from dictionary
         delete id_to_collection[collection_id];
         // remove collection from UI
         const div = document.getElementById(collection_id);
         timers_collections_container.removeChild(div);
+        removeLoader();
         // if it is the selected collection
         if (selected_timers_collection && selected_timers_collection.id === collection_id) {
             // disable add timer button
@@ -574,8 +576,10 @@ function deleteTimerButtonClicked() {
     const collection_id = selected_timers_collection.id;
     const flex_item = dropdown.parentElement.parentElement;
     const timer_id = Number(flex_item.id.split('-')[1]);
+    createLoader();
     deleteRequest(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers/${timer_id}`, () => {
         removeTimerFromCollection(collection_id, timer_id);
+        removeLoader();
     });
 }
 
