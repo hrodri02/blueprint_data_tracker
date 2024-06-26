@@ -322,12 +322,11 @@ function collectionSelected() {
         selected_div.style.backgroundColor = "black";
         removeTimersFromContainer();
     }
-    // change the background color of div
+    // update selected timers collection
     const collection_id = div.id;
     const collection_name = id_to_collection[collection_id].name;
     const collection_timers = id_to_collection[collection_id].timers;
     div.style.backgroundColor = "#444";
-    // update selected timers collection
     const timers_collection = {
         id: collection_id,
         name: collection_name,
@@ -455,7 +454,6 @@ function createTimer() {
     createLoader();
     post(`${protocol}://${domain}/users/me/timers_collections/${collection_id}/timers`, body, (timer) => {
         id_to_collection[collection_id].timers.push(timer);
-        selected_timers_collection.timers.push(timer);
         localStorage.setItem('selected_timers_collection', JSON.stringify(selected_timers_collection));
         addTimerToContainer(timer);
         setTimerFlexItems();
