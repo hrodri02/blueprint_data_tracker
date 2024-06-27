@@ -110,7 +110,6 @@ async function deleteRequest(url, callback = () => {}) {
     let json;
     try {
         const res = await fetch(url, {method: "DELETE"});
-        removeLoader();
         if (res.ok) {
             json = await res.json();
         }
