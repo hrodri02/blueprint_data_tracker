@@ -250,15 +250,17 @@ function addNoteToContainer(student_note) {
     const formattedDate = formatDate(date);
     studentNotesContainer.innerHTML += `
         <div class="notes-flex-item" id="note-${student_note.id}">
-            <p>${student_note['note']}</p>
-            <label>${formattedDate}</label>
-            <div class="note-dropdown">
-                <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
-                <div class="note-dropdown-content">
-                    <a id="delete-note-button" href="#" onclick="deleteNoteButtonClicked()">Delete from list</a>
-                    <a id="edit-note-button" href="#" onclick="editNoteButtonClicked()">Edit</a>
+            <div class="notes-flex-item-header">
+                <label>${formattedDate}</label>
+                <div class="note-dropdown">
+                    <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
+                    <div class="note-dropdown-content">
+                        <a id="delete-note-button" href="#" onclick="deleteNoteButtonClicked()">Delete from list</a>
+                        <a id="edit-note-button" href="#" onclick="editNoteButtonClicked()">Edit</a>
+                    </div>
                 </div>
             </div>
+            <p>${student_note['note']}</p>
         </div>
     `;
 }
@@ -524,7 +526,7 @@ function deleteNoteButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
     
-    const note_id_str = dropdown.parentElement.parentElement.id;
+    const note_id_str = dropdown.parentElement.parentElement.parentElement.id;
     const note_id = Number(note_id_str.split('-')[1]);
     createLoader();
     deleteRequest(`${protocol}://${domain}/students/${studentID}/notes/${note_id}`, () => {
@@ -539,7 +541,7 @@ function editNoteButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
 
-    const note_flex_item = dropdown.parentElement.parentElement;
+    const note_flex_item = dropdown.parentElement.parentElement.parentElement;
     const note_id_str = note_flex_item.id;
     const note_id = Number(note_id_str.split('-')[1]);
     const note_text = note_flex_item.querySelector('p').innerText;
