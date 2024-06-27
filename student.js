@@ -256,7 +256,7 @@ function addNoteToContainer(student_note) {
                 <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
                 <div class="note-dropdown-content">
                     <a id="delete-note-button" href="#" onclick="deleteNoteButtonClicked()">Delete from list</a>
-                    <a id="edit-note-button" href="#" onclick="editNoterButtonClicked()">Edit</a>
+                    <a id="edit-note-button" href="#" onclick="editNoteButtonClicked()">Edit</a>
                 </div>
             </div>
         </div>
@@ -483,24 +483,7 @@ function isStudentGoalUpdated(goal) {
 }
 
 function addNoteButtonClicked() {
-    const blackContainer = document.createElement('div');
-    blackContainer.classList.add('black-container');
-    document.body.appendChild(blackContainer);
-    const div = document.createElement('div');
-    div.innerHTML = `
-        <div class="popup-top-nav">
-            <h3>Add New Note</h3>
-            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
-        </div>
-        <div class="popup-body">
-            <textarea id='student-note' name='note'></textarea>
-            <div class="popup-body-bottom">
-                <button onclick="uploadNote()">Upload Note</button>
-            </div>
-        </div>
-    `;
-    div.classList.add("popup-container");
-    document.body.appendChild(div);
+    createStudentNotePopup('Add New Note', 'Upload Note', 'uploadNoteButtonClicked()');
 }
 
 function closePopup() {
@@ -509,12 +492,7 @@ function closePopup() {
     const div = document.querySelector('.popup-container');
     document.body.removeChild(div);
 }
-
-function uploadNote() {
-    uploadNoteButtonClicked();
-    closePopup();
-}
-
+    
 function uploadNoteButtonClicked() {
     const studentNoteTextArea = document.getElementById('student-note');
     const note = studentNoteTextArea.value;
@@ -526,6 +504,7 @@ function uploadNoteButtonClicked() {
     post(`${protocol}://${domain}/students/${studentID}/notes`, body, (notes) => {
         studentNotesContainer.innerHTML = '';
         addNotesToContainer(notes);
+        closePopup();
     });
 }
 
@@ -556,8 +535,60 @@ function deleteNoteButtonClicked() {
     });
 }
 
-function editNoterButtonClicked() {
+function editNoteButtonClicked() {
     const dropdown = event.srcElement.parentElement;
     dropdown.style.display = "none";
-    
+
+    const note_flex_item = dropdown.parentElement.parentElement;
+    const note_id_str = note_flex_item.id;
+    const note_id = Number(note_id_str.split('-')[1]);
+    const note_text = note_flex_item.querySelector('p').innerText;
+    createStudentNotePopup('Edit Note', 'Upload Note', `uploadEditedNote(${note_id})`, note_text);
+}
+
+function uploadEditedNote(note_id) {
+    const studentNoteTextArea = document.getElementById('student-note');
+    const note = studentNoteTextArea.value;
+    const date = new Date();
+    const body = JSON.stringify({
+        id: note_id,
+        note: note,
+        date: date.toISOString()
+    });
+    const headers = { "Content-Type": "application/json" };
+    createLoader();
+    put(`${protocol}://${domain}/students/${studentID}/notes/${note_id}`, body, headers, (updated_note) => {
+        // update UI
+        const note_flex_item = document.getElementById(`note-${note_id}`);
+        const p = note_flex_item.querySelector('p');
+        p.innerText = updated_note.note;
+        const date = parseISOString(updated_note.date);
+        const formattedDate = formatDate(date);
+        const date_label = note_flex_item.querySelector('label');
+        date_label.innerText = formattedDate;
+        closePopup();
+        removeLoader();
+    });
+}
+
+function createStudentNotePopup(header_name, button_name, button_function, note_text = '') 
+{
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>${header_name}</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <textarea id='student-note' name='note'>${note_text}</textarea>
+            <div class="popup-body-bottom">
+                <button onclick="${button_function}">${button_name}</button>
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
 }
