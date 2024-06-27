@@ -272,6 +272,36 @@ router.get('/:id/notes', [auth], async (req, res) => {
   res.send(notes);
 });
 
+router.put('/:id/notes/:note_id', [auth], async (req, res) => {
+  const student_id = req.params.id;
+  const result = await db.getStudent(student_id);
+  if (!result) {
+    return res.status(404).send('Student with given ID not found.');
+  }
+
+  const note_id = req.params.note_id;
+  const student_note = await db.getStudentNote(note_id);
+  if (!note_id) {
+    return res.status(404).send('Student note with given ID not found.');
+  }
+
+  // Update the note's information with the data from the request body
+  Object.keys(req.body).forEach(key => {
+    if (student_note.hasOwnProperty(key)) {
+      student_note[key] = req.body[key];
+    }
+  });
+
+  const { error } = validateNote(student_note);
+  if (error) {
+    console.log(error.details[0].message);
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const updated_note = await db.updateStudentNote(student_note);
+  res.send(updated_note);
+});
+
 router.delete('/:id/notes/:note_id', [auth], async (req, res) => {
   const student_id = req.params.id;
   const result = await db.getStudent(student_id);
@@ -324,6 +354,8 @@ function validateDailyData(dailyData) {
 
 function validateNote(student_note) {
   const schema = Joi.object({
+    id: Joi.number(),
+    student_id: Joi.number(),
     note: Joi.string().min(5).max(1000),
     date: Joi.string().isoDate()
   });
