@@ -484,6 +484,11 @@ h3 {
     padding: 10px;
 }
 
+.notes-flex-item-header {
+    display: flex;
+    justify-content: space-between;
+}
+
 .notes-flex-item label {
     font-size: 12px;
 }
