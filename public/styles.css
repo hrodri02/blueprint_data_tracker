@@ -6,6 +6,7 @@ body {
     padding: 0;
     margin: 0;
     background-color: black;
+    overflow-x: hidden;
 }
 
 input[type="date"] {
@@ -33,6 +34,7 @@ input[type="date"] {
 
 .top-navigation-bar {
     display: flex;
+    border-bottom: solid 0.1px #444;
 }
 
 .top-left-flex-container {
@@ -85,7 +87,7 @@ input[type="date"] {
 }
 
 #timerLabel {
-    background-color: blue;
+    background-color: black;
 }
 
 .lesson-part {
@@ -448,13 +450,18 @@ h3 {
 
 .popup-input-container {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: 75%;
 }
 
-.popup-input-container input {
-    width: 90%;
+.popup-input-flex-item {
+
+}
+
+.popup-input-container label {
+    margin-right: 5px;
 }
 
 .popup-body-bottom {
@@ -462,7 +469,6 @@ h3 {
     justify-content: center;
     align-items: center;
     height: 25%;
-    background-color: red;
 }
 
 #student-note {
@@ -514,3 +520,84 @@ h3 {
 }
 
 .note-dropdown-content a:hover {background-color: #f1f1f1}
+
+.timers-collections-container {
+    float: left;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    color: #ccc;
+    width: 30%;
+    min-height: 100vh;
+    padding: 10px;
+    background-color: #222;
+    border-right: solid 0.1px #444;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timers-collections-flex-item {
+    display: flex;
+    justify-content: space-between;
+    color: #ccc;
+    background-color: black;
+    width: 100%;
+    padding: 10px;
+}
+
+.timers-collections-flex-item:hover {
+    background-color: #444!important;
+}
+
+.timers-collections-flex-item label {
+    pointer-events: none;
+}
+
+.timers-collection-container {
+    float: left;
+    width: 70%;
+    padding: 0 10%;
+    background-color: black;
+}
+
+.timers-collection-header {
+    color: #ccc;
+    float: right;
+    padding-bottom: 5px;
+}
+
+.timers-collection-flex-item {
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    color: #ccc;
+    background-color: black;
+    width: 100%;
+    padding: 10px;
+}
+
+.timer-dropdown {
+    position: relative;
+}
+
+.timer-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.timer-dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.timer-dropdown-content a:hover {background-color: #f1f1f1}

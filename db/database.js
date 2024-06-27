@@ -446,6 +446,261 @@ async function updateFellow(fellow) {
   });
 }
 
+async function insertTimersCollectionForUser(fellow_id, name) {
+  return new Promise((resolve, reject) => {
+    db.serialize(function() {
+      const sql = 'INSERT INTO timers_collections(name, fellow_id) VALUES(?, ?)';
+      const select_new_timers_collection = 'SELECT * FROM timers_collections ORDER BY id DESC LIMIT 1';
+      db.run(sql, [name, fellow_id], function (err) {
+        if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+      });
+
+      db.get(select_new_timers_collection, [], (err, row) => {
+        if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+        else {
+          dbDebugger(row);
+          resolve(row);
+        }
+      });
+    });
+  });
+}
+
+function insertTimer(timers_collection_id, timer) {
+  const sql = 'INSERT INTO timers(name, minutes, text_color, background_color, order_id, timers_collection_id) VALUES(?, ?, ?, ?, ?, ?)';
+  const select_new_timer = 'SELECT * FROM timers ORDER BY id DESC LIMIT 1';
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(sql, [timer.name, timer.minutes, timer.text_color, timer.background_color, timer.order_id, timers_collection_id], (err) => {
+        if (err) {
+          dbDebugger(err.message);
+          reject(err.message);
+        }
+      });
+  
+      db.get(select_new_timer, [], (error, row) => {
+        if (error) {
+          dbDebugger(error.message);
+          reject(error.message);
+        }
+        else {
+          resolve(row);
+        }
+      });
+    });
+  });
+}
+
+function getTimersCollection(id) {
+  const select_new_timers_collection = 'SELECT * FROM timers_collections WHERE id = ?';
+  return new Promise((resolve, reject) => {
+    db.get(select_new_timers_collection, [id], (err, row) => {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(row);
+        resolve(row);
+      }
+    });
+  });
+}
+
+function getTimersOfTimersCollection(id) {
+  const select_new_timers = 'SELECT * FROM timers WHERE timers_collection_id = ?';
+  return new Promise((resolve, reject) => {
+    db.all(select_new_timers, [id], function(err, rows) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(rows);
+        resolve(rows);
+      }
+    });
+  });
+}
+
+function updateTimersCollection(collection) {
+  return new Promise((resolve, reject) => {
+    const id = collection['id'];
+    const name = collection['name'];
+    const fellow_id = collection['id'];
+    db.run(`UPDATE timers_collections SET name = ? WHERE id = ?`, [name, id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`Timers collection ${id} updated`);
+        const updated_collection = {
+          id: id,
+          name: name,
+          fellow_id, fellow_id,
+        };
+        resolve(updated_collection);
+      }
+    });
+  });
+}
+
+function deleteTimersCollection(id) {
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM timers_collections WHERE id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted timers collection ${id} from DB.`);
+        resolve();
+      }
+    });
+
+    db.run(`DELETE FROM timers WHERE timers_collection_id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted a timer from DB.`);
+        resolve();
+      }
+    });
+  });
+}
+
+function getTimersCollectionsForFellow(fellow_id) {
+  const sql = `SELECT timers.id, timers.name, timers.minutes, timers.order_id, timers.text_color, timers.background_color, timers_collections.id AS timers_collection_id, timers_collections.name AS timers_collection_name FROM timers_collections LEFT JOIN timers on timers_collections.id = timers.timers_collection_id WHERE fellow_id = '${fellow_id}'`;
+  return new Promise((resolve, reject) => {
+    db.all(sql, function(err, rows) {
+      if (err) {
+        dbDebugger(err.message);
+        reject();
+      }
+      else {
+        dbDebugger(rows);
+        /*
+        id_to_collection
+        {
+          id: {name: "", timers: []}
+        }
+        */
+        const id_to_collection = {};
+        for (row of rows) {
+          const collection_id = row['timers_collection_id'];
+          if (!(collection_id in id_to_collection)) {
+            id_to_collection[collection_id] = {};
+            id_to_collection[collection_id]['name'] = row['timers_collection_name'];
+            id_to_collection[collection_id]['timers'] = [];
+          }
+          if (row.id) {
+            const timer = {
+              id: row.id,
+              name: row.name,
+              minutes: row.minutes,
+              text_color: row.text_color,
+              background_color: row.background_color,
+              order_id: row.order_id
+            };
+            
+            id_to_collection[collection_id]['timers'].push(timer);
+          }
+        }
+        for (id of Object.keys(id_to_collection)) {
+          id_to_collection[id]['timers'].sort((a, b) => a.order_id - b.order_id);
+        }
+        resolve(id_to_collection);
+      }
+    });
+  });
+}
+
+function getTimer(id) {
+  const select_timer = 'SELECT * FROM timers WHERE id = ?';
+  return new Promise((resolve, reject) => {
+    db.get(select_timer, [id], (err, row) => {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(row);
+        resolve(row);
+      }
+    });
+  });
+}
+
+async function updateTimers(timers) {
+  const updated_timers = [];
+  for (timer of timers) {
+    const updated_timer = await updateTimer(timer);
+    if (updated_timer) {
+      updated_timers.push(updated_timer);
+    }
+    else {
+      dbDebugger(`error updating student: ${student['name']}`);
+    }
+  }
+  return updated_timers;
+}
+
+function updateTimer(timer) {
+  return new Promise((resolve, reject) => {
+    const id = timer['id'];
+    const name = timer['name'];
+    const minutes = timer['minutes'];
+    const text_color = timer['text_color'];
+    const background_color = timer['background_color'];
+    const order_id = timer['order_id'];
+    const timers_collection_id = timer['timers_collection_id'];
+    db.run(`UPDATE timers SET name = ?, minutes = ?, text_color = ?, background_color = ?, order_id = ?, timers_collection_id = ? WHERE id = ?`,
+      [name, minutes, text_color, background_color, order_id, timers_collection_id, id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`Timer ${id} updated`);
+        const updated_timer = {
+          id: id,
+          name: name,
+          minutes: minutes,
+          text_color: text_color,
+          background_color: background_color,
+          order_id: order_id,
+          timers_collection_id: timers_collection_id
+        };
+        resolve(updated_timer);
+      }
+    });
+  });
+}
+
+function deleteTimer(id) {
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM timers WHERE id = ?`, [id], function(err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(`deleted timer ${id} from DB.`);
+        resolve();
+      }
+    });
+  });
+}
+
 process.on('SIGINT', () => {
     // close the database connection
     db.close((err) => {
@@ -476,3 +731,14 @@ module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
 module.exports.insertFellow = insertFellow;
 module.exports.updateFellow = updateFellow;
+module.exports.insertTimersCollectionForUser = insertTimersCollectionForUser;
+module.exports.insertTimer = insertTimer;
+module.exports.getTimersCollection = getTimersCollection;
+module.exports.getTimersOfTimersCollection = getTimersOfTimersCollection;
+module.exports.updateTimersCollection = updateTimersCollection;
+module.exports.deleteTimersCollection = deleteTimersCollection;
+module.exports.getTimersCollectionsForFellow = getTimersCollectionsForFellow;
+module.exports.getTimer = getTimer;
+module.exports.updateTimers = updateTimers;
+module.exports.updateTimer = updateTimer;
+module.exports.deleteTimer = deleteTimer;

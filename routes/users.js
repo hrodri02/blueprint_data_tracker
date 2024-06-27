@@ -184,6 +184,157 @@ function isValidURL(url) {
   }
 }
 
+router.post('/me/timers_collections', async (req, res) => {
+  const user_id = req.session.user.id;
+  const timers_collection = req.body;
+  const { error } = validateTimersCollection(timers_collection);
+  if (error) {
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  const timers_collection_in_db = await db.insertTimersCollectionForUser(user_id, timers_collection.name);
+  res.send(timers_collection_in_db);
+});
+
+router.post('/me/timers_collections/:id/timers', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer = req.body;
+  const { error } = validateTimer(timer);
+  if (error) {
+    console.log(error.details[0].message);
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  const timers = await db.insertTimer(id, timer);
+  res.send(timers);
+});
+
+router.get('/me/timers_collections', async (req, res) => {
+  const user_id = req.session.user.id;
+  const timers_collections = await db.getTimersCollectionsForFellow(user_id);
+  return res.send(timers_collections);
+});
+
+router.put('/me/timers_collections/:id', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const { error } = validateTimersCollection(req.body);
+  if (error) {
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+  
+  const updated_collection = await db.updateTimersCollection(req.body);
+  res.send(updated_collection);
+});
+
+router.delete('/me/timers_collections/:id', async (req, res) => {
+  const id = req.params.id;
+  const timers_collection = await db.getTimersCollection(id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  await db.deleteTimersCollection(id);
+  res.send(timers_collection);
+});
+
+/*
+  req.body
+  {
+    collection_id: {
+      timer_id: {
+        ...
+      },
+      ...
+    },
+    ...
+  }
+*/
+router.patch('/me/timers_collections', async (req, res) => {
+  const result = {};
+  for (collection_id of Object.keys(req.body)) {
+    const timers = await db.getTimersOfTimersCollection(collection_id);
+    for (timer of timers) {
+      const updated_timer = req.body[collection_id][timer.id];
+      dbDebugger(updated_timer);
+      // Update the timer's information with the data from the request body
+      Object.keys(updated_timer).forEach(key => {
+        if (timer.hasOwnProperty(key)) {
+          timer[key] = updated_timer[key];
+        }
+      });
+    }
+
+    const { error } = validateTimers(timers);
+    if (error) {
+      console.log(error.details[0].message);
+      return res.status(400).send({error_message: error.details[0].message});
+    }
+
+    const timers_in_db = await db.updateTimers(timers);
+    result[collection_id] = timers_in_db;
+  }
+
+  dbDebugger(result);
+  res.send(result);
+});
+
+router.patch('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
+  const collection_id = req.params.collection_id;
+  const timers_collection = await db.getTimersCollection(collection_id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer_id = req.params.timer_id;
+  const timer = await db.getTimer(timer_id);
+  if (!timer) {
+    return res.status(404).send({error_message: 'Timer with the given id is not found.'});
+  }
+  
+  // Update the timer's information with the data from the request body
+  Object.keys(req.body).forEach(key => {
+    if (timer.hasOwnProperty(key)) {
+      timer[key] = req.body[key];
+    }
+  });
+
+  const { error } = validateTimer(timer);
+  if (error) {
+    console.log(error.details[0].message);
+    return res.status(400).send({error_message: error.details[0].message});
+  }
+
+  const timer_in_db = await db.updateTimer(timer);
+  res.send(timer_in_db);
+});
+
+router.delete('/me/timers_collections/:collection_id/timers/:timer_id', async (req, res) => {
+  const collection_id = req.params.collection_id;
+  const timers_collection = await db.getTimersCollection(collection_id);
+  if (!timers_collection) {
+    return res.status(404).send({error_message: 'Timers collection with the given id is not found.'});
+  }
+
+  const timer_id = req.params.timer_id;
+  const timer = await db.getTimer(timer_id);
+  if (!timer) {
+    return res.status(404).send({error_message: 'Timer with the given id is not found.'});
+  }
+
+  await db.deleteTimer(timer_id);
+  res.send(timer);
+});
+
 function getSheetIDFromURL(url) {
   return url.split('/')[5];
 }
@@ -200,6 +351,48 @@ function validateFellow(fellow) {
   });
 
   const result = schema.validate(fellow);
+  return result;
+}
+
+function validateTimersCollection(collection) {
+  const schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(1).max(30).required(),
+    fellow_id: Joi.string()
+  });
+  
+  const result = schema.validate(collection);
+  return result;
+}
+
+function validateTimers(timers) {
+  const timer_schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(3).required(),
+    minutes: Joi.number().min(1).required(),
+    text_color: Joi.string().required(),
+    background_color: Joi.string().required(),
+    order_id: Joi.number().min(0).max(9).required(),
+    timers_collection_id: Joi.number().required()
+  });
+
+  const schema = Joi.array().items(timer_schema);
+  const result = schema.validate(timers);
+  return result;
+}
+
+function validateTimer(timer) {
+  const schema = Joi.object({
+    id: Joi.number(),
+    name: Joi.string().min(3).required(),
+    minutes: Joi.number().min(1).required(),
+    text_color: Joi.string().required(),
+    background_color: Joi.string().required(),
+    order_id: Joi.number().min(0).max(9).required(),
+    timers_collection_id: Joi.number().required()
+  });
+
+  const result = schema.validate(timer);
   return result;
 }
 

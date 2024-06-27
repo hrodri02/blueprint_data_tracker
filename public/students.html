@@ -10,14 +10,15 @@
         <div class='top-left-flex-container'>
         </div>
         <ul class='top-center-flex-container'>
-            <li><a id='timerLabel' href='javascript:startButtonClicked()'>5:00</a></li>
-            <li><a id='hallpassTimerLabel'>15:00</a></li>
+            <li><a id="timers-collection-name"></a></li>
+            <li><a id='timerLabel' href='javascript:startButtonClicked()'>0:00</a></li>
             <li><a id='reset' href='javascript:resetButtonClicked()'>Reset</a></li>
             <li><input type='date' id='date'/></li>
         </ul>
         <div class='top-right-flex-container'>
             <button class="settings-button" onclick="settingsButtonClicked()"><i class="fa-solid fa-gear"></i></button>
             <div id="settings-content">
+                <a id="timers-button" href="timers.html" onclick="timersButtonClicked()">Timers</a>
                 <a id="sheets-permissions-button" href="#" onclick="sheetsPermissionsButtonClicked()">Sheets Permissions</a>
                 <a href="#" onclick="finishAccountSetupButtonClicked()">Account Setup</a>
                 <a id='synchronize' href="#" onclick="synchronizeButtonClicked()">Synchronize</a>

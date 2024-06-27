@@ -118,11 +118,13 @@ async function deleteRequest(url, callback = () => {}) {
         }
     }
     catch (error) {
+        console.log('first error', error);
         alert(`${url}: ${error}`);
     }
 
     if (json) {
         if (json['error_message']) {
+            console.log('second error');
             alert(url, json['error_message']);
         }
         else {
