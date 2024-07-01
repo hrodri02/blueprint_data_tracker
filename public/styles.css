@@ -193,6 +193,9 @@ li a:hover {
 img {
     width: 50%;
     height: auto;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
 }
 
 h3 {
@@ -280,7 +283,12 @@ h3 {
 }
 
 .student-profile-image-container img {
-    padding: 20px 0;
+    margin: 20px 0;
+}
+
+.popup-input-container img {
+    height: 80%;
+    width: auto;
 }
 
 .student-page-button {
