@@ -97,7 +97,8 @@ function validateStudent(student) {
     period: Joi.number().min(0).max(7).required(),
     sheets_row: Joi.number().min(1).max(300).required(),
     fellow_id: Joi.string().min(1).required(),
-    goal: Joi.string().min(5).max(100).required()
+    goal: Joi.string().min(5).max(100).required(),
+    profile_image_url: Joi.string().required()
   });
 
   const result = schema.validate(student);
