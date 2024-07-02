@@ -475,12 +475,13 @@ function addStudentToPeriodContainer(student, container) {
     const row = student['sheets_row'];
     const id = student['id'];
     const period = student['period'];
+    const img_url = student['profile_image_url'];
     idToRow[id] = row;
     rowToStudentData[row] = [[],[],[]];
     const firstName = student['name'].split(",")[1];
     container.innerHTML += `
         <div class="flex-item" id=${id}>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png">
+            <img src="${img_url}">
             <a href="student.html?id=${id}&period=${period}"><h3>${firstName}</h3></a>
             <select onchange="onAttendanceValueChanged()">
                 <option value="">--Attendance--</option>

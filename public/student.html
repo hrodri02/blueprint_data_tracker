@@ -18,26 +18,32 @@
         </div>
     </nav>
     <div class="loader"></div>
-    <div class="student-page-group">
-        <div class="student-page-header">
-            <label for="goal"><strong>Math Goal</strong></label>
-            <button onclick="editMathGoalButtonClicked()">Edit</button>
-        </div>
-        <label id="goal"></label>
+    <div class="student-profile-image-container">
+        <img>
+        <button class="student-page-button" onclick="editImageButtonClicked()">Edit Image</button>
     </div>
-    <div class="student-page-group">
-        <div class="student-page-header">
-            <label for="studentData"><strong>Student Data</strong></label>
-            <button id="upload" onclick="uploadButtonClicked()">Upload Daily Data</button>
+    <div class="student-info-container">
+        <div class="student-page-group">
+            <div class="student-page-header">
+                <label for="goal"><strong>Math Goal</strong></label>
+                <button class="student-page-button" onclick="editMathGoalButtonClicked()">Edit</button>
+            </div>
+            <label id="goal"></label>
         </div>
-        <div class="days-flex-container"></div>
-    </div>
-    <div class="student-page-group">
-        <div class="student-page-header">
-            <label for="studentData"><strong>Student Notes</strong></label>
-            <button onclick="addNoteButtonClicked()">Add Note</button>
+        <div class="student-page-group">
+            <div class="student-page-header">
+                <label for="studentData"><strong>Student Data</strong></label>
+                <button class="student-page-button" id="upload" onclick="uploadButtonClicked()">Upload Daily Data</button>
+            </div>
+            <div class="days-flex-container"></div>
         </div>
-        <div id="student-notes-container"></div>
+        <div class="student-page-group">
+            <div class="student-page-header">
+                <label for="studentData"><strong>Student Notes</strong></label>
+                <button class="student-page-button" onclick="addNoteButtonClicked()">Add Note</button>
+            </div>
+            <div id="student-notes-container"></div>
+        </div>
     </div>
     <script type='text/javascript', src='./website_metadata.js'></script>
     <script type='text/javascript', src='../loader.js'></script>

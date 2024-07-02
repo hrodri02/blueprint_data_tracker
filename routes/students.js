@@ -97,7 +97,8 @@ function validateStudent(student) {
     period: Joi.number().min(0).max(7).required(),
     sheets_row: Joi.number().min(1).max(300).required(),
     fellow_id: Joi.string().min(1).required(),
-    goal: Joi.string().min(5).max(100).required()
+    goal: Joi.string().min(5).max(100).required(),
+    profile_image_url: Joi.string().required()
   });
 
   const result = schema.validate(student);
@@ -119,7 +120,7 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
 
   try {
     await batchUpdateValues(req.session.user.id,
-                    '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+                    req.session.user.sheet_id,
                     ranges,
                     values,
                     'RAW');
@@ -189,7 +190,7 @@ router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
     const sheets = google.sheets({version: 'v4', auth: oauth2Client});
     let response;
     response = await sheets.spreadsheets.values.get({
-      spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+      spreadsheetId: fellow.sheet_id,
       range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
     });
   
@@ -231,8 +232,8 @@ router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
       ranges.push(range);
     }
     
-    
-    await batchUpdateValues("1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM",
+    const sheet_id = req.session.user.sheet_id;
+    await batchUpdateValues(sheet_id,
                     ranges,
                     values,
                     'RAW');

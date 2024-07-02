@@ -12,6 +12,7 @@ CREATE TABLE students (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 					    period INTEGER NOT NULL, 
 					   	sheets_row INTEGER NOT NULL,
 						goal TEXT NOT NULL DEFAULT('No Math goal.'),
+						profile_image_url TEXT NOT NULL DEFAULT('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'),
 					   FOREIGN KEY (fellow_id) REFERENCES fellows(id));
 CREATE TABLE student_notes (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 							student_id INTEGER NOT NULL,

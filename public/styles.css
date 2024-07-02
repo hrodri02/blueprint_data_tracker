@@ -193,6 +193,9 @@ li a:hover {
 img {
     width: 50%;
     height: auto;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
 }
 
 h3 {
@@ -271,6 +274,39 @@ h3 {
     grid-row-end: 13;
 }
 
+.student-profile-image-container {
+    float: left;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 25%;
+}
+
+.student-profile-image-container img {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.popup-input-container img {
+    height: 80%;
+    width: auto;
+}
+
+.student-page-button {
+    background-color: cornflowerblue;
+    border: none;
+    color: #ccc;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.student-info-container {
+    float: left;
+    width: 75%;
+    padding: 0 20px;
+}
+
 .form-group {
     background-color: black;
     margin: 15px 0;
@@ -283,7 +319,7 @@ h3 {
 }
 
 .student-page-group {
-    margin: 20px 10%;
+    margin: 20px 0;
 }
 
 .student-page-header {
@@ -294,15 +330,6 @@ h3 {
     margin-bottom: 5px;
     color: #ccc;
     border-bottom: 0.5px solid;
-}
-
-.student-page-header button {
-    background-color: cornflowerblue;
-    border: none;
-    color: #ccc;
-    padding: 8px 16px;
-    text-align: center;
-    text-decoration: none;
 }
 
 .student-page-group label {
@@ -365,6 +392,7 @@ h3 {
 
 .popup-top-nav {
     display: flex;
+    height: 10%;
 }
 
 .popup-top-nav h3 {
@@ -376,10 +404,10 @@ h3 {
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 37.5%;
-    left: 37.5%;
-    width: 25%;
-    height: 25%;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
     background-color: #f9f9f9;
     border-radius: 10px;
 }
@@ -445,7 +473,7 @@ h3 {
 
 .popup-body {
     width: 100%;
-    height: 100%;
+    height: 90%;
 }
 
 .popup-input-container {
@@ -469,6 +497,7 @@ h3 {
     justify-content: center;
     align-items: center;
     height: 25%;
+    /* background-color: blue; */
 }
 
 #student-note {

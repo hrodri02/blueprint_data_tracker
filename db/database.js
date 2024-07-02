@@ -344,8 +344,9 @@ async function patchStudent(student) {
     const period = student['period'];
     const sheets_row = student['sheets_row'];
     const goal = student['goal'];
-    db.run(`UPDATE students SET fellow_id = ?, name = ?, period = ?, sheets_row = ?, goal = ? WHERE id = ?`, 
-          [fellow_id, name, period, sheets_row, goal, id], function(err) {
+    const profile_image_url = student['profile_image_url'];
+    db.run(`UPDATE students SET fellow_id = ?, name = ?, period = ?, sheets_row = ?, goal = ?, profile_image_url = ? WHERE id = ?`, 
+          [fellow_id, name, period, sheets_row, goal, profile_image_url, id], function(err) {
       if (err) {
         reject(err.message);
       }
@@ -357,7 +358,8 @@ async function patchStudent(student) {
           'period': period,
           'sheets_row': sheets_row,
           'fellow_id': fellow_id,
-          'goal': goal
+          'goal': goal,
+          'profile_image_url': profile_image_url
         };
         resolve(updated_student);
       }

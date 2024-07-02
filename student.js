@@ -7,8 +7,11 @@ const weekInput = document.getElementById('week');
 const goalLabel = document.getElementById('goal');
 const container = document.getElementsByClassName('days-flex-container')[0];
 const studentNotesContainer = document.getElementById('student-notes-container');
+const student_profile_image = document.querySelector('.student-profile-image-container').querySelector('img');
 
+const MAX_IMAGE_SIZE = 1000000
 const WEEKDAYS = 5;
+const original = {};
 
 let year;
 let week;
@@ -19,8 +22,9 @@ let dates = [];
 ]
 */
 let studentData = [];
+let selected_students = [];
 let student;
-const original = {};
+let selected_image_file = null;
 
 setStudent();
 setWeek();
@@ -31,9 +35,9 @@ getDataForCurrentWeek();
 getStudentNotes();
 
 function setStudent() {
-    const students = JSON.parse(localStorage.getItem('selected_students'));
+    selected_students = JSON.parse(localStorage.getItem('selected_students'));
     const index = (period < 5)? period - 1 : period - 2;
-    for (s of students[index]) {
+    for (s of selected_students[index]) {
         if (s['id'] === studentID) {
             student = s;
             break;
@@ -42,6 +46,7 @@ function setStudent() {
     h1.innerText = student['name'];
     const goal = student['goal'];
     goalLabel.innerText = goal;
+    student_profile_image.src = student['profile_image_url'];
     hashData('goal', goal);
 }
 
@@ -124,7 +129,7 @@ function getDataForCurrentWeek() {
     }
     catch (err) {
         removeLoader();
-        alert(err.message);
+        console.error(err.message);
     }
 }
 
@@ -429,6 +434,137 @@ function resetDays() {
             button.style.backgroundColor = "";
         }
     }
+}
+
+function editImageButtonClicked() {
+    const blackContainer = document.createElement('div');
+    blackContainer.classList.add('black-container');
+    document.body.appendChild(blackContainer);
+    const div = document.createElement('div');
+    div.innerHTML = `
+        <div class="popup-top-nav">
+            <h3>Select an image</h3>
+            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+        </div>
+        <div class="popup-body">
+            <div class="popup-input-container">
+                <input type="file" onchange="onFileChange()" accept="image/jpeg">
+            </div>
+            <div class="popup-body-bottom">
+            </div>
+        </div>
+    `;
+    div.classList.add("popup-container");
+    document.body.appendChild(div);
+}
+
+function onFileChange() {
+    let files = event.target.files || event.dataTransfer.files;
+    if (!files.length) return;
+    createImage(files[0])
+}
+
+function createImage(file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (!e.target.result.includes('data:image/jpeg')) {
+        return alert('Wrong file type - JPG only.')
+      }
+      if (e.target.result.length > MAX_IMAGE_SIZE) {
+        return alert('Image is loo large.')
+      }
+      selected_image_file = e.target.result;
+      showSelectedImage();
+    }
+    reader.readAsDataURL(file);
+}
+
+function showSelectedImage() {
+    const input_container = document.querySelector('.popup-input-container');
+    input_container.innerHTML = `
+        <img src="${selected_image_file}"/>
+    `;
+    const bottom_container = document.querySelector('.popup-body-bottom');
+    bottom_container.innerHTML = `
+        <button onclick="removeImage()">Remove image</button>
+        <button onclick="uploadImage()">Upload image</button>
+    `;
+}
+
+function removeImage() {
+    const input_container = document.querySelector('.popup-input-container');
+    input_container.innerHTML = `
+        <input type="file" onchange="onFileChange()" accept="image/jpeg">
+    `;
+    const bottom_container = document.querySelector('.popup-body-bottom');
+    bottom_container.innerHTML = ``;
+}
+
+async function uploadImage() {
+    createLoader();
+    try {
+        const {uploadURL, key} = await getPresignedURLAndkey();
+        const blob_data = convertBase64ImageDataToArrayOfASCIICharacters();
+        await uploadImageToS3(uploadURL, blob_data);
+        uploadStudentProfileImageURL(key);
+    }
+    catch (e) {
+        console.log(e);
+        removeLoader();
+        closePopup();
+    }
+}
+
+function convertBase64ImageDataToArrayOfASCIICharacters() {
+    const parts = selected_image_file.split(',');
+    const image_data = parts[1];
+    const binary = atob(image_data);
+    const array = [];
+    for (let i = 0; i < binary.length; i++) {
+        array.push(binary.charCodeAt(i));
+    }
+    const blob_data = new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
+    return blob_data;
+}
+
+async function getPresignedURLAndkey() {
+    const img_url = student['profile_image_url'];
+    let getSignedURL = `${API_GATEWAY_ENPOINT}/signedURL?action=put`;
+    if (img_url.startsWith(S3_BUCKET_ENDPOINT)) {
+        const key = getKeyOfImageURL(img_url);
+        getSignedURL += `&key=${key}`;    
+    }
+    const response = await fetch(getSignedURL);
+    const json = await response.json();
+    return json;
+}
+
+function getKeyOfImageURL(img_url) {
+    const key = img_url.replace(`${S3_BUCKET_ENDPOINT}/`, "");
+    return key;
+}
+
+async function uploadImageToS3(uploadURL, blob_data) {
+    await fetch(uploadURL, {
+        method: 'PUT',
+        body: blob_data
+    });
+}
+
+function uploadStudentProfileImageURL(key) {
+    const img_url = `${S3_BUCKET_ENDPOINT}/${key}`;
+    student['profile_image_url'] = img_url;
+    const body = JSON.stringify(student);
+    const headers = {'Content-Type': 'application/json'};
+    patch(`${protocol}://${domain}/students/${studentID}`, body, headers, () => {
+        removeLoader();
+        updateStudentImage();
+        closePopup();
+    });
+}
+
+function updateStudentImage() {
+    student_profile_image.src = student['profile_image_url'];
 }
 
 function editMathGoalButtonClicked() {

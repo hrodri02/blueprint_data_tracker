@@ -172,7 +172,7 @@ router.get('/columnsForDates', [sheets_auth], async (req, res) => {
     const sheets = google.sheets({version: 'v4', auth: oauth2Client});
     let response;
     response = await sheets.spreadsheets.values.get({
-        spreadsheetId: '1jFT3SCoOuMwJnsRJxuD7D2Eq6hKgne6nEam1RdLlPmM',
+        spreadsheetId: fellow.sheet_id,
         range: 'Daily Data!F2:IU2',
     });
   
