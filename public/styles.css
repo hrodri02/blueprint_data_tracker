@@ -283,6 +283,7 @@ h3 {
 }
 
 .student-profile-image-container img {
+    width: 100%;
     margin: 20px 0;
 }
 
@@ -303,6 +304,7 @@ h3 {
 .student-info-container {
     float: left;
     width: 75%;
+    padding: 0 20px;
 }
 
 .form-group {
@@ -317,7 +319,7 @@ h3 {
 }
 
 .student-page-group {
-    margin: 20px 10%;
+    margin: 20px 0;
 }
 
 .student-page-header {
