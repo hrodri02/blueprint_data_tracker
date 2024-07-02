@@ -129,7 +129,7 @@ function getDataForCurrentWeek() {
     }
     catch (err) {
         removeLoader();
-        alert(err.message);
+        console.error(err.message);
     }
 }
 
