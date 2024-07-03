@@ -1,7 +1,6 @@
 /**
  * Required External Modules
  */
-require('express-async-errors');
 const express = require('express');
 const {google} = require('./routes/google');
 const path = require('path');
