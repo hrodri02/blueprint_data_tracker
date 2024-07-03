@@ -118,18 +118,12 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
     }
   }
 
-  try {
-    await batchUpdateValues(req.session.user.id,
-                    req.session.user.sheet_id,
-                    ranges,
-                    values,
-                    'RAW');
-    res.send({period: period});
-  }
-  catch (err) {
-    googleDebugger(err.message);
-    res.send({error_message: err.message});
-  }
+  await batchUpdateValues(req.session.user.id,
+                  req.session.user.sheet_id,
+                  ranges,
+                  values,
+                  'RAW');
+  res.send({period: period});
 });
 
 async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueInputOption) {
@@ -167,81 +161,71 @@ async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueI
 }
 
 router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
-  try {
-    // get student with id
-    const student = await db.getStudent(req.params.id);
-    if (!student) {
-      return res.status(404).send('Student with given ID not found.');
-    }
-
-    // get sheets row for student
-    const sheets_row = student['sheets_row'];
-    // use google api to read daily data
-    const start = req.query.start;
-    const end = req.query.end;
-    const fellowID = req.session.user.id;
-    const fellow = await db.getFellow(fellowID);
-    const refreshToken = fellow['refresh_token'];
-
-    oauth2Client.setCredentials({
-      refresh_token: refreshToken
-    });
-  
-    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-    let response;
-    response = await sheets.spreadsheets.values.get({
-      spreadsheetId: fellow.sheet_id,
-      range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
-    });
-  
-    const range = response.data;
-  
-    if (!range || !range.values || range.values.length == 0) {
-      res.send([]);
-    }
-    res.send(range.values);
+  // get student with id
+  const student = await db.getStudent(req.params.id);
+  if (!student) {
+    return res.status(404).send('Student with given ID not found.');
   }
-  catch (err) {
-    res.send({error_message: err.message});
+
+  // get sheets row for student
+  const sheets_row = student['sheets_row'];
+  // use google api to read daily data
+  const start = req.query.start;
+  const end = req.query.end;
+  const fellowID = req.session.user.id;
+  const fellow = await db.getFellow(fellowID);
+  const refreshToken = fellow['refresh_token'];
+
+  oauth2Client.setCredentials({
+    refresh_token: refreshToken
+  });
+
+  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+  let response;
+  response = await sheets.spreadsheets.values.get({
+    spreadsheetId: fellow.sheet_id,
+    range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
+  });
+
+  const range = response.data;
+
+  if (!range || !range.values || range.values.length == 0) {
+    res.send([]);
   }
+  res.send(range.values);
 });
 
 router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
-  try {
-    // get student with id
-    const student = await db.getStudent(req.params.id);
-    if (!student) {
-      return res.status(404).send('Student with given ID not found.');
-    }
-
-    // validate daily data
-    const values = req.body['values'];
-    for (value of values) {
-      const { error } = validateDailyData(value);
-      if (error) {
-        return res.status(400).send(error);
-      }
-    }
-
-    // update student daily data
-    const columns = req.body['columns'];
-    const row = student['sheets_row'];
-    const ranges = [];
-    for (col of columns) {
-      const range = `${col}${row}:${col}${row + 2}`;
-      ranges.push(range);
-    }
-    
-    const sheet_id = req.session.user.sheet_id;
-    await batchUpdateValues(sheet_id,
-                    ranges,
-                    values,
-                    'RAW');
-    res.send({dailyData: values});
+  // get student with id
+  const student = await db.getStudent(req.params.id);
+  if (!student) {
+    return res.status(404).send('Student with given ID not found.');
   }
-  catch (err) {
-    res.send({error_message: err.message});
+
+  // validate daily data
+  const values = req.body['values'];
+  for (value of values) {
+    const { error } = validateDailyData(value);
+    if (error) {
+      return res.status(400).send(error);
+    }
   }
+
+  // update student daily data
+  const columns = req.body['columns'];
+  const row = student['sheets_row'];
+  const ranges = [];
+  for (col of columns) {
+    const range = `${col}${row}:${col}${row + 2}`;
+    ranges.push(range);
+  }
+  
+  const sheet_id = req.session.user.sheet_id;
+  await batchUpdateValues(sheet_id,
+                  ranges,
+                  values,
+                  'RAW');
+  res.send({dailyData: values});
 });
 
 router.post('/:id/notes', [auth], async (req, res) => {

@@ -15,31 +15,25 @@ router.post('/signup', async (req, res) => {
     const client = new OAuth2Client();
     const token = req.body['credential'];
 
-    try {
-      const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: config.get('google.client_id'),
-      });
-      const payload = ticket.getPayload();
-      const googleUserID = payload['sub'];
-      const email = payload['email'];
-      const name = payload['name'];
-      // check if user is in DB
-      let user = await db.getFellow(googleUserID);
-      // store new users in DB
-      if (user == null) {
-        user = await db.insertFellow(googleUserID, email, name);
-        req.session.user = user;
-        return res.redirect('/users/sheets_permissions');
-      }
-      
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: config.get('google.client_id'),
+    });
+    const payload = ticket.getPayload();
+    const googleUserID = payload['sub'];
+    const email = payload['email'];
+    const name = payload['name'];
+    // check if user is in DB
+    let user = await db.getFellow(googleUserID);
+    // store new users in DB
+    if (user == null) {
+      user = await db.insertFellow(googleUserID, email, name);
       req.session.user = user;
-      res.redirect('/');
+      return res.redirect('/users/sheets_permissions');
     }
-    catch (err) {
-      dbDebugger(err.message);
-      res.status(400).send({error: err.message});
-    }
+    
+    req.session.user = user;
+    res.redirect('/');
 });
 
 router.get('/signout', (req, res) => {
@@ -107,68 +101,62 @@ router.patch('/me', async (req, res) => {
 });
 
 router.post('/me/students', async (req, res) => {
-  try {
-    const user_id = req.session.user.id;
-    const user = await db.getFellow(user_id);
-    oauth2Client.setCredentials({
-      refresh_token: user.refresh_token
-    });
+  const user_id = req.session.user.id;
+  const user = await db.getFellow(user_id);
+  oauth2Client.setCredentials({
+    refresh_token: user.refresh_token
+  });
 
-    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: user.sheet_id,
-        range: 'Daily Data!A3:C300',
-    });
+  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+  const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: user.sheet_id,
+      range: 'Daily Data!A3:C300',
+  });
 
-    const range = response.data;
-    if (!range || !range.values || range.values.length == 0) {
-      googleDebugger('No students');
-      res.send({error_message: 'Spreadsheet has not data.'});
-    }
-
-    // get all of the students in the DB
-    const students_in_db = await db.getStudentsByPeriod();
-    const student_names = new Set();
-    for (period of students_in_db) {
-      for (student of period) {
-        student_names.add(student.name);
-      }
-    }
-
-    // get all of the students in the spreadsheet
-    const all_students = [];
-    for (let i = 0; i < range.values.length; i += 3) {
-      const period = range.values[i][0];
-      const name = range.values[i][1];
-      const tutor_name = range.values[i][2];
-      if (isNaN(period) || tutor_name !== user.tutor_name) {
-        continue;
-      }
-
-      const new_student = {
-        'name': name,
-        'period': period,
-        'fellow_id': user.id,
-        'sheets_row': i + 3
-      };
-      all_students.push(new_student);
-    }
-
-    // Add the students that are not in the DB
-    const new_students = [];
-    for (student of all_students) {
-      if (!student_names.has(student.name)) {
-        new_students.push(student);
-      }
-    }
-
-    await db.insertStudentsForFellow(new_students);
-    res.redirect('/');
+  const range = response.data;
+  if (!range || !range.values || range.values.length == 0) {
+    googleDebugger('No students');
+    res.send({error_message: 'Spreadsheet has not data.'});
   }
-  catch (err) {
-    googleDebugger(err.message);
-    res.send({error_message: err.message});
+
+  // get all of the students in the DB
+  const students_in_db = await db.getStudentsByPeriod();
+  const student_names = new Set();
+  for (period of students_in_db) {
+    for (student of period) {
+      student_names.add(student.name);
+    }
   }
+
+  // get all of the students in the spreadsheet
+  const all_students = [];
+  for (let i = 0; i < range.values.length; i += 3) {
+    const period = range.values[i][0];
+    const name = range.values[i][1];
+    const tutor_name = range.values[i][2];
+    if (isNaN(period) || tutor_name !== user.tutor_name) {
+      continue;
+    }
+
+    const new_student = {
+      'name': name,
+      'period': period,
+      'fellow_id': user.id,
+      'sheets_row': i + 3
+    };
+    all_students.push(new_student);
+  }
+
+  // Add the students that are not in the DB
+  const new_students = [];
+  for (student of all_students) {
+    if (!student_names.has(student.name)) {
+      new_students.push(student);
+    }
+  }
+
+  await db.insertStudentsForFellow(new_students);
+  res.redirect('/');
 });
 
 function isValidURL(url) {

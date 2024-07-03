@@ -1,12 +1,14 @@
 /**
  * Required External Modules
  */
+require('express-async-errors');
 const express = require('express');
 const {google} = require('./routes/google');
 const path = require('path');
 const home = require('./routes/home');
 const students = require('./routes/students');
 const users = require('./routes/users');
+const error = require('./middleware/error')
 const session = require('express-session');
 const config = require('config');
 
@@ -38,6 +40,7 @@ app.use('/', home);
 app.use('/students', students);
 app.use('/users', users);
 app.use('/google', google);
+app.use(error);
 
 /**
  * Server Activation
