@@ -72,6 +72,7 @@ input[type="date"] {
     color: #ccc;
     padding: 14px 16px;
     text-decoration: none;
+    text-wrap: nowrap;
 }
 
 .top-center-flex-container a:hover {
