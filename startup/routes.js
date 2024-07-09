@@ -2,7 +2,7 @@ const {google} = require('../routes/google');
 const home = require('../routes/home');
 const students = require('../routes/students');
 const users = require('../routes/users');
-const error = require('../middleware/error')
+const error = require('../middleware/error');
 
 module.exports = function(app) {
     app.use('/', home);
