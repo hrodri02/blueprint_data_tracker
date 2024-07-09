@@ -1,8 +1,9 @@
+const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const config = require('config');
 
-module.exports = function(app, express) {
+module.exports = function(app) {
     const oneDay = 1000 * 60 * 60 * 24;
     app.use(express.static(path.join(__dirname, '../public')));
     app.use(express.static(path.join(__dirname, '../')));
