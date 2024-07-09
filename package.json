@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node app.js",
-    "test": "jest"
+    "test": "jest --watchAll"
   },
   "engines": {
     "node": "16.19.0"
