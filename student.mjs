@@ -1,3 +1,5 @@
+import { hash } from './hash.mjs';
+
 const url = new URL(location.href); 
 const studentID = Number(url.searchParams.get("id"));
 const period = url.searchParams.get("period");
@@ -37,7 +39,7 @@ getStudentNotes();
 function setStudent() {
     selected_students = JSON.parse(localStorage.getItem('selected_students'));
     const index = (period < 5)? period - 1 : period - 2;
-    for (s of selected_students[index]) {
+    for (const s of selected_students[index]) {
         if (s['id'] === studentID) {
             student = s;
             break;
@@ -209,7 +211,7 @@ function updateDayWithDayData(dayIndex, data) {
     const buttons = div.getElementsByTagName('button');
     if (data[2].length > 0) {
         const grades = data[2][0];
-        for (button of buttons) {
+        for (const button of buttons) {
             const letter = button.innerText;
             if (grades.includes(letter)) {
                 button.style.backgroundColor = "green";
@@ -219,23 +221,7 @@ function updateDayWithDayData(dayIndex, data) {
 }
 
 function hashData(key, data) {
-    const json = JSON.stringify(data);
-    const hash = rawToHex(json);
-    // console.log(`json: ${json}\nhash: ${hash}`);
-    original[key] = hash;
-}
-
-// Convert a raw string to a hex string
-function rawToHex(raw) {
-    let hex = "";
-    let hexChars = "0123456789abcdef";
-    for (let i = 0; i < raw.length; i++) {
-        let c = raw.charCodeAt(i);
-        hex += (
-        hexChars.charAt((c >>> 4) & 0x0f) +
-        hexChars.charAt(c & 0x0f));
-    }
-    return hex;
+    original[key] = hash(data);
 }
 
 function getStudentNotes() {
@@ -245,7 +231,7 @@ function getStudentNotes() {
 }
 
 function addNotesToContainer(notes) {
-    for (note of notes) {
+    for (const note of notes) {
         addNoteToContainer(note);
     }
 }
@@ -345,7 +331,7 @@ function sortParticipationGrades(i) {
 
 function getColumnsForDates() {
     const columns = [];
-    for (date of dates) {
+    for (const date of dates) {
         const column = getColumn(date);
         columns.push(column);
     }
@@ -425,12 +411,12 @@ function onWeekChanged() {
 
 function resetDays() {
     const divs = container.getElementsByClassName('flex-item');
-    for (div of divs) {
+    for (const div of divs) {
         const select = div.getElementsByTagName('select')[0];
         select.value = "";
         const etInput = div.getElementsByTagName('input')[0];
         etInput.value = "";
-        for (button of div.getElementsByTagName('button')) {
+        for (const button of div.getElementsByTagName('button')) {
             button.style.backgroundColor = "";
         }
     }
