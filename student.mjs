@@ -1,5 +1,6 @@
 import { hash } from './hash.mjs';
 import { validateExitTicketGrade } from './validate_student.mjs';
+import { sortParticipationGrades } from './participation_letters.mjs';
 
 const url = new URL(location.href); 
 const studentID = Number(url.searchParams.get("id"));
@@ -303,7 +304,7 @@ function uploadButtonClicked() {
                 validateExitTicketGrade(etGrade);
             }
             if (studentData[i][2].length > 0) {
-                sortParticipationGrades(i);
+                studentData[i][2] = sortParticipationGrades(studentData[i][2][0]);
             }
 
             if (isStudentDataUpdated(dates[i], studentData[i])) {
@@ -324,19 +325,6 @@ function uploadButtonClicked() {
     catch (err) {
         alert(err.message);
     }
-}
-
-function sortParticipationGrades(i) {
-    const studentsLetters = studentData[i][2][0];
-    const letters = ['G', 'R', 'A', 'D', 'E', 'S'];
-    const grades = letters.reduce((str, letter) => {
-        if (studentsLetters.includes(letter)) {
-            return str + letter;
-        }
-        return str;
-    }, "");
-
-    studentData[i][2] = (grades === "")? [] : [grades];
 }
 
 function getColumnsForDates() {
