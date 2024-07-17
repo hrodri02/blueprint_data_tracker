@@ -28,6 +28,13 @@ let selected_students = [];
 let student;
 let selected_image_file = null;
 
+// add click listeners to buttons
+document.getElementById('edit-math-goal-button').addEventListener('click', editMathGoalButtonClicked);
+document.getElementById('week').addEventListener('change', onWeekChanged);
+document.getElementById('edit-image-button').addEventListener('click', editImageButtonClicked);
+document.getElementById('upload').addEventListener('click', uploadButtonClicked);
+document.getElementById('add-note-button').addEventListener('click', addNoteButtonClicked);
+
 setStudent();
 setWeek();
 setDates();
@@ -81,7 +88,7 @@ function createDays() {
         container.innerHTML += `
             <div class="flex-item" id="${i}">
                 <h3></h3>
-                <select onchange="onAttendanceValueChanged()">
+                <select class="attendance-select">
                     <option value="">--Attendance--</option>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
@@ -90,16 +97,22 @@ function createDays() {
                     <option value="No Session">No Session</option>
                     <option value="No School">No School</option>
                 </select>
-                <input type='number' min='0' max='4' onchange="onExitTicketGradeChanged()">
-                <button onclick="gradeButtonClick()">G</button>
-                <button onclick="gradeButtonClick()">R</button>
-                <button onclick="gradeButtonClick()">A</button>
-                <button onclick="gradeButtonClick()">D</button>
-                <button onclick="gradeButtonClick()">E</button>
-                <button onclick="gradeButtonClick()">S</button>
+                <input class="exit-ticket-input" type='number' min='0' max='4'>
+                <button class="grade-button">G</button>
+                <button class="grade-button">R</button>
+                <button class="grade-button">A</button>
+                <button class="grade-button">D</button>
+                <button class="grade-button">E</button>
+                <button class="grade-button">S</button>
             </div>
         `;
     }
+    const attendanceSelects = document.querySelectorAll('.attendance-select');
+    attendanceSelects.forEach( select => select.addEventListener('change', onAttendanceValueChanged) );
+    const exitTicketInputs = document.querySelectorAll('.exit-ticket-input');
+    exitTicketInputs.forEach( input => input.addEventListener('change', onExitTicketGradeChanged) );
+    const gradeButtons = document.querySelectorAll('.grade-button');
+    gradeButtons.forEach( button => button.addEventListener('click', gradeButtonClick) );
 }
 
 function setDatesForDays() {
@@ -244,16 +257,22 @@ function addNoteToContainer(student_note) {
             <div class="notes-flex-item-header">
                 <label>${formattedDate}</label>
                 <div class="note-dropdown">
-                    <i class="fa-solid fa-ellipsis" onclick="ellipsisButtonClicked()"></i>
+                    <i class="fa-solid fa-ellipsis"></i>
                     <div class="note-dropdown-content">
-                        <a id="delete-note-button" href="#" onclick="deleteNoteButtonClicked()">Delete from list</a>
-                        <a id="edit-note-button" href="#" onclick="editNoteButtonClicked()">Edit</a>
+                        <a id="delete-note-button" href="#">Delete from list</a>
+                        <a id="edit-note-button" href="#">Edit</a>
                     </div>
                 </div>
             </div>
             <p>${student_note['note']}</p>
         </div>
     `;
+    const ellipsisButton = studentNotesContainer.querySelector('.fa-ellipsis');
+    ellipsisButton.addEventListener('click', ellipsisButtonClicked);
+    const deleteNoteButton = div.getElementById('delete-note-button');
+    deleteNoteButton.addEventListener('click', deleteNoteButtonClicked);
+    const editNoteButton = div.getElementById('edit-note-button');
+    editNoteButton.addEventListener('click', editNoteButtonClicked);
 }
 
 function parseISOString(s) {
@@ -430,11 +449,11 @@ function editImageButtonClicked() {
     div.innerHTML = `
         <div class="popup-top-nav">
             <h3>Select an image</h3>
-            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+            <button class="cancel-button"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="popup-body">
             <div class="popup-input-container">
-                <input type="file" onchange="onFileChange()" accept="image/jpeg">
+                <input class="file-input" type="file" accept="image/jpeg">
             </div>
             <div class="popup-body-bottom">
             </div>
@@ -442,6 +461,14 @@ function editImageButtonClicked() {
     `;
     div.classList.add("popup-container");
     document.body.appendChild(div);
+    const fileInput = document.querySelector('.file-input');
+    fileInput.addEventListener('change', onFileChange);
+    addEventListenerToCancelButton();
+}
+
+function addEventListenerToCancelButton() {
+    const button = document.querySelector('.cancel-button');
+    button.addEventListener('click', closePopup);
 }
 
 function onFileChange() {
@@ -472,18 +499,24 @@ function showSelectedImage() {
     `;
     const bottom_container = document.querySelector('.popup-body-bottom');
     bottom_container.innerHTML = `
-        <button onclick="removeImage()">Remove image</button>
-        <button onclick="uploadImage()">Upload image</button>
+        <button id='remove-image-button'>Remove image</button>
+        <button id='upload-image-button'>Upload image</button>
     `;
+    const removeImageButton = div.getElementById('remove-image-button');
+    removeImageButton.addEventListener('click', removeImage);
+    const uploadImageButton = div.getElementById('upload-image-button');
+    uploadImageButton.addEventListener('click', uploadImage);
 }
 
 function removeImage() {
     const input_container = document.querySelector('.popup-input-container');
     input_container.innerHTML = `
-        <input type="file" onchange="onFileChange()" accept="image/jpeg">
+        <input type="file" accept="image/jpeg">
     `;
     const bottom_container = document.querySelector('.popup-body-bottom');
     bottom_container.innerHTML = ``;
+    const fileInput = document.querySelector('.file-input');
+    fileInput.addEventListener('change', onFileChange);
 }
 
 async function uploadImage() {
@@ -561,19 +594,22 @@ function editMathGoalButtonClicked() {
     div.innerHTML = `
         <div class="popup-top-nav">
             <h3>Edit Math Goal</h3>
-            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+            <button class="cancel-button"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="popup-body">
             <div class="popup-input-container">
                 <input type="text" id="new-goal" maxlength="100" value="${student['goal']}" style="width:90%;">
             </div>
             <div class="popup-body-bottom">
-                <button onclick="uploadGoal()">Confirm</button>
+                <button id='upload-goal-button'>Confirm</button>
             </div>
         </div>
     `;
     div.classList.add("popup-container");
     document.body.appendChild(div);
+    const uploadGoalButton = document.getElementById('upload-goal-button');
+    uploadGoalButton.addEventListener('click', uploadGoal);
+    addEventListenerToCancelButton();
 }
 
 function uploadGoal() {
@@ -607,7 +643,9 @@ function isStudentGoalUpdated(goal) {
 }
 
 function addNoteButtonClicked() {
-    createStudentNotePopup('Add New Note', 'Upload Note', 'uploadNoteButtonClicked()');
+    createStudentNotePopup('Add New Note', 'Upload Note');
+    const noteBottomButton = document.getElementById('note-bottom-button');
+    noteBottomButton.addEventListener('click', uploadNoteButtonClicked);
 }
 
 function closePopup() {
@@ -667,7 +705,9 @@ function editNoteButtonClicked() {
     const note_id_str = note_flex_item.id;
     const note_id = Number(note_id_str.split('-')[1]);
     const note_text = note_flex_item.querySelector('p').innerText;
-    createStudentNotePopup('Edit Note', 'Upload Note', `uploadEditedNote(${note_id})`, note_text);
+    createStudentNotePopup('Edit Note', 'Upload Note', note_text);
+    const noteBottomButton = document.getElementById('note-bottom-button');
+    noteBottomButton.addEventListener('click', () => uploadEditedNote(note_id));
 }
 
 function uploadEditedNote(note_id) {
@@ -695,7 +735,7 @@ function uploadEditedNote(note_id) {
     });
 }
 
-function createStudentNotePopup(header_name, button_name, button_function, note_text = '') 
+function createStudentNotePopup(header_name, button_name, note_text = '') 
 {
     const blackContainer = document.createElement('div');
     blackContainer.classList.add('black-container');
@@ -704,15 +744,16 @@ function createStudentNotePopup(header_name, button_name, button_function, note_
     div.innerHTML = `
         <div class="popup-top-nav">
             <h3>${header_name}</h3>
-            <button class="cancel-button" onclick="closePopup()"><i class="fa-solid fa-x"></i></button>
+            <button class="cancel-button"><i class="fa-solid fa-x"></i></button>
         </div>
         <div class="popup-body">
             <textarea id='student-note' name='note'>${note_text}</textarea>
             <div class="popup-body-bottom">
-                <button onclick="${button_function}">${button_name}</button>
+                <button id='note-bottom-button'>${button_name}</button>
             </div>
         </div>
     `;
     div.classList.add("popup-container");
     document.body.appendChild(div);
+    addEventListenerToCancelButton();
 }
