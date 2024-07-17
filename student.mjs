@@ -349,17 +349,16 @@ function getColumnsForDates() {
 }
 
 function isStudentDataUpdated(date, data) {
-    const json = JSON.stringify(data);
-    const hash = rawToHex(json);
+    const current_hash = hash(data);
     // console.log(`json: ${json}\nhash: ${hash}`);
     const monthDay = convertDateToMonthAndDay(date);
-    if (original[monthDay] === hash) {
+    if (original[monthDay] === current_hash) {
         console.log(`${monthDay}: data is the same.`);
     }
     else {
         console.log(`${monthDay}: data changed.`);
     }
-    return original[monthDay] !== hash;
+    return original[monthDay] !== current_hash;
 }
 
 function onAttendanceValueChanged() {
@@ -621,16 +620,15 @@ function uploadGoal() {
 }
 
 function isStudentGoalUpdated(goal) {
-    const json = JSON.stringify(goal);
-    const hash = rawToHex(json);
+    const current_hash = hash(goal);
     // console.log(`json: ${json}\nhash: ${hash}`);
-    if (original['goal'] === hash) {
+    if (original['goal'] === current_hash) {
         console.log(`goal is the same.`);
     }
     else {
         console.log(`goal changed.`);
     }
-    return original['goal'] !== hash;
+    return original['goal'] !== current_hash;
 }
 
 function addNoteButtonClicked() {
