@@ -1,3 +1,8 @@
 {
-    "db": "./db/data_tracker_test.db"
+    "db": "./db/data_tracker_test.db",
+    "session_secret": "data_tracker_session_secret",
+    "google": {
+        "client_id": "data_tracker_client_id",
+        "client_secret": "data_tracker_client_secret"
+    }
 }
