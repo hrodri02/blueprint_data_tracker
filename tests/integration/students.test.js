@@ -7,7 +7,7 @@ describe('/users', () => {
     describe('GET /me', () => {
         it('should return the current user', async () => {
             const res = await request(server).get('/users/me');
-            expect(res.status).toBe(500);
+            expect(res.status).toBe(200);
         });
     });
 });
