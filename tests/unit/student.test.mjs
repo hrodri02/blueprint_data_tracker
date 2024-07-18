@@ -1,6 +1,6 @@
-import { hash } from '../hash.mjs';
-import { validateExitTicketGrade } from '../validate_student.mjs';
-import { sortParticipationGrades } from '../participation_letters.mjs';
+import { hash } from '../../hash.mjs';
+import { validateExitTicketGrade } from '../../validate_student.mjs';
+import { sortParticipationGrades } from '../../participation_letters.mjs';
 
 describe('hash', () => {
     it('should convert a string to a hex', () => {
