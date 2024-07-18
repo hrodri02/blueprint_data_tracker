@@ -1,14 +1,16 @@
 const process = require('process');
 const dbDebugger = require('debug')('app:db');
 const sqlite3 = require('sqlite3').verbose();
+const config = require('config');
+const db_name = config.get('db');
 
 // open the database
-const db = new sqlite3.Database('./db/data_tracker.db', (err) => {
+const db = new sqlite3.Database(db_name, (err) => {
     if (err) {
         dbDebugger(err.message);
     }
     else {
-        dbDebugger('Connected to the data_tracker database.');
+        dbDebugger(`Connected to the ${db_name} database.`);
     }
 });
 
