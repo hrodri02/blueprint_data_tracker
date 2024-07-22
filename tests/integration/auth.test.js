@@ -3,7 +3,7 @@ let server;
 
 describe('auth middleware', () => {
     beforeEach(() => { server = require('../../app'); });
-    afterEach(() => { server.close() } );
+    afterEach(() => { server.close(); });
 
     it('should return 401 if user is undefined', async () => {
         const res = await request(server).get('/students');
