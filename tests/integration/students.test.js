@@ -12,7 +12,7 @@ describe('/students', () => {
     });
 
     describe('POST /', () => {
-        it('should return 400 if the input is an invalid student', async () => {
+        test('should return 400 if the input is an invalid student', async () => {
             const res = await request(server)
                                 .post('/students')
                                 .send({
@@ -24,7 +24,7 @@ describe('/students', () => {
             expect(res.status).toBe(400);
         });
 
-        it('should return student if the input is a valid student', async () => {
+        test('should return student if the input is a valid student', async () => {
             const new_student = {
                 name: 'Vongphrachanh, Makaiden', 
                 period: 1,
@@ -40,7 +40,7 @@ describe('/students', () => {
     });
 
     describe('GET /', () => {
-        it('should return two students in a two-dimensional array', async () => {
+        test('should return two students in a two-dimensional array', async () => {
             await db.insertStudentsForFellow([
                 {
                     name: 'Vongphrachanh, Makaiden', 
@@ -64,7 +64,7 @@ describe('/students', () => {
             expect(res.body[0].some(s => s.name === 'Vongphrachanh, Makaiden')).toBeTruthy();
         });
 
-        it('should return two students in a two-dimensional array and each student is in a separate array', async () => {
+        test('should return two students in a two-dimensional array and each student is in a separate array', async () => {
             await db.insertStudentsForFellow([
                 {
                     name: "Burton, So'Laya", 
@@ -92,7 +92,7 @@ describe('/students', () => {
     });
 
     describe('GET /fellow', () => {
-        it('should return only the students of the fellow that made the request', async () => {
+        test('should return only the students of the fellow that made the request', async () => {
             await db.insertStudentsForFellow([
                 {
                     name: 'Vongphrachanh, Makaiden', 
@@ -134,12 +134,12 @@ describe('/students', () => {
     });
 
     describe('PATCH /:id', () => {
-        it('should return 404 if the student id is invalid', async () => {
+        test('should return 404 if the student id is invalid', async () => {
             const res = await request(server).patch('/students/1');
             expect(res.status).toBe(404);
         });
 
-        it('should return 400 if the input is an invalid student', async () => {
+        test('should return 400 if the input is an invalid student', async () => {
             const student = await db.insertStudentForFellow({
                 name: 'Vongphrachanh, Makaiden', 
                 period: 1,
@@ -155,7 +155,7 @@ describe('/students', () => {
             expect(res.status).toBe(400);
         });
 
-        it('should return student if the input is a valid change', async () => {
+        test('should return student if the input is a valid change', async () => {
             const student = await db.insertStudentForFellow({
                 name: 'Vongphrachanh, Makaiden', 
                 period: 1,
@@ -174,12 +174,12 @@ describe('/students', () => {
     });
 
     describe('DELETE /:id', () => {
-        it('should return 404 if the student id is invalid', async () => {
+        test('should return 404 if the student id is invalid', async () => {
             const res = await request(server).delete('/students/1');
             expect(res.status).toBe(404);
         });
 
-        it('should return the deleted student if the studend id is valid', async () => {
+        test('should return the deleted student if the studend id is valid', async () => {
             const student = await db.insertStudentForFellow({
                 name: 'Vongphrachanh, Makaiden', 
                 period: 1,
