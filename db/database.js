@@ -733,6 +733,7 @@ module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
+module.exports.insertStudentForFellow = insertStudentForFellow;
 module.exports.insertStudentNote = insertStudentNote;
 module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudentNote = getStudentNote;
