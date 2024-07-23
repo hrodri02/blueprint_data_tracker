@@ -172,4 +172,25 @@ describe('/students', () => {
             expect(res.body).toHaveProperty('period', 2);
         });
     });
+
+    describe('DELETE /:id', () => {
+        it('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).delete('/students/1');
+            expect(res.status).toBe(404);
+        });
+
+        it('should return the deleted student if the studend id is valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Vongphrachanh, Makaiden', 
+                period: 1,
+                sheets_row: 21,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server).delete('/students/' + student.id);
+                                
+            expect(res.status).toBe(200);
+            expect(res.body).toMatchObject(student);
+        });
+    });
 });
