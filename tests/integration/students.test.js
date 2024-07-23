@@ -1,15 +1,44 @@
 const request = require('supertest');
 const db = require('../../db/database');
-
+let server;
 describe('/students', () => {
-    let server;
     beforeEach(() => { 
         server = require('../../app');
     });
+
     afterEach(() => { 
         server.close();
         db.deleteAllStudents();
     });
+
+    describe('POST /', () => {
+        it('should return 400 if the input is an invalid student', async () => {
+            const res = await request(server)
+                                .post('/students')
+                                .send({
+                                    name: 'Vo', 
+                                    period: 1,
+                                    sheets_row: 21,
+                                    fellow_id: '113431031494705476915'
+                                });
+            expect(res.status).toBe(400);
+        });
+
+        it('should return student if the input is a valid student', async () => {
+            const new_student = {
+                name: 'Vongphrachanh, Makaiden', 
+                period: 1,
+                sheets_row: 21,
+                fellow_id: '113431031494705476915'
+            };
+            const res = await request(server)
+                                .post('/students')
+                                .send(new_student);
+            expect(res.status).toBe(200);
+            expect(res.body).toMatchObject(new_student);
+        })
+    });
+
     describe('GET /', () => {
         it('should return two students in a two-dimensional array', async () => {
             await db.insertStudentsForFellow([
