@@ -90,4 +90,46 @@ describe('/students', () => {
             expect(res.body[0].some(s => s.name === "Burton, So'Laya")).toBeTruthy();
         });
     });
+
+    describe('GET /fellow', () => {
+        it('should return only the students of the fellow that made the request', async () => {
+            await db.insertStudentsForFellow([
+                {
+                    name: 'Vongphrachanh, Makaiden', 
+                    period: 1,
+                    sheets_row: 21,
+                    fellow_id: '113431031494705476915'
+                },
+                {
+                    name: 'Hammond, Braylani',
+                    period: 1,
+                    sheets_row: 15,
+                    fellow_id: '113431031494705476915'
+                }
+            ]);
+
+            await db.insertStudentsForFellow([
+                {
+                    name: "Burton, So'Laya", 
+                    period: 1,
+                    sheets_row: 3,
+                    fellow_id: '117317693270757170130'
+                },
+                {
+                    name: 'Lopez-Macias, Camila',
+                    period: 2,
+                    sheets_row: 6,
+                    fellow_id: '117317693270757170130'
+                }
+            ]);
+
+            const res = await request(server).get('/students/fellow');
+            expect(res.status).toBe(200);
+            expect(res.body[0].length).toBe(2);
+            expect(res.body[0].some(s => s.name === 'Hammond, Braylani')).toBeTruthy();
+            expect(res.body[0].some(s => s.name === 'Vongphrachanh, Makaiden')).toBeTruthy();
+            expect(res.body[0].some(s => s.name === "Burton, So'Laya")).toBeFalsy();
+            expect(res.body[0].some(s => s.name === 'Lopez-Macias, Camila')).toBeFalsy();
+        });
+    });
 });
