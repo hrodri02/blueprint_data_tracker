@@ -132,4 +132,44 @@ describe('/students', () => {
             expect(res.body[0].some(s => s.name === 'Lopez-Macias, Camila')).toBeFalsy();
         });
     });
+
+    describe('PATCH /:id', () => {
+        it('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).patch('/students/1');
+            expect(res.status).toBe(404);
+        });
+
+        it('should return 400 if the input is an invalid student', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Vongphrachanh, Makaiden', 
+                period: 1,
+                sheets_row: 21,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server)
+                                .patch('/students/' + student.id)
+                                .send({
+                                    name: 'Vo',
+                                });
+            expect(res.status).toBe(400);
+        });
+
+        it('should return student if the input is a valid change', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Vongphrachanh, Makaiden', 
+                period: 1,
+                sheets_row: 21,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server)
+                                .patch('/students/' + student.id)
+                                .send({
+                                    period: 2,
+                                });
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('period', 2);
+        });
+    });
 });
