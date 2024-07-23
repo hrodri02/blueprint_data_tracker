@@ -369,6 +369,17 @@ async function patchStudent(student) {
   });
 }
 
+function deleteAllStudents() {
+  db.run(`DELETE FROM students`, function(res, err) {
+    if (err) {
+      dbDebugger(err.message);
+    }
+    else {
+      dbDebugger(res);
+    }
+  });
+}
+
 function deleteStudents(studentNames) {
   db.parallelize(() => {
     for (student of studentNames) {
@@ -730,6 +741,7 @@ module.exports.deleteStudentNote = deleteStudentNote;
 module.exports.getStudent = getStudent;
 module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;
+module.exports.deleteAllStudents = deleteAllStudents;
 module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;
