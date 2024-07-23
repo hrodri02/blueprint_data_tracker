@@ -12,7 +12,7 @@ const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
 
-router.post('/', async (req, res) => {
+router.post('/', [auth], async (req, res) => {
   const student = req.body;
   const { error } = validateStudent(student);
   if (error) {
