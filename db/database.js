@@ -1,14 +1,16 @@
 const process = require('process');
 const dbDebugger = require('debug')('app:db');
 const sqlite3 = require('sqlite3').verbose();
+const config = require('config');
+const db_name = config.get('db');
 
 // open the database
-const db = new sqlite3.Database('./db/data_tracker.db', (err) => {
+const db = new sqlite3.Database(db_name, (err) => {
     if (err) {
         dbDebugger(err.message);
     }
     else {
-        dbDebugger('Connected to the data_tracker database.');
+        dbDebugger(`Connected to the ${db_name} database.`);
     }
 });
 
@@ -367,6 +369,17 @@ async function patchStudent(student) {
   });
 }
 
+function deleteAllStudents() {
+  db.run(`DELETE FROM students`, function(res, err) {
+    if (err) {
+      dbDebugger(err.message);
+    }
+    else {
+      dbDebugger(res);
+    }
+  });
+}
+
 function deleteStudents(studentNames) {
   db.parallelize(() => {
     for (student of studentNames) {
@@ -720,6 +733,7 @@ module.exports.getPeriods = getPeriods;
 module.exports.getStudentsByPeriod = getStudentsByPeriod;
 module.exports.insertStudents = insertStudents;
 module.exports.insertStudentsForFellow = insertStudentsForFellow;
+module.exports.insertStudentForFellow = insertStudentForFellow;
 module.exports.insertStudentNote = insertStudentNote;
 module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudentNote = getStudentNote;
@@ -728,6 +742,7 @@ module.exports.deleteStudentNote = deleteStudentNote;
 module.exports.getStudent = getStudent;
 module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;
+module.exports.deleteAllStudents = deleteAllStudents;
 module.exports.deleteStudents = deleteStudents;
 module.exports.deleteStudent = deleteStudent;
 module.exports.getFellow = getFellow;

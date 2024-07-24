@@ -12,15 +12,14 @@ const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets'
 ];
 
-router.post('/', async (req, res) => {
+router.post('/', [auth], async (req, res) => {
   const student = req.body;
   const { error } = validateStudent(student);
   if (error) {
     return res.status(400).send({error_message: error.details[0].message});
   }
 
-  const id = await db.insertStudent(student);
-  const studentInDB = await db.getStudent(id);
+  const studentInDB = await db.insertStudentForFellow(student);
   res.send(studentInDB);
 });
 
@@ -97,8 +96,8 @@ function validateStudent(student) {
     period: Joi.number().min(0).max(7).required(),
     sheets_row: Joi.number().min(1).max(300).required(),
     fellow_id: Joi.string().min(1).required(),
-    goal: Joi.string().min(5).max(100).required(),
-    profile_image_url: Joi.string().required()
+    goal: Joi.string().min(5).max(100),
+    profile_image_url: Joi.string()
   });
 
   const result = schema.validate(student);

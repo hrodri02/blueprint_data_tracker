@@ -4,6 +4,6 @@ export default {
       // must include "js" to pass validation https://github.com/facebook/jest/issues/12116
       "js",
     ],
-    testRegex: `test\.mjs$`,
+    testRegex: `test\.(?:mjs|js)$`,
     transform: {}
   };
