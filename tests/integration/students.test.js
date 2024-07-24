@@ -2,12 +2,11 @@ const request = require('supertest');
 const db = require('../../db/database');
 let server;
 describe('/students', () => {
-    beforeEach(() => { 
+    beforeAll(() => {
         server = require('../../app');
     });
 
     afterEach(() => { 
-        server.close();
         db.deleteAllStudents();
     });
 
