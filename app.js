@@ -7,9 +7,9 @@ require('./startup/routes')(app);
  * Server Activation
  */
 const port = process.env.PORT || 8000;
-const server = app.listen(port, () => console.log(`Listening on port ${port}...`));
-module.exports = server;
-
+if (process.env.NODE_ENV !== 'test')
+    app.listen(port, () => console.log(`Listening on port ${port}...`));
+module.exports = app;
 /**
  * Server Deactivation
  */
