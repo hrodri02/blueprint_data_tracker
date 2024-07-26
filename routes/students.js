@@ -118,14 +118,13 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
   }
 
   await batchUpdateValues(req.session.user.id,
-                  req.session.user.sheet_id,
                   ranges,
                   values,
                   'RAW');
   res.send({period: period});
 });
 
-async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueInputOption) {
+async function batchUpdateValues(fellowID, ranges, values, valueInputOption) {
   const data = [];
 
   for (i in values) {
@@ -149,7 +148,7 @@ async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueI
     });
 
     const response = await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: spreadsheetId,
+      spreadsheetId: fellow['sheet_id'],
       resource: body,
     });
     googleDebugger(`${response.data.totalUpdatedCells} cells updated.`);
