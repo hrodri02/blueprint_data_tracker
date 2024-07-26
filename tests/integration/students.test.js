@@ -192,4 +192,13 @@ describe('/students', () => {
             expect(res.body).toMatchObject(student);
         });
     });
+
+    describe('POST /dailydata', () => {
+        test('should return 400 if the daily data is invalid', async () => {
+            const dailyData = {'values': [[['Present'], [-1], ['gra']], [['Present'], [0], ['grADe']]]};
+            const res = await request(server).post('/students/dailydata').send(dailyData);
+            console.log(res.body);
+            expect(res.status).toBe(400);
+        });
+    });
 });
