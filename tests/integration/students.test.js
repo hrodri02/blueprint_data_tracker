@@ -197,8 +197,18 @@ describe('/students', () => {
         test('should return 400 if the daily data is invalid', async () => {
             const dailyData = {'values': [[['Present'], [-1], ['gra']], [['Present'], [0], ['grADe']]]};
             const res = await request(server).post('/students/dailydata').send(dailyData);
-            console.log(res.body);
             expect(res.status).toBe(400);
+        });
+
+        test('should update the spreadsheet if the daily data is valid', async() => {
+            const dailyData = {
+                'period': 0,
+                'ranges': ['IT15:IT17'],
+                'values': [[['Present'], [2], ['GRADES']]],
+            };
+            const res = await request(server).post('/students/dailydata').send(dailyData);
+            console.log(res.body);
+            expect(res.status).toBe(200);
         });
     });
 });
