@@ -223,7 +223,7 @@ describe('/students', () => {
             expect(res.status).toBe(404);
         });
 
-        test('should student dailydata if student id is valid', async () => {
+        test('should return student dailydata if student id is valid', async () => {
             const student = await db.insertStudentForFellow({
                 name: 'Davis, Navie', 
                 period: 1,
@@ -244,6 +244,18 @@ describe('/students', () => {
             const regex = /^[gradesGRADES]*$/
             const allLetterGradesAllowed = ['GRADE'].every(value => regex.test(value));
             expect(allLetterGradesAllowed).toBeTruthy();
+        });
+
+        test('should return 400 if ranges are invalid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server).get('/students/' + student.id + '/dailydata?start=JG&end=JH');
+            expect(res.status).toBe(400);
         });
     });
 });
