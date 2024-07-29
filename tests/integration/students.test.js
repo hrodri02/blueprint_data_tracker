@@ -216,4 +216,34 @@ describe('/students', () => {
             expect(res.body[0].updatedData.values).toMatchObject(dailyData['values'][0]);
         });
     });
+
+    describe('GET :id/dailydata', () => {
+        test('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).get('/students/1/dailydata');
+            expect(res.status).toBe(404);
+        });
+
+        test('should student dailydata if student id is valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server).get('/students/' + student.id + '/dailydata?start=IQ&end=IT');
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(3);
+            expect(res.body[0].length).toBe(4);
+            const allowedAttendanceValues = ['Present', 'Absent', 'No Session', 'Tardy', 'Left Early', 'No School'];
+            const allAttendanceValuesAllowed = res.body[0].every(value => allowedAttendanceValues.includes(value));
+            expect(allAttendanceValuesAllowed).toBeTruthy();
+            const allowedETValues = ['', '0', '1', '2', '3', '4'];
+            const allETValuesAllowed = res.body[1].every(value => allowedETValues.includes(value));
+            expect(allETValuesAllowed).toBeTruthy();
+            const regex = /^[gradesGRADES]*$/
+            const allLetterGradesAllowed = ['GRADE'].every(value => regex.test(value));
+            expect(allLetterGradesAllowed).toBeTruthy();
+        });
+    });
 });
