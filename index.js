@@ -266,7 +266,9 @@ function uploadButtonClicked() {
         }
 
         const body = JSON.stringify({ranges: ranges, values: values});
+        createLoader();
         post(`${protocol}://${domain}/students/dailydata`, body, (data) => {
+            removeLoader();
             resetGrades(period);
         });
     }
