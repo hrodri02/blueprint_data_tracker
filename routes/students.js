@@ -178,20 +178,24 @@ router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
   oauth2Client.setCredentials({
     refresh_token: refreshToken
   });
+  
+  try {
+    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: fellow.sheet_id,
+      range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
+    });
 
-  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-  let response;
-  response = await sheets.spreadsheets.values.get({
-    spreadsheetId: fellow.sheet_id,
-    range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
-  });
+    const range = response.data;
 
-  const range = response.data;
-
-  if (!range || !range.values || range.values.length == 0) {
-    res.send([]);
+    if (!range || !range.values || range.values.length == 0) {
+      res.send([]);
+    }
+    res.send(range.values);
   }
-  res.send(range.values);
+  catch (error) {
+    res.status(error.response.status).send(error.response.data);
+  } 
 });
 
 router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
