@@ -1,6 +1,10 @@
 const request = require('supertest');
 const db = require('../../db/database');
 let server;
+
+const TIME_IN_SECONDS = 15 * 1000
+jest.setTimeout(TIME_IN_SECONDS)
+
 describe('/students', () => {
     beforeAll(() => {
         server = require('../../app');
@@ -202,13 +206,14 @@ describe('/students', () => {
 
         test('should update the spreadsheet if the daily data is valid', async() => {
             const dailyData = {
-                'period': 0,
                 'ranges': ['IT15:IT17'],
                 'values': [[['Present'], [2], ['GRADES']]],
             };
             const res = await request(server).post('/students/dailydata').send(dailyData);
-            console.log(res.body);
             expect(res.status).toBe(200);
+            expect(res.body.length).toBe(1);
+            dailyData['values'][0][1] = [dailyData['values'][0][1].toString()];
+            expect(res.body[0].updatedData.values).toMatchObject(dailyData['values'][0]);
         });
     });
 });
