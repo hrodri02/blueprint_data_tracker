@@ -105,7 +105,6 @@ function validateStudent(student) {
 }
 
 router.post('/dailydata', [sheets_auth], async (req, res) => {
-  const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
 
@@ -117,11 +116,12 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
     }
   }
 
-  await batchUpdateValues(req.session.user.id,
+  const dailydata = await batchUpdateValues(req.session.user.id,
                   ranges,
                   values,
                   'RAW');
-  res.send({period: period});
+
+  res.send(dailydata);
 });
 
 async function batchUpdateValues(fellowID, ranges, values, valueInputOption) {
@@ -137,6 +137,7 @@ async function batchUpdateValues(fellowID, ranges, values, valueInputOption) {
   const body = {
     data: data,
     valueInputOption: valueInputOption,
+    includeValuesInResponse: true
   };
   const sheets = google.sheets({version: 'v4', auth: oauth2Client});
   try {
@@ -152,7 +153,7 @@ async function batchUpdateValues(fellowID, ranges, values, valueInputOption) {
       resource: body,
     });
     googleDebugger(`${response.data.totalUpdatedCells} cells updated.`);
-    return response;
+    return response.data.responses;
   } catch (err) {
     throw err;
   }
