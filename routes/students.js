@@ -223,12 +223,11 @@ router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
     ranges.push(range);
   }
   
-  const sheet_id = req.session.user.sheet_id;
-  await batchUpdateValues(sheet_id,
+  const dailydata = await batchUpdateValues(req.session.user.id,
                   ranges,
                   values,
                   'RAW');
-  res.send({dailyData: values});
+  res.send({dailydata});
 });
 
 router.post('/:id/notes', [auth], async (req, res) => {
