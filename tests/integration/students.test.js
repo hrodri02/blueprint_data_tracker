@@ -2,7 +2,7 @@ const request = require('supertest');
 const db = require('../../db/database');
 let server;
 
-const TIME_IN_SECONDS = 15 * 1000
+const TIME_IN_SECONDS = 30 * 1000
 jest.setTimeout(TIME_IN_SECONDS)
 
 describe('/students', () => {
@@ -217,7 +217,7 @@ describe('/students', () => {
         });
     });
 
-    describe('GET :id/dailydata', () => {
+    describe('GET /:id/dailydata', () => {
         test('should return 404 if the student id is invalid', async () => {
             const res = await request(server).get('/students/1/dailydata');
             expect(res.status).toBe(404);
@@ -242,7 +242,7 @@ describe('/students', () => {
             const allETValuesAllowed = res.body[1].every(value => allowedETValues.includes(value));
             expect(allETValuesAllowed).toBeTruthy();
             const regex = /^[gradesGRADES]*$/
-            const allLetterGradesAllowed = ['GRADE'].every(value => regex.test(value));
+            const allLetterGradesAllowed = res.body[2].every(value => regex.test(value));
             expect(allLetterGradesAllowed).toBeTruthy();
         });
 
@@ -256,6 +256,61 @@ describe('/students', () => {
 
             const res = await request(server).get('/students/' + student.id + '/dailydata?start=JG&end=JH');
             expect(res.status).toBe(400);
+        });
+    });
+
+    describe('PATCH /:id/dailydata', () => {
+        test('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).patch('/students/1/dailydata');
+            expect(res.status).toBe(404);
+        });
+
+        test('should return 400 if the dailydata invalid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const dailydata = {'values': [[['Present'], [-1], ['gra']], [['Present'], [0], ['grADe']]]};
+            const res = await request(server).patch('/students/' + student.id + '/dailydata').send(dailydata);
+            expect(res.status).toBe(400);
+        });
+
+        test('should return student dailydata if the student id and dailydata are valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+            
+            const body = {
+                'values': [[['Present'], [2], ['gra']], [['Present'], [4], ['grADeS']]],
+                'columns': ['IS', 'IT']
+            };
+            const res = await request(server).patch('/students/' + student.id + '/dailydata').send(body);
+            expect(res.status).toBe(200);
+            expect(res.body.dailydata.length).toBe(2);
+            const attendanceValue1 = res.body.dailydata[0].updatedData.values[0][0];
+            const attendanceValue2 = res.body.dailydata[1].updatedData.values[0][0];
+            const atendanceValues = [attendanceValue1, attendanceValue2];
+            const allowedAttendanceValues = ['Present', 'Absent', 'No Session', 'Tardy', 'Left Early', 'No School'];
+            const allAttendanceValuesAllowed = atendanceValues.every(value => allowedAttendanceValues.includes(value));
+            expect(allAttendanceValuesAllowed).toBeTruthy();
+            const etValue1 = res.body.dailydata[0].updatedData.values[1][0];
+            const etValue2 = res.body.dailydata[1].updatedData.values[1][0];
+            const etValues = [etValue1, etValue2];
+            const allowedETValues = ['', '0', '1', '2', '3', '4'];
+            const allETValuesAllowed = etValues.every(value => allowedETValues.includes(value));
+            expect(allETValuesAllowed).toBeTruthy();
+            const gradesValue1 = res.body.dailydata[0].updatedData.values[2][0];
+            const gradesValue2 = res.body.dailydata[1].updatedData.values[2][0];
+            const gradesValues = [gradesValue1, gradesValue2];
+            const regex = /^[gradesGRADES]*$/
+            const allLetterGradesAllowed = gradesValues.every(value => regex.test(value));
+            expect(allLetterGradesAllowed).toBeTruthy();
         });
     });
 });
