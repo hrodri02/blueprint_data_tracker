@@ -365,4 +365,30 @@ describe('/students', () => {
             expect(res.body[0]).toMatchObject(note);
         });
     });
+
+    describe('POST /:id/notes', () => {
+        test('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).get('/students/1/notes');
+            expect(res.status).toBe(404);
+        });
+
+        test('should return all student notes if student id is valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+            const student_note = {
+                note: 'Have student summarize their steps after completing a few problems.',
+                date: new Date().toISOString()
+            };
+            await db.insertStudentNote(student_note, student.id);
+
+            const res = await request(server).get('/students/' + student.id + '/notes');
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(1);
+            expect(res.body[0]).toMatchObject(student_note);
+        });
+    });
 });
