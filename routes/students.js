@@ -105,7 +105,6 @@ function validateStudent(student) {
 }
 
 router.post('/dailydata', [sheets_auth], async (req, res) => {
-  const period = req.body['period'];
   const ranges = req.body['ranges'];
   const values = req.body['values'];
 
@@ -117,15 +116,15 @@ router.post('/dailydata', [sheets_auth], async (req, res) => {
     }
   }
 
-  await batchUpdateValues(req.session.user.id,
-                  req.session.user.sheet_id,
+  const dailydata = await batchUpdateValues(req.session.user.id,
                   ranges,
                   values,
                   'RAW');
-  res.send({period: period});
+
+  res.send(dailydata);
 });
 
-async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueInputOption) {
+async function batchUpdateValues(fellowID, ranges, values, valueInputOption) {
   const data = [];
 
   for (i in values) {
@@ -138,6 +137,7 @@ async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueI
   const body = {
     data: data,
     valueInputOption: valueInputOption,
+    includeValuesInResponse: true
   };
   const sheets = google.sheets({version: 'v4', auth: oauth2Client});
   try {
@@ -149,11 +149,11 @@ async function batchUpdateValues(fellowID, spreadsheetId, ranges, values, valueI
     });
 
     const response = await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: spreadsheetId,
+      spreadsheetId: fellow['sheet_id'],
       resource: body,
     });
     googleDebugger(`${response.data.totalUpdatedCells} cells updated.`);
-    return response;
+    return response.data.responses;
   } catch (err) {
     throw err;
   }
@@ -178,20 +178,24 @@ router.get('/:id/dailydata', [sheets_auth], async (req, res) => {
   oauth2Client.setCredentials({
     refresh_token: refreshToken
   });
+  
+  try {
+    const sheets = google.sheets({version: 'v4', auth: oauth2Client});
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: fellow.sheet_id,
+      range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
+    });
 
-  const sheets = google.sheets({version: 'v4', auth: oauth2Client});
-  let response;
-  response = await sheets.spreadsheets.values.get({
-    spreadsheetId: fellow.sheet_id,
-    range: `Daily Data!${start}${sheets_row}:${end}${sheets_row + 2}`,
-  });
+    const range = response.data;
 
-  const range = response.data;
-
-  if (!range || !range.values || range.values.length == 0) {
-    res.send([]);
+    if (!range || !range.values || range.values.length == 0) {
+      res.send([]);
+    }
+    res.send(range.values);
   }
-  res.send(range.values);
+  catch (error) {
+    res.status(error.response.status).send(error.response.data);
+  } 
 });
 
 router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
@@ -219,12 +223,11 @@ router.patch('/:id/dailydata', [sheets_auth], async (req, res) => {
     ranges.push(range);
   }
   
-  const sheet_id = req.session.user.sheet_id;
-  await batchUpdateValues(sheet_id,
+  const dailydata = await batchUpdateValues(req.session.user.id,
                   ranges,
                   values,
                   'RAW');
-  res.send({dailyData: values});
+  res.send({dailydata});
 });
 
 router.post('/:id/notes', [auth], async (req, res) => {
@@ -256,7 +259,7 @@ router.get('/:id/notes', [auth], async (req, res) => {
   res.send(notes);
 });
 
-router.put('/:id/notes/:note_id', [auth], async (req, res) => {
+router.patch('/:id/notes/:note_id', [auth], async (req, res) => {
   const student_id = req.params.id;
   const result = await db.getStudent(student_id);
   if (!result) {
@@ -265,7 +268,7 @@ router.put('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const note_id = req.params.note_id;
   const student_note = await db.getStudentNote(note_id);
-  if (!note_id) {
+  if (!student_note) {
     return res.status(404).send('Student note with given ID not found.');
   }
 
@@ -278,7 +281,6 @@ router.put('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const { error } = validateNote(student_note);
   if (error) {
-    console.log(error.details[0].message);
     return res.status(400).send(error.details[0].message);
   }
 
@@ -295,7 +297,7 @@ router.delete('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const note_id = req.params.note_id;
   const note = await db.getStudentNote(note_id);
-  if (!note_id) {
+  if (!note) {
     return res.status(404).send('Student note with given ID not found.');
   }
 

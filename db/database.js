@@ -271,6 +271,21 @@ function deleteStudentNote(note_id) {
   });
 }
 
+function deleteAllStudentNotes() {
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM student_notes`, function(res, err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(res);
+        resolve(res);
+      }
+    });
+  });
+}
+
 async function getStudent(id) {
 return new Promise((resolve, reject) => {
     const sql = 'SELECT * FROM students WHERE id = ?';
@@ -370,13 +385,17 @@ async function patchStudent(student) {
 }
 
 function deleteAllStudents() {
-  db.run(`DELETE FROM students`, function(res, err) {
-    if (err) {
-      dbDebugger(err.message);
-    }
-    else {
-      dbDebugger(res);
-    }
+  return new Promise((resolve, reject) => {
+    db.run(`DELETE FROM students`, function(res, err) {
+      if (err) {
+        dbDebugger(err.message);
+        reject(err.message);
+      }
+      else {
+        dbDebugger(res);
+        resolve(res);
+      }
+    });
   });
 }
 
@@ -739,6 +758,7 @@ module.exports.getStudentNotes = getStudentNotes;
 module.exports.getStudentNote = getStudentNote;
 module.exports.updateStudentNote = updateStudentNote;
 module.exports.deleteStudentNote = deleteStudentNote;
+module.exports.deleteAllStudentNotes = deleteAllStudentNotes;
 module.exports.getStudent = getStudent;
 module.exports.patchStudent = patchStudent;
 module.exports.updateStudents = updateStudents;

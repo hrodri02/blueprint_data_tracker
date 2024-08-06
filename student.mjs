@@ -698,7 +698,7 @@ function uploadEditedNote(note_id) {
     });
     const headers = { "Content-Type": "application/json" };
     createLoader();
-    put(`${protocol}://${domain}/students/${studentID}/notes/${note_id}`, body, headers, (updated_note) => {
+    patch(`${protocol}://${domain}/students/${studentID}/notes/${note_id}`, body, headers, (updated_note) => {
         // update UI
         const note_flex_item = document.getElementById(`note-${note_id}`);
         const p = note_flex_item.querySelector('p');

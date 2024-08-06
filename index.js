@@ -265,9 +265,10 @@ function uploadButtonClicked() {
             ranges.push(range);
         }
 
-        const body = JSON.stringify({period: period,ranges: ranges, values: values});
+        const body = JSON.stringify({ranges: ranges, values: values});
+        createLoader();
         post(`${protocol}://${domain}/students/dailydata`, body, (data) => {
-            const period = data['period'];
+            removeLoader();
             resetGrades(period);
         });
     }
