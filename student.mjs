@@ -271,9 +271,9 @@ function addNoteToContainer(student_note) {
     `;
     const ellipsisButton = studentNotesContainer.querySelector('.fa-ellipsis');
     ellipsisButton.addEventListener('click', ellipsisButtonClicked);
-    const deleteNoteButton = div.getElementById('delete-note-button');
+    const deleteNoteButton = document.getElementById('delete-note-button');
     deleteNoteButton.addEventListener('click', deleteNoteButtonClicked);
-    const editNoteButton = div.getElementById('edit-note-button');
+    const editNoteButton = document.getElementById('edit-note-button');
     editNoteButton.addEventListener('click', editNoteButtonClicked);
 }
 
