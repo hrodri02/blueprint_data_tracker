@@ -259,7 +259,7 @@ router.get('/:id/notes', [auth], async (req, res) => {
   res.send(notes);
 });
 
-router.put('/:id/notes/:note_id', [auth], async (req, res) => {
+router.patch('/:id/notes/:note_id', [auth], async (req, res) => {
   const student_id = req.params.id;
   const result = await db.getStudent(student_id);
   if (!result) {
@@ -268,7 +268,7 @@ router.put('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const note_id = req.params.note_id;
   const student_note = await db.getStudentNote(note_id);
-  if (!note_id) {
+  if (!student_note) {
     return res.status(404).send('Student note with given ID not found.');
   }
 
@@ -281,7 +281,6 @@ router.put('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const { error } = validateNote(student_note);
   if (error) {
-    console.log(error.details[0].message);
     return res.status(400).send(error.details[0].message);
   }
 
