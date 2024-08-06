@@ -391,4 +391,75 @@ describe('/students', () => {
             expect(res.body[0]).toMatchObject(student_note);
         });
     });
+
+    describe('PATCH /:id/notes/:id', () => {
+        test('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).patch('/students/1/notes/1');
+            expect(res.status).toBe(404);
+        });
+
+        test('should return 404 if the note id is invalid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const res = await request(server).patch('/students/' + student.id + '/notes/1');
+            expect(res.status).toBe(404);
+        });
+        
+        test('should return 400 if the student note is invalid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const student_note = {
+                note: 'Have student summarize their steps after completing a few problems.',
+                date: new Date().toISOString()
+            };
+            const note_in_db = await db.insertStudentNote(student_note, student.id);
+
+            const updated_note = {
+                note: 'hi',
+                date: new Date().toISOString()
+            };
+
+            const res = await request(server)
+                                .patch('/students/' + student.id + '/notes/' + note_in_db.id)
+                                .send(updated_note);
+            expect(res.status).toBe(400);
+        });
+        
+
+        test('should return the updated note if the student note is valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const student_note = {
+                note: 'Have student summarize their steps after completing a few problems.',
+                date: new Date().toISOString()
+            };
+            const note_in_db = await db.insertStudentNote(student_note, student.id);
+
+            const updated_note = {
+                note: 'Have student summarize their steps after completing three problems.',
+                date: new Date().toISOString()
+            };
+
+            const res = await request(server)
+                                .patch('/students/' + student.id + '/notes/' + note_in_db.id)
+                                .send(updated_note);
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveProperty('note', updated_note.note);
+        });
+    });
 });
