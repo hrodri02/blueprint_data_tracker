@@ -297,7 +297,7 @@ router.delete('/:id/notes/:note_id', [auth], async (req, res) => {
 
   const note_id = req.params.note_id;
   const note = await db.getStudentNote(note_id);
-  if (!note_id) {
+  if (!note) {
     return res.status(404).send('Student note with given ID not found.');
   }
 
