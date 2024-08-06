@@ -366,7 +366,7 @@ describe('/students', () => {
         });
     });
 
-    describe('POST /:id/notes', () => {
+    describe('GET /:id/notes', () => {
         test('should return 404 if the student id is invalid', async () => {
             const res = await request(server).get('/students/1/notes');
             expect(res.status).toBe(404);
