@@ -10,8 +10,9 @@ describe('/students', () => {
         server = require('../../app');
     });
 
-    afterEach(() => { 
-        db.deleteAllStudents();
+    afterEach(async () => { 
+        await db.deleteAllStudents();
+        await db.deleteAllStudentNotes();
     });
 
     describe('POST /', () => {
@@ -311,6 +312,57 @@ describe('/students', () => {
             const regex = /^[gradesGRADES]*$/
             const allLetterGradesAllowed = gradesValues.every(value => regex.test(value));
             expect(allLetterGradesAllowed).toBeTruthy();
+        });
+    });
+
+    describe('POST /:id/notes', () => {
+        test('should return 404 if the student id is invalid', async () => {
+            const res = await request(server).post('/students/1/notes');
+            expect(res.status).toBe(404);
+        });
+
+        test('should return 400 if the student note is invalid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const now = new Date();
+            const note = {
+                student_id: student.id,
+                note: 'hi',
+                date: now.toISOString()
+            };
+
+            const res = await request(server)
+                                .post('/students/' + student.id + '/notes')
+                                .send(note);
+            expect(res.status).toBe(400);
+        });
+
+        test('should return student note if it is valid', async () => {
+            const student = await db.insertStudentForFellow({
+                name: 'Davis, Navie', 
+                period: 1,
+                sheets_row: 15,
+                fellow_id: '113431031494705476915'
+            });
+
+            const now = new Date();
+            const note = {
+                student_id: student.id,
+                note: 'Have student summarize their steps after completing a few problems.',
+                date: now.toISOString()
+            };
+
+            const res = await request(server)
+                                .post('/students/' + student.id + '/notes')
+                                .send(note);
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(1);
+            expect(res.body[0]).toMatchObject(note);
         });
     });
 });
