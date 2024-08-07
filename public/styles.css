@@ -304,9 +304,13 @@ h3 {
     padding-left: 10px;
 }
 
+#student-profile-image:hover {
+    cursor: pointer;
+}
+
 .student-profile-image-container img {
     width: 100%;
-    margin: 20px 0;
+    margin-top: 20px;
 }
 
 .popup-input-container img {
@@ -326,8 +330,7 @@ h3 {
 .student-info-container {
     float: left;
     width: 75%;
-    padding-right: 10%;
-    padding-left: 20px;
+    padding: 0 5%;
 }
 
 .form-group {
