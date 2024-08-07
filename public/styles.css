@@ -103,6 +103,7 @@ input[type="date"] {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+    padding-right: 10px;
     width: 30%;
 }
 
@@ -300,11 +301,16 @@ h3 {
     align-items: center;
     flex-direction: column;
     width: 25%;
+    padding-left: 10px;
+}
+
+#student-profile-image:hover {
+    cursor: pointer;
 }
 
 .student-profile-image-container img {
     width: 100%;
-    margin: 20px 0;
+    margin-top: 30px;
 }
 
 .popup-input-container img {
@@ -324,7 +330,7 @@ h3 {
 .student-info-container {
     float: left;
     width: 75%;
-    padding: 0 20px;
+    padding: 0 5%;
 }
 
 .form-group {
@@ -339,7 +345,7 @@ h3 {
 }
 
 .student-page-group {
-    margin: 20px 0;
+    margin: 30px 0;
 }
 
 .student-page-header {

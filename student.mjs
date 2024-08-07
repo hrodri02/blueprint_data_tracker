@@ -33,7 +33,7 @@ let selected_image_file = null;
 // add click listeners to buttons
 document.getElementById('edit-math-goal-button').addEventListener('click', editMathGoalButtonClicked);
 document.getElementById('week').addEventListener('change', onWeekChanged);
-document.getElementById('edit-image-button').addEventListener('click', editImageButtonClicked);
+document.getElementById('student-profile-image').addEventListener('click', editImageButtonClicked);
 document.getElementById('upload').addEventListener('click', uploadButtonClicked);
 document.getElementById('add-note-button').addEventListener('click', addNoteButtonClicked);
 
