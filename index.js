@@ -10,9 +10,8 @@ const dateControl = document.querySelector('input[type="date"]');
 // timer variables
 let lessonTimerId = null;
 let startTime;
-let expectedTime;
-let numLessonParts;
-let timerIndex;
+let nextAt;
+let timerIndex = 0;
 
 /*
     rowToStudentData = {
@@ -141,9 +140,9 @@ function createPeriod(students) {
 
 function setupLessonTimer() {
     const timers = timers_collection.timers;
-    lessonTimerLabel.style.background = timers[0].background_color;
-    lessonTimerLabel.style.color = timers[0].text_color;
-    const timeInMS = timers[0].minutes * 60000;
+    lessonTimerLabel.style.background = timers[timerIndex].background_color;
+    lessonTimerLabel.style.color = timers[timerIndex].text_color;
+    const timeInMS = timers[timerIndex].minutes * 60000;
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
@@ -156,12 +155,13 @@ function startButtonClicked() {
 }
 
 function startLessonTimer() {
+    if (timerIndex > 0) {
+        setupLessonTimer();
+    }
+    
     startTime = Date.now();
-    expectedTime = startTime + 1000; // When the next update should happen
-    const timers = timers_collection.timers;
-    numLessonParts = timers.length;
-    timerIndex = 0;
-    lessonTimerId = setTimeout(updateTimer, 1000);
+    nextAt = startTime + 1000;
+    lessonTimerId = setTimeout(updateTimer, nextAt - Date.now());
 }
 
 function updateTimer() {
@@ -172,42 +172,23 @@ function updateTimer() {
     const elapsedTime = currentTime - startTime;
     const timeLeft = Math.max(0, timeInMS - elapsedTime);
 
-    mins = Math.floor(timeLeft / 60000);
-    secs = Math.round((timeLeft % 60000) / 1000);
-
     if (timeLeft <= 0) {
-        if (timerIndex == numLessonParts - 1) {
-            clearTimeout(lessonTimerId);
-        }
-        else {
-            // play alarm sound
-            const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
-            alarmSound.play();
-            // update the lesson part
-            timerIndex++;
-            // update background color
-            lessonTimerLabel.style.background = timers[timerIndex].background_color;
-            lessonTimerLabel.style.color = timers[timerIndex].text_color;
-            // update the time in the new part
-            startTime = Date.now();
-            expectedTime = startTime + 1000;
-            timeInMS = timers[timerIndex].minutes * 60000;
-            mins = parseInt(timeInMS / 60000);
-            secs = (timeInMS - mins * 60000) / 1000;
-            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            lessonTimerLabel.innerText = `${mins}:${secsString}`;
-            lessonTimerId = setTimeout(updateTimer, 1000);
+        clearTimeout(lessonTimerId);
+        // play alarm sound
+        const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+        alarmSound.play();
+        timerIndex++;
+        if (timerIndex < timers.length) {
+            startLessonTimer();
         }
     }
     else {
+        mins = Math.floor(timeLeft / 60000);
+        secs = Math.round((timeLeft % 60000) / 1000);
         const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
         lessonTimerLabel.innerText = `${mins}:${secsString}`;
-
-        const drift = currentTime - expectedTime; // How much we're off schedule
-        console.log('drift:', drift);
-        expectedTime += 1000; // Schedule next update for the next second
-
-        lessonTimerId = setTimeout(updateTimer, Math.max(0, 1000 - drift));
+        nextAt += 1000;
+        lessonTimerId = setTimeout(updateTimer, nextAt - Date.now());
     }
 }
 
@@ -611,6 +592,7 @@ function resetGrades(period) {
 }
 
 function resetButtonClicked() {
+    timerIndex = 0;
     clearTimeout(lessonTimerId);
     setupLessonTimer();
     lessonTimerLabel.style.pointerEvents = "auto";
