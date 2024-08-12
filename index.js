@@ -7,7 +7,11 @@ const settingsContent = document.getElementById("settings-content");
 const container = document.getElementsByClassName("container")[0];
 const studentsContainer = document.getElementsByClassName("students-container")[0];
 const dateControl = document.querySelector('input[type="date"]');
+// timer variables
 let lessonTimerId = null;
+let startTime;
+let nextAt;
+let timerIndex = 0;
 
 /*
     rowToStudentData = {
@@ -135,10 +139,10 @@ function createPeriod(students) {
 }
 
 function setupLessonTimer() {
-    lessonTimerLabel.style.background = timers[0].background_color;
-    lessonTimerLabel.style.color = timers[0].text_color;
     const timers = timers_collection.timers;
-    const timeInMS = timers[0].minutes * 60000;
+    lessonTimerLabel.style.background = timers[timerIndex].background_color;
+    lessonTimerLabel.style.color = timers[timerIndex].text_color;
+    const timeInMS = timers[timerIndex].minutes * 60000;
     const mins = parseInt(timeInMS / 60000);
     const secs = (timeInMS - mins * 60000) / 1000;
     const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
@@ -151,46 +155,41 @@ function startButtonClicked() {
 }
 
 function startLessonTimer() {
-    const timers = timers_collection.timers;
-    const numLessonParts = timers.length;
-    let i = 0;
-    let timeInMS = timers[0].minutes * 60000;
-
-    lessonTimerId = window.setInterval(() => {
-        timeInMS -= 1000;
-        mins = parseInt(timeInMS / 60000);
-        secs = (timeInMS - mins * 60000) / 1000;
+    if (timerIndex > 0) {
+        setupLessonTimer();
+    }
     
-        if (mins == 0 && secs === 0) {
-            if (i == numLessonParts - 1) {
-                clearInterval(lessonTimerId);
-            }
-            else {
-                // play alarm sound
-                const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
-                alarmSound.play();
-                // update the lesson part
-                i++;
-                // update background color
-                lessonTimerLabel.style.background = timers[i].background_color;
-                lessonTimerLabel.style.color = timers[i].text_color;
-                // update the time in the new part
-                timeInMS = timers[i].minutes * 60000;
-                mins = parseInt(timeInMS / 60000);
-                secs = (timeInMS - mins * 60000) / 1000;
-                lessonTimerLabel.innerText = `${mins}:0${secs}`;
-            }
+    startTime = Date.now();
+    nextAt = startTime + 1000;
+    lessonTimerId = setTimeout(updateTimer, nextAt - Date.now());
+}
+
+function updateTimer() {
+    const timers = timers_collection.timers;
+    let timeInMS = timers[timerIndex].minutes * 60000;
+    
+    let currentTime = Date.now();
+    const elapsedTime = currentTime - startTime;
+    const timeLeft = Math.max(0, timeInMS - elapsedTime);
+
+    if (timeLeft <= 0) {
+        clearTimeout(lessonTimerId);
+        // play alarm sound
+        const alarmSound = new Audio('mixkit-classic-alarm-995.wav');
+        alarmSound.play();
+        timerIndex++;
+        if (timerIndex < timers.length) {
+            startLessonTimer();
         }
-        else if (mins > 0 && secs === 0) {
-            mins -= 1;
-            secs = 59;
-            lessonTimerLabel.innerText = `${mins}:${secs}`;
-        }
-        else {
-            const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
-            lessonTimerLabel.innerText = `${mins}:${secsString}`;
-        }
-    }, 1000);
+    }
+    else {
+        mins = Math.floor(timeLeft / 60000);
+        secs = Math.round((timeLeft % 60000) / 1000);
+        const secsString = (secs < 10) ? "0" + secs.toString() : secs.toString();
+        lessonTimerLabel.innerText = `${mins}:${secsString}`;
+        nextAt += 1000;
+        lessonTimerId = setTimeout(updateTimer, nextAt - Date.now());
+    }
 }
 
 function onAttendanceValueChanged() {
@@ -593,7 +592,8 @@ function resetGrades(period) {
 }
 
 function resetButtonClicked() {
-    clearInterval(lessonTimerId);
+    timerIndex = 0;
+    clearTimeout(lessonTimerId);
     setupLessonTimer();
     lessonTimerLabel.style.pointerEvents = "auto";
 }
